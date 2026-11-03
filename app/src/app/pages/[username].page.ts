@@ -45,9 +45,10 @@ const REPO = 'angular/angular';
       <app-container class="py-8 lg:py-14">
         <div class="grid items-start gap-8 lg:grid-cols-5 lg:gap-12">
           <div class="flex min-w-0 flex-col items-start gap-5 lg:col-span-2">
-            <div class="flex items-center gap-4 lg:flex-col lg:items-start lg:gap-6">
+            <!-- w-full: a long name truncates instead of widening the page on phones -->
+            <div class="flex w-full min-w-0 items-center gap-4 lg:flex-col lg:items-start lg:gap-6">
               <img [src]="avatar(person)" [alt]="person.username" width="112" height="112" class="size-20 shrink-0 rounded-xl bg-muted ring-1 ring-border lg:size-28" />
-              <div class="flex min-w-0 flex-col gap-1">
+              <div class="flex min-w-0 flex-1 flex-col gap-1 lg:w-full">
                 <h1 class="truncate text-3xl font-bold tracking-tight sm:text-4xl" [title]="displayName()">{{ displayName() }}</h1>
                 @if (person.name) {
                   <p class="truncate text-lg text-muted-foreground">{{ person.username }}</p>
