@@ -1,13 +1,13 @@
 {
-  "name": "angular-contributors",
+  "name": "angularians",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "pnpm --filter @angular-contributors/app dev",
-    "build": "pnpm --filter @angular-contributors/app build",
+    "dev": "pnpm --filter @angularians/app dev",
+    "build": "pnpm --filter @angularians/app build",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
-    "collect": "pnpm --filter @angular-contributors/collector collect"
+    "collect": "pnpm --filter @angularians/collector collect"
   },
   "packageManager": "pnpm@10.28.0",
   "pnpm": {

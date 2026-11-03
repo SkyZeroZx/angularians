@@ -1,7 +1,7 @@
 // Ported from nuxt.com `app/components/nuxters/NuxtersScoreBreakdown.vue` (MIT, Copyright (c) 2022-2023 NuxtLabs).
 // Inline instead of a modal; landed PRs only, no core bonus.
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core'
-import { scoreBreakdown, type PullRequestCounts } from '@angular-contributors/shared'
+import { scoreBreakdown, type PullRequestCounts } from '@angularians/shared'
 import { NgIcon, provideIcons } from '@ng-icons/core'
 import { lucideBookOpen, lucideBrushCleaning, lucideRocket, lucideWrench } from '@ng-icons/lucide'
 import { HlmProgressImports } from '@spartan-ng/helm/progress'

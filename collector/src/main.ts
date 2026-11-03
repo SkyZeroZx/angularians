@@ -9,7 +9,7 @@ import {
   prCloseNumbers,
   toJsonLines,
   type LandedPullRequest,
-} from '@angular-contributors/shared'
+} from '@angularians/shared'
 import { gitCommits } from './commits.ts'
 import { parseConfig } from './config.ts'
 import { collectProfiles } from './profiles.ts'

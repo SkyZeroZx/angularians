@@ -1,7 +1,7 @@
 // Ported from nuxt/nuxters `scripts/collect-contributors.ts` and `scripts/utils/countries.ts`
 // (MIT, Copyright (c) 2023 Nuxt).
 import { strFromU8, unzipSync } from 'fflate'
-import { countryFromLocation, parseCountryIndex, type CountryIndex, type ProfileRecord, type SocialAccount } from '@angular-contributors/shared'
+import { countryFromLocation, parseCountryIndex, type CountryIndex, type ProfileRecord, type SocialAccount } from '@angularians/shared'
 import { graphql } from './github.ts'
 
 const GEONAMES_COUNTRIES_URL = 'https://download.geonames.org/export/dump/countryInfo.txt'

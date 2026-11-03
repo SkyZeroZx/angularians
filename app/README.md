@@ -1,4 +1,4 @@
-# Angular Contributors: the site
+# Angularians: the site
 
 [Analog](https://analogjs.org) (Angular 22, server-rendered), [spartan/ui](https://www.spartan.ng) and Tailwind 4.
 See the [root README](../README.md) for the project.

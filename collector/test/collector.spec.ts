@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseCountryIndex } from '@angular-contributors/shared'
+import { parseCountryIndex } from '@angularians/shared'
 import { parseGitLog } from '../src/commits.ts'
 import { parseConfig, parseSince } from '../src/config.ts'
 import { nextLink, retryDelay } from '../src/github.ts'

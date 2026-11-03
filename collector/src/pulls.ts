@@ -1,4 +1,4 @@
-import type { PullRequestInput } from '@angular-contributors/shared'
+import type { PullRequestInput } from '@angularians/shared'
 import { getJson, paginate } from './github.ts'
 
 type Repo = { owner: string, name: string }

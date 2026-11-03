@@ -6,7 +6,7 @@ import { HlmButton } from '@spartan-ng/helm/button';
 import { PageSection } from '../layout/page-section';
 
 export const routeMeta = {
-  title: 'Page not found · Angular Contributors',
+  title: 'Page not found · Angularians',
   meta: [{ name: 'robots', content: 'noindex' }],
 } satisfies RouteMeta;
 

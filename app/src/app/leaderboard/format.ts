@@ -1,4 +1,4 @@
-import type { Period } from '@angular-contributors/shared'
+import type { Period } from '@angularians/shared'
 
 const number = new Intl.NumberFormat('en-US')
 const date = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeZone: 'UTC' })

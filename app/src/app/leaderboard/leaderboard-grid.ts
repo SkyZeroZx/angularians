@@ -2,7 +2,7 @@
 import { ChangeDetectionStrategy, Component, computed, input, linkedSignal, signal } from '@angular/core'
 import { RouterLink } from '@angular/router'
 import { injectServerFnMutation } from '@analogjs/router'
-import type { ContributorSummary, LeaderboardPage } from '@angular-contributors/shared'
+import type { ContributorSummary, LeaderboardPage } from '@angularians/shared'
 import { NgIcon, provideIcons } from '@ng-icons/core'
 import { lucidePlus } from '@ng-icons/lucide'
 import { HlmButton } from '@spartan-ng/helm/button'

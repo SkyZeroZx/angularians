@@ -1,4 +1,4 @@
-import type { Contributor } from '@angular-contributors/shared'
+import type { Contributor } from '@angularians/shared'
 import * as v from 'valibot'
 import type { DataBundle } from './bundle'
 import { ContributorsData, MAX_PAGE_SIZE } from './contributors'

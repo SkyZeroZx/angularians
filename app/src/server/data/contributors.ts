@@ -11,7 +11,7 @@ import {
   type LeaderboardPage,
   type Period,
   type ProfileRecord,
-} from '@angular-contributors/shared'
+} from '@angularians/shared'
 import type { DataBundle } from './bundle'
 
 /** 10 rows of the 10-column avatar grid. */

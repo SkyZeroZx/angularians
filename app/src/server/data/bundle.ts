@@ -1,4 +1,4 @@
-import type { Contributor, Period, ProfileRecord } from '@angular-contributors/shared'
+import type { Contributor, Period, ProfileRecord } from '@angularians/shared'
 
 /** What `scripts/bundle-data.ts` writes to `bundle.generated.json`: the validated `data/` files, in one module. */
 export interface DataBundle {

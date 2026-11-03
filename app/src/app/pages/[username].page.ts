@@ -6,7 +6,7 @@ import { Meta, Title } from '@angular/platform-browser';
 import { Router, RouterLink } from '@angular/router';
 import { injectServerFn, type RouteMeta } from '@analogjs/router';
 import { injectResponse } from '@analogjs/router/tokens';
-import { countryName, DEFAULT_PERIOD, isPeriod, periodPhrase, type ContributorProfile, type Period } from '@angular-contributors/shared';
+import { countryName, DEFAULT_PERIOD, isPeriod, periodPhrase, type ContributorProfile, type Period } from '@angularians/shared';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucideArrowLeft, lucideArrowUpRight, lucideAward, lucideCalendar, lucideGithub, lucideGitPullRequest, lucideGlobe, lucideLink, lucideMapPin,
@@ -23,7 +23,7 @@ import { PeriodTabs } from '../leaderboard/period-tabs';
 import { ScoreBreakdown } from '../profile/score-breakdown';
 
 export const routeMeta = {
-  title: 'Contributor · Angular Contributors',
+  title: 'Contributor · Angularians',
 } satisfies RouteMeta;
 
 const SINCE = new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' });
@@ -252,16 +252,16 @@ export default class Profile {
   /** Shared links show the period on screen; the canonical URL has none, so search engines see one page per profile. */
   private updateHead(person: ContributorProfile | null): void {
     if (!person) {
-      this.title.setTitle(`${this.username()} · Angular Contributors`);
+      this.title.setTitle(`${this.username()} · Angularians`);
       this.meta.updateTag({ name: 'robots', content: 'noindex' });
       return;
     }
     const current = this.current();
     const title = this.period() === 'all'
-      ? `${person.username}, Angular contributor #${formatNumber(current.rank)}`
+      ? `${person.username}, Angularian #${formatNumber(current.rank)}`
       : `${person.username}: #${formatNumber(current.rank)} ${periodPhrase(this.period())}`;
     const description = `${person.username} landed ${plural(current.pullRequests.all, 'pull request', 'pull requests')} in angular/angular ${periodPhrase(this.period())}: #${formatNumber(current.rank)} with ${formatPoints(current.score)}.`;
-    this.title.setTitle(`${title} · Angular Contributors`);
+    this.title.setTitle(`${title} · Angularians`);
     this.meta.removeTag('name="robots"');
     this.meta.updateTag({ name: 'description', content: description });
     this.meta.updateTag({ property: 'og:title', content: title });

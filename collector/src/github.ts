@@ -4,7 +4,7 @@
  */
 
 const API = 'https://api.github.com'
-const USER_AGENT = 'angular-contributors-collector'
+const USER_AGENT = 'angularians-collector'
 const MAX_ATTEMPTS = 6
 /** A rate-limit wait longer than this fails the run instead: the next nightly run starts over. */
 const MAX_WAIT_MS = 65 * 60 * 1000

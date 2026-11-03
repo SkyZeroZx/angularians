@@ -1,6 +1,6 @@
 // Ported from nuxt.com `app/components/nuxters/NuxtersCountrySelect.vue` (MIT, Copyright (c) 2022-2023 NuxtLabs).
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core'
-import { countryName, type CountryStats } from '@angular-contributors/shared'
+import { countryName, type CountryStats } from '@angularians/shared'
 import { HlmSelectImports } from '@spartan-ng/helm/select'
 import { formatNumber } from './format'
 

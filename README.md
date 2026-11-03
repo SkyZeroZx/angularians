@@ -1,4 +1,4 @@
-# Angular Contributors
+# Angularians
 
 Everyone whose pull requests landed in [angular/angular](https://github.com/angular/angular) since 2014, ranked by
 what they shipped: features, fixes, docs and chores. Updated every night.
@@ -37,13 +37,13 @@ Node 22.18+ (24 recommended, used on Netlify and in CI) and pnpm 10.
 
 ```bash
 pnpm install
-pnpm --filter @angular-contributors/app dev   # http://localhost:5173
+pnpm --filter @angularians/app dev   # http://localhost:5173
 pnpm test                                     # every package
 pnpm typecheck
 ```
 
 The app bundles `data/` at build time (`app/scripts/bundle-data.ts`). To try it with another data folder:
-`CONTRIBUTORS_DATA_DIR=/path/to/data pnpm --filter @angular-contributors/app build`.
+`CONTRIBUTORS_DATA_DIR=/path/to/data pnpm --filter @angularians/app build`.
 
 ## Data
 

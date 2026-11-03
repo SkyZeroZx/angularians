@@ -3,7 +3,7 @@ import { afterRenderEffect, ChangeDetectionStrategy, Component, computed, effect
 import { Meta, Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { injectServerFn, type RouteMeta } from '@analogjs/router';
-import { countryCode, countryName, DEFAULT_PERIOD, isPeriod, periodPhrase, PULL_REQUEST_POINTS, type Period } from '@angular-contributors/shared';
+import { countryCode, countryName, DEFAULT_PERIOD, isPeriod, periodPhrase, PULL_REQUEST_POINTS, type Period } from '@angularians/shared';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideBookOpen, lucideBrushCleaning, lucideCalendar, lucideGitPullRequest, lucideRocket, lucideUsers, lucideWrench } from '@ng-icons/lucide';
 import { injectQueryParams } from 'ngxtension/inject-query-params';
@@ -25,7 +25,7 @@ import { World } from '../world/world';
 const SITE_DESCRIPTION = 'Everyone whose pull requests landed in angular/angular since 2014, ranked by what they shipped: features, fixes, docs and chores.';
 
 export const routeMeta = {
-  title: 'Angular Contributors',
+  title: 'Angularians',
   meta: [{ name: 'description', content: SITE_DESCRIPTION }],
 } satisfies RouteMeta;
 
@@ -40,7 +40,7 @@ export const routeMeta = {
   template: `
     <app-page-hero [description]="description">
       <span heroHeadline hlmBadge variant="outline" class="mb-4">Community project · updated every night</span>
-      <span heroTitle class="bg-linear-to-r from-brand-from to-brand-to bg-clip-text text-transparent">Angular Contributors</span>
+      <span heroTitle>Meet the <span class="bg-linear-to-r from-brand-from to-brand-to bg-clip-text text-transparent">Angularians</span></span>
       <ng-container heroActions>
         <a hlmBtn href="#how-it-works">How the score works</a>
         <a hlmBtn variant="outline" href="https://github.com/angular/angular/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">How to contribute</a>
@@ -185,7 +185,7 @@ export default class Home {
     effect(() => {
       const page = this.leaderboard.value();
       const shared = this.requestedPeriod() && page?.total ? page : null;
-      const title = shared ? `Top Angular contributors ${periodPhrase(shared.period)}` : 'Angular Contributors';
+      const title = shared ? `Top Angularians ${periodPhrase(shared.period)}` : 'Angularians';
       const description = shared
         ? `${plural(shared.total, 'person', 'people')} landed ${plural(shared.landedPullRequests, 'pull request', 'pull requests')} in angular/angular ${periodPhrase(shared.period)}.`
         : SITE_DESCRIPTION;

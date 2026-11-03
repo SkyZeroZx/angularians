@@ -1,5 +1,5 @@
 {
-  "name": "@angular-contributors/app",
+  "name": "@angularians/app",
   "version": "0.0.0",
   "type": "module",
   "engines": {
@@ -22,7 +22,7 @@
   "private": true,
   "dependencies": {
     "@analogjs/router": "^2.9.5",
-    "@angular-contributors/shared": "workspace:*",
+    "@angularians/shared": "workspace:*",
     "@angular/cdk": "22.0.0",
     "@angular/common": "^22.0.0",
     "@angular/compiler": "^22.0.0",

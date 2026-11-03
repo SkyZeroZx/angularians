@@ -13,9 +13,6 @@ importers:
       '@analogjs/router':
         specifier: ^2.9.5
         version: 2.9.5(d6c90ffaa0e427f1011a3ed74b88dac2)
-      '@angular-contributors/shared':
-        specifier: workspace:*
-        version: link:../shared
       '@angular/cdk':
         specifier: 22.0.0
         version: 22.0.0(@angular/common@22.2.4(@angular/core@22.2.4(@angular/compiler@22.2.4)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.2.4(@angular/compiler@22.2.4)(rxjs@7.8.2))(@angular/platform-browser@22.2.4(@angular/common@22.2.4(@angular/core@22.2.4(@angular/compiler@22.2.4)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.2.4(@angular/compiler@22.2.4)(rxjs@7.8.2)))(rxjs@7.8.2)
@@ -40,6 +37,9 @@ importers:
       '@angular/router':
         specifier: ^22.0.0
         version: 22.2.4(@angular/common@22.2.4(@angular/core@22.2.4(@angular/compiler@22.2.4)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.2.4(@angular/compiler@22.2.4)(rxjs@7.8.2))(@angular/platform-browser@22.2.4(@angular/common@22.2.4(@angular/core@22.2.4(@angular/compiler@22.2.4)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.2.4(@angular/compiler@22.2.4)(rxjs@7.8.2)))(rxjs@7.8.2)
+      '@angularians/shared':
+        specifier: workspace:*
+        version: link:../shared
       '@ng-icons/core':
         specifier: '>=32.0.0 <34.0.0'
         version: 33.4.0(@angular-devkit/schematics@22.2.5(chokidar@5.0.0))(@angular/common@22.2.4(@angular/core@22.2.4(@angular/compiler@22.2.4)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.2.4(@angular/compiler@22.2.4)(rxjs@7.8.2))(@schematics/angular@22.2.5(chokidar@5.0.0))(rxjs@7.8.2)
@@ -128,7 +128,7 @@ importers:
 
   collector:
     dependencies:
-      '@angular-contributors/shared':
+      '@angularians/shared':
         specifier: workspace:*
         version: link:../shared
       fflate:

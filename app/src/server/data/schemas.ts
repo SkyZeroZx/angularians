@@ -1,4 +1,4 @@
-import { countryCode, DEFAULT_PERIOD, isPeriod } from '@angular-contributors/shared'
+import { countryCode, DEFAULT_PERIOD, isPeriod } from '@angularians/shared'
 import * as v from 'valibot'
 
 /** GitHub logins: letters, digits and single hyphens, 39 characters at most. */

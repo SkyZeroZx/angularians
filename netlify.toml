@@ -1,6 +1,6 @@
 # Netlify: the Analog app in app/, server-rendered by one function (Nitro's netlify preset).
 [build]
-  command = "pnpm --filter @angular-contributors/app build"
+  command = "pnpm --filter @angularians/app build"
   # Paths are from the repository root (the site's base directory).
   # Static assets (JS, CSS, favicon) are served by the CDN...
   publish = "app/dist/analog/public"

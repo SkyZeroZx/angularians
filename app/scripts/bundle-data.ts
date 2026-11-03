@@ -9,7 +9,7 @@ import { existsSync } from 'node:fs'
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { parseContributorsFile, parseProfilesFile, periodFromFile, PROFILES_FILE } from '@angular-contributors/shared'
+import { parseContributorsFile, parseProfilesFile, periodFromFile, PROFILES_FILE } from '@angularians/shared'
 import type { DataBundle } from '../src/server/data/bundle.ts'
 
 const here = dirname(fileURLToPath(import.meta.url))

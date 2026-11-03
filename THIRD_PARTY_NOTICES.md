@@ -1,6 +1,6 @@
 # Third-party notices
 
-Angular Contributors is a port of the Nuxters leaderboard. Parts of its code are adapted from these MIT-licensed
+Angularians is a port of the Nuxters leaderboard. Parts of its code are adapted from these MIT-licensed
 projects. Each ported file says where it comes from in a comment at its top.
 
 ## nuxt.com

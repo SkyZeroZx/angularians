@@ -1,6 +1,6 @@
 // Ported from nuxt.com `app/components/nuxters/NuxtersPeriodTabs.vue` (MIT, Copyright (c) 2022-2023 NuxtLabs).
 import { ChangeDetectionStrategy, Component, computed, input, linkedSignal, output } from '@angular/core'
-import type { Period } from '@angular-contributors/shared'
+import type { Period } from '@angularians/shared'
 import { HlmSelectImports } from '@spartan-ng/helm/select'
 import { HlmTabsImports } from '@spartan-ng/helm/tabs'
 

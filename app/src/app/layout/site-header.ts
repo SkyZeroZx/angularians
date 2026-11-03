@@ -17,7 +17,7 @@ import { ThemeToggle } from './theme-toggle';
     <app-container class="flex h-14 items-center gap-4">
       <a routerLink="/" class="flex items-center gap-2 font-semibold tracking-tight">
         <app-logo-mark class="size-6" />
-        <span>Angular Contributors</span>
+        <span>Angularians</span>
       </a>
       <nav class="ml-auto flex items-center gap-1" aria-label="Site">
         <a hlmBtn variant="ghost" size="icon" href="https://github.com/angular/angular" target="_blank" rel="noopener" aria-label="angular/angular on GitHub" title="angular/angular on GitHub">

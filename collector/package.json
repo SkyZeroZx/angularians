@@ -1,5 +1,5 @@
 {
-  "name": "@angular-contributors/collector",
+  "name": "@angularians/collector",
   "private": true,
   "type": "module",
   "scripts": {
@@ -8,7 +8,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@angular-contributors/shared": "workspace:*",
+    "@angularians/shared": "workspace:*",
     "fflate": "^0.8.3"
   },
   "devDependencies": {

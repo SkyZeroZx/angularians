@@ -3,7 +3,7 @@
 import {
   afterNextRender, ChangeDetectionStrategy, Component, computed, DestroyRef, effect, ElementRef, inject, input, output, signal, untracked, viewChild,
 } from '@angular/core';
-import { COUNTRIES, type CountryStats } from '@angular-contributors/shared';
+import { COUNTRIES, type CountryStats } from '@angularians/shared';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideMinus, lucidePause, lucidePlay, lucidePlus, lucideRotateCcw } from '@ng-icons/lucide';
 import { HlmButton } from '@spartan-ng/helm/button';

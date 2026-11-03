@@ -16,7 +16,7 @@ describe('App', () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
     const element: HTMLElement = fixture.nativeElement;
-    expect(element.querySelector('app-site-header')?.textContent).toContain('Angular Contributors');
+    expect(element.querySelector('app-site-header')?.textContent).toContain('Angularians');
     expect(element.querySelector('main#main')).toBeTruthy();
     expect(element.querySelector('app-site-footer')?.textContent).toContain('not affiliated with Google');
   });
