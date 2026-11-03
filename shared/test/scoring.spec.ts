@@ -41,8 +41,8 @@ describe('scoreBreakdown', () => {
 
 const now = new Date('2026-11-03T12:00:00Z')
 let number = 0
-const pr = (login: string, id: number, type: PullRequestType, landedAt: string): LandedPullRequest =>
-  ({ number: ++number, author: { login, id }, type, landedAt })
+const pr = (login: string, id: number, type: PullRequestType, landedAt: string, scopes: string[] = []): LandedPullRequest =>
+  ({ number: ++number, author: { login, id }, type, scopes, landedAt })
 const user = (login: string, id: number) => ({ login, id })
 
 describe('buildContributorRecords (landed PRs only)', () => {
@@ -130,5 +130,20 @@ describe('ContributorsAccumulator', () => {
     expect(files.get('30d')?.[0]).toMatchObject({ score: 5, comments: 0, reviewComments: 0 })
     expect(files.get('2019')?.[0]).toMatchObject({ comments: 1 })
     expect(files.get('2025')?.[0]).toMatchObject({ reviewComments: 1 })
+  })
+})
+
+describe('ContributorsAccumulator.packages', () => {
+  it('counts the packages of each contributor\'s merged PRs, all time, most first', () => {
+    const acc = new ContributorsAccumulator(now)
+    acc.addLandedPullRequest(pr('ann', 2, 'fix', '2016-01-01T00:00:00Z', ['router']))
+    acc.addLandedPullRequest(pr('ann', 2, 'feat', '2026-10-30T00:00:00Z', ['core', 'router']))
+    acc.addLandedPullRequest(pr('ann', 2, 'docs', '2026-10-30T00:00:00Z'))
+    acc.addLandedPullRequest(pr('bob', 1, 'fix', '2026-10-30T00:00:00Z', ['forms']))
+    acc.addLandedPullRequest(pr('cy', 3, 'chore', '2026-10-30T00:00:00Z'))
+    expect(acc.packages()).toEqual([
+      { githubId: 1, packages: [{ name: 'forms', pullRequests: 1 }] },
+      { githubId: 2, packages: [{ name: 'router', pullRequests: 2 }, { name: 'core', pullRequests: 1 }] },
+    ])
   })
 })

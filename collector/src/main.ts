@@ -9,16 +9,20 @@ import {
   prCloseNumbers,
   toJsonLines,
   type LandedPullRequest,
+  type TeamRecord,
 } from '@angularians/shared'
 import { collectActivity } from './activity.ts'
 import { gitCommits } from './commits.ts'
 import { parseConfig } from './config.ts'
+import { paginate } from './github.ts'
 import { collectProfiles } from './profiles.ts'
 import { restPulls, searchPulls } from './pulls.ts'
 
 /** Below this, a full run is most likely broken (token, API): keep the previous files. */
 const MIN_FULL_RUN_CONTRIBUTORS = 1000
 export const META_FILE = 'meta.json'
+const PACKAGES_FILE = 'packages.json'
+const TEAM_FILE = 'team.json'
 
 const config = parseConfig(process.argv.slice(2), process.env)
 const now = new Date()
@@ -79,6 +83,29 @@ for (const [period, records] of files) {
 }
 console.log(`Wrote ${files.size} period files to ${config.outputDir} (${allTime.length} contributors all time)`)
 
+// The packages each contributor's merged PRs named (`fix(router)`), all time.
+const packages = accumulator.packages()
+await writeFile(join(config.outputDir, PACKAGES_FILE), toJsonLines(packages), 'utf8')
+console.log(`Wrote ${packages.length} contributors' packages`)
+
+// The public members of the organizations of the repositories: the "Angular team" badge.
+let team: number | null = null
+try {
+  const members: TeamRecord[] = []
+  for (const owner of new Set(config.repos.map(repo => repo.owner))) {
+    for await (const page of paginate<{ login: string, id: number }>(`/orgs/${owner}/public_members?per_page=100`)) {
+      for (const member of page) members.push({ githubId: member.id, username: member.login })
+    }
+  }
+  members.sort((a, b) => a.githubId - b.githubId)
+  await writeFile(join(config.outputDir, TEAM_FILE), toJsonLines(members), 'utf8')
+  team = members.length
+  console.log(`Wrote ${members.length} public organization members`)
+}
+catch (error) {
+  console.error(`Team members failed, ${existsSync(join(config.outputDir, TEAM_FILE)) ? 'keeping the previous file' : 'no team file'}:`, error instanceof Error ? error.message : error)
+}
+
 let profiles: number | null = null
 if (config.profiles) {
   try {
@@ -104,6 +131,7 @@ const meta = {
   contributors: allTime.length,
   landedPullRequests: landed.length,
   profiles,
+  team,
   ...stats,
 }
 await writeFile(join(config.outputDir, META_FILE), `${JSON.stringify(meta, null, 2)}\n`, 'utf8')

@@ -24,8 +24,22 @@ export interface LandedPullRequest {
   number: number
   author: GitHubUser
   type: PullRequestType
+  /** The packages named in the title, `fix(router): …` → `['router']`. Empty without a scope. */
+  scopes: string[]
   /** ISO date: GitHub's `merged_at`, or the date of its `PR Close #N` commit on the main branch. */
   landedAt: string
+}
+
+/** One line of `packages.json`: the packages a contributor's merged PRs touched, all time, most first. */
+export interface PackagesRecord {
+  githubId: number
+  packages: Array<{ name: string, pullRequests: number }>
+}
+
+/** One line of `team.json`: a public member of the GitHub organization of the repository. */
+export interface TeamRecord {
+  githubId: number
+  username: string
 }
 
 /**

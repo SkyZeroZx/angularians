@@ -3,7 +3,7 @@
 // Differences: no core bonus (one repository), and inline review comments count too (1 point each).
 import { isBotAccount } from './bots.ts'
 import { allPeriods, periodsFor } from './periods.ts'
-import type { ActivityCounts, ContributorRecord, GitHubUser, LandedPullRequest, Period, PullRequestCounts, PullRequestType } from './types.ts'
+import type { ActivityCounts, ContributorRecord, GitHubUser, LandedPullRequest, PackagesRecord, Period, PullRequestCounts, PullRequestType } from './types.ts'
 
 export const PULL_REQUEST_POINTS: Readonly<Record<PullRequestType, number>> = {
   feat: 7,
@@ -122,6 +122,8 @@ export class ContributorsAccumulator {
   private readonly byPeriod: Map<Period, Map<number, Counts>>
   private readonly logins = new Map<number, { login: string, time: number }>()
   private readonly first = new Map<number, number>()
+  /** GitHub id → package → merged PRs, all time. */
+  private readonly packageCounts = new Map<number, Map<string, number>>()
 
   constructor(now: Date) {
     this.now = now
@@ -129,6 +131,12 @@ export class ContributorsAccumulator {
   }
 
   addLandedPullRequest(pull: LandedPullRequest): void {
+    let packages = this.packageCounts.get(pull.author.id)
+    if (!packages) {
+      packages = new Map()
+      this.packageCounts.set(pull.author.id, packages)
+    }
+    for (const scope of pull.scopes ?? []) packages.set(scope, (packages.get(scope) ?? 0) + 1)
     this.add(pull.author, pull.landedAt, true, (counts) => {
       counts.pullRequests[pull.type] += 1
       counts.pullRequests.all += 1
@@ -168,6 +176,17 @@ export class ContributorsAccumulator {
     const user = toUser(comment.user)
     if (!user) return
     this.add(user, comment.created_at, true, counts => (counts.reviewComments += 1))
+  }
+
+  /** `packages.json`: every contributor with a scoped PR, by GitHub id; each one's packages, most PRs first. */
+  packages(): PackagesRecord[] {
+    return [...this.packageCounts]
+      .filter(([, packages]) => packages.size)
+      .map(([githubId, packages]) => ({
+        githubId,
+        packages: [...packages].map(([name, pullRequests]) => ({ name, pullRequests })).sort((a, b) => b.pullRequests - a.pullRequests || a.name.localeCompare(b.name)),
+      }))
+      .sort((a, b) => a.githubId - b.githubId)
   }
 
   /** Every period, even an empty one, so readers can rely on its file. */
