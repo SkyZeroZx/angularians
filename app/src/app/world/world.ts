@@ -1,0 +1,121 @@
+// Ported from nuxt.com `app/components/nuxters/NuxtersWorld.vue` (MIT, Copyright (c) 2022-2023 NuxtLabs).
+import { NgTemplateOutlet } from '@angular/common';
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { countryName, type ContributorsMap, type ContributorSummary, type CountryStats } from '@angular-contributors/shared';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideArrowUp, lucideX } from '@ng-icons/lucide';
+import { HlmButton } from '@spartan-ng/helm/button';
+import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
+import { HlmTooltip } from '@spartan-ng/helm/tooltip';
+import { avatarUrl, formatNumber, plural } from '../leaderboard/format';
+import { Globe } from './globe';
+
+/** People shown on the card of a country. */
+const CARD_TILES = 12;
+
+@Component({
+  selector: 'app-world',
+  imports: [Globe, HlmButton, HlmSkeleton, HlmTooltip, NgIcon, NgTemplateOutlet, RouterLink],
+  providers: [provideIcons({ lucideArrowUp, lucideX })],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { class: 'grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] lg:gap-12' },
+  template: `
+    <ng-template #card let-shown>
+      <div class="rounded-lg border bg-background/90 p-4 shadow-lg backdrop-blur">
+        <div class="flex items-center gap-3">
+          <div class="min-w-0 flex-1">
+            <p class="truncate font-semibold">{{ name(shown.code) }}</p>
+            <p class="text-sm text-muted-foreground">{{ count(shown.count) }} · #{{ rankOf(shown.code) }} country</p>
+          </div>
+          <button hlmBtn variant="ghost" size="icon-sm" type="button" aria-label="Show all countries" (click)="select.emit(null)">
+            <ng-icon name="lucideX" aria-hidden="true" />
+          </button>
+        </div>
+        <ul class="mt-4 grid grid-cols-6 gap-2" [attr.aria-busy]="!people().length || null" [attr.aria-label]="'Best ranked from ' + name(shown.code)">
+          @for (tile of tiles(); track $index) {
+            <li class="aspect-square">
+              @if (tile) {
+                <a [routerLink]="['/', tile.username]" [hlmTooltip]="tile.username + ' · #' + number(tile.rank)" [attr.aria-label]="tile.username + ', #' + number(tile.rank)" class="block size-full overflow-hidden rounded-md bg-muted ring-1 ring-border transition hover:ring-primary">
+                  <img [src]="avatar(tile)" alt="" width="56" height="56" loading="lazy" class="size-full object-cover" />
+                </a>
+              } @else {
+                <div hlmSkeleton class="size-full rounded-md"></div>
+              }
+            </li>
+          }
+        </ul>
+        <button hlmBtn variant="link" class="mt-3 px-0" type="button" (click)="leaderboard.emit()">
+          See {{ shown.count === 1 ? 'the contributor' : 'the ' + number(shown.count) + ' contributors' }} from {{ name(shown.code) }}
+          <ng-icon name="lucideArrowUp" aria-hidden="true" />
+        </button>
+      </div>
+    </ng-template>
+
+    <!-- The card floats on the globe: picking a country moves nothing on the page -->
+    <div class="relative mx-auto aspect-square w-full max-w-[36rem]">
+      @defer (on viewport) {
+        <app-globe [countries]="map().countries" [selected]="selected()" (select)="select.emit($event)" />
+      } @placeholder {
+        <div class="size-full rounded-full bg-muted/50 ring-1 ring-border"></div>
+      }
+      @if (current(); as shown) {
+        <div class="absolute right-0 bottom-0 w-80 max-sm:hidden">
+          <ng-container [ngTemplateOutlet]="card" [ngTemplateOutletContext]="{ $implicit: shown }" />
+        </div>
+      }
+    </div>
+
+    <div class="flex min-w-0 flex-col gap-4">
+      <ol class="-mx-2 max-h-96 overflow-y-auto pr-1" aria-label="Countries, from the most contributors">
+        @for (item of map().countries; track item.code) {
+          <li>
+            <button
+              type="button"
+              class="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-left text-sm transition-colors hover:bg-muted/60 aria-pressed:bg-muted"
+              [attr.aria-pressed]="item.code === selected()"
+              (click)="select.emit(item.code === selected() ? null : item.code)"
+            >
+              <span class="min-w-0 flex-1">
+                <span class="block truncate">{{ name(item.code) }}</span>
+                <span class="mt-1 block h-1 rounded-full bg-primary/60" [style.width.%]="barWidth(item)"></span>
+              </span>
+              <span class="text-muted-foreground tabular-nums">{{ number(item.count) }}</span>
+            </button>
+          </li>
+        }
+      </ol>
+      <p class="text-xs text-muted-foreground">
+        From the location on each GitHub profile, matched to a country: {{ number(map().located) }} of {{ number(map().total) }} contributors set one.
+      </p>
+    </div>
+
+    <!-- Phones: the globe is too small to float on, and often scrolled away from the list. A card at the bottom of the screen. -->
+    @if (current(); as shown) {
+      <div class="sticky bottom-4 z-10 sm:hidden">
+        <ng-container [ngTemplateOutlet]="card" [ngTemplateOutletContext]="{ $implicit: shown }" />
+      </div>
+    }
+  `,
+})
+export class World {
+  readonly map = input.required<ContributorsMap>();
+  readonly selected = input<string | null>(null);
+  /** The best ranked contributors of the selected country: the first page of its board, empty while it loads. */
+  readonly people = input<ContributorSummary[]>([]);
+  readonly select = output<string | null>();
+  /** "See the N contributors": scroll up to the board, already filtered. */
+  readonly leaderboard = output<void>();
+
+  protected readonly current = computed(() => this.map().countries.find(item => item.code === this.selected()) ?? null);
+  /** One tile per person shown, known from the count: the card keeps its size while they load. */
+  protected readonly tiles = computed(() => Array.from({ length: Math.min(CARD_TILES, this.current()?.count ?? 0) }, (_, index) => this.people()[index] ?? null));
+  private readonly largest = computed(() => this.map().countries[0]?.count ?? 1);
+
+  protected readonly name = countryName;
+  protected readonly number = formatNumber;
+  protected readonly count = (value: number) => plural(value, 'contributor', 'contributors');
+  protected readonly avatar = (person: ContributorSummary) => avatarUrl(person.githubId, 56);
+  protected readonly rankOf = (code: string) => this.map().countries.findIndex(item => item.code === code) + 1;
+  protected readonly barWidth = (item: CountryStats) => Math.max(2, item.count / this.largest() * 100);
+}

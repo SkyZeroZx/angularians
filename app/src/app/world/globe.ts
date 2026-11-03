@@ -1,0 +1,432 @@
+// Ported from nuxt.com `app/components/nuxters/NuxtersGlobe.vue` (MIT, Copyright (c) 2022-2023 NuxtLabs).
+// Browser only: it is rendered inside `@defer`, and its WebGL setup runs in `afterNextRender`.
+import {
+  afterNextRender, ChangeDetectionStrategy, Component, computed, DestroyRef, effect, ElementRef, inject, input, output, signal, untracked, viewChild,
+} from '@angular/core';
+import { COUNTRIES, type CountryStats } from '@angular-contributors/shared';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideMinus, lucidePause, lucidePlay, lucidePlus, lucideRotateCcw } from '@ng-icons/lucide';
+import { HlmButton } from '@spartan-ng/helm/button';
+import type { Globe as CobeGlobe } from 'cobe';
+import createGlobe from 'cobe';
+import { formatNumber } from '../leaderboard/format';
+import { ThemeService } from '../theme.service';
+import { faceOnGlobe, projectOnGlobe } from './globe-math';
+
+const DEFAULT_CAMERA = { phi: 0, theta: 0.2, zoom: 1 };
+const MAX_ZOOM = 3;
+/** Zoomed in, countries show their best ranked contributors instead of a count. */
+const AVATAR_ZOOM = 1.6;
+/** Zoomed in, the globe outgrows the canvas and fades out from 82% of the radius: markers stay inside. */
+const FRAME = 0.88;
+const KEY_MOVES: Record<string, [number, number]> = { ArrowLeft: [-0.15, 0], ArrowRight: [0.15, 0], ArrowUp: [0, -0.15], ArrowDown: [0, 0.15] };
+
+const clamp = (value: number, low: number, high: number) => Math.min(high, Math.max(low, value));
+const angleDelta = (from: number, to: number) => ((to - from + Math.PI) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2) - Math.PI;
+const palette = (dark: boolean) => dark
+  ? { dark: 1, diffuse: 1.2, mapBrightness: 4, mapBaseBrightness: 0.03, baseColor: [0.32, 0.36, 0.4] as [number, number, number], glowColor: [0.06, 0.08, 0.1] as [number, number, number] }
+  : { dark: 0, diffuse: 1.4, mapBrightness: 8, mapBaseBrightness: 0, baseColor: [0.94, 0.95, 0.96] as [number, number, number], glowColor: [0.92, 0.93, 0.95] as [number, number, number] };
+
+interface GlobeMarker extends CountryStats {
+  name: string
+  location: readonly [number, number]
+}
+
+@Component({
+  selector: 'app-globe',
+  imports: [HlmButton, NgIcon],
+  providers: [provideIcons({ lucideMinus, lucidePause, lucidePlay, lucidePlus, lucideRotateCcw })],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { class: 'globe relative block size-full isolate overflow-hidden', '[attr.data-ready]': 'ready() || null' },
+  template: `
+    <!-- Clipped: a hidden marker keeps its last position, out of the frame it would widen the page -->
+    <canvas
+      #canvas
+      [hidden]="failed()"
+      tabindex="0"
+      role="img"
+      aria-label="Contributors around the world. Arrow keys rotate the globe, plus and minus zoom, zero resets. Every country is also in the list."
+      class="globe__canvas block size-full cursor-grab touch-none outline-none active:cursor-grabbing"
+      (pointerdown)="pointerDown($event)"
+      (pointermove)="pointerMove($event)"
+      (pointerup)="pointerEnd($event)"
+      (pointercancel)="pointerEnd($event)"
+      (lostpointercapture)="pointerEnd($event)"
+      (keydown)="keydown($event)"
+      (webglcontextlost)="contextLost($event)"
+    ></canvas>
+
+    @if (ready() && !failed()) {
+      @for (marker of markers(); track marker.code) {
+        <button
+          type="button"
+          class="globe__marker"
+          [attr.data-code]="marker.code"
+          data-visible="false"
+          inert
+          [class.is-selected]="selected() === marker.code"
+          [class.is-avatars]="avatars()"
+          [attr.aria-label]="marker.name + ', ' + count(marker.count)"
+          [attr.aria-pressed]="selected() === marker.code"
+          (click)="select.emit(selected() === marker.code ? null : marker.code)"
+        >
+          @if (avatars()) {
+            <span class="flex pl-2" aria-hidden="true">
+              @for (username of (marker.code === selected() ? marker.top : marker.top.slice(0, 1)); track username) {
+                <img [src]="avatar(username)" alt="" width="32" height="32" loading="lazy" class="-ml-2 size-8 max-w-none rounded-full bg-muted object-cover ring-2 ring-background" />
+              }
+            </span>
+          } @else {
+            <span>{{ number(marker.count) }}</span>
+          }
+        </button>
+      }
+    }
+
+    @if (failed()) {
+      <p class="absolute inset-[20%] grid place-content-center text-center text-sm text-muted-foreground" role="status">The globe needs WebGL. Every country is in the list.</p>
+    }
+
+    @if (ready() && !failed()) {
+      <div class="absolute bottom-1 left-1 flex gap-0.5 rounded-lg bg-background/80 p-1 ring-1 ring-border backdrop-blur" role="group" aria-label="Globe controls">
+        <button hlmBtn variant="ghost" size="icon-sm" type="button" [attr.aria-label]="paused() ? 'Resume rotation' : 'Pause rotation'" [attr.aria-pressed]="paused()" (click)="togglePause()">
+          <ng-icon [name]="paused() ? 'lucidePlay' : 'lucidePause'" aria-hidden="true" />
+        </button>
+        <button hlmBtn variant="ghost" size="icon-sm" type="button" aria-label="Zoom in" [disabled]="zoom() >= MAX_ZOOM" (click)="setZoom(zoom() + 0.25)">
+          <ng-icon name="lucidePlus" aria-hidden="true" />
+        </button>
+        <button hlmBtn variant="ghost" size="icon-sm" type="button" aria-label="Zoom out" [disabled]="zoom() <= 1" (click)="setZoom(zoom() - 0.25)">
+          <ng-icon name="lucideMinus" aria-hidden="true" />
+        </button>
+        <button hlmBtn variant="ghost" size="icon-sm" type="button" aria-label="Reset the globe" (click)="reset()">
+          <ng-icon name="lucideRotateCcw" aria-hidden="true" />
+        </button>
+      </div>
+    }
+  `,
+  styles: `
+    /* A fade, not a clip: zoomed in, a rounded canvas cut the globe along a false horizon */
+    .globe__canvas { mask-image: radial-gradient(closest-side, #000 82%, transparent); }
+    /* The mask would hide an outline on the canvas */
+    :host:has(.globe__canvas:focus-visible)::after {
+      content: ""; position: absolute; inset: 4px; border-radius: 999px; outline: 2px solid var(--ring); pointer-events: none;
+    }
+    .globe__marker {
+      position: absolute; inset: 0 auto auto 0; will-change: transform;
+      display: flex; align-items: center; height: 28px; padding: 0 9px;
+      border: 1px solid var(--border); border-radius: 999px; background: var(--background); color: var(--foreground);
+      font: 600 11px/1 var(--font-sans); font-variant-numeric: tabular-nums; white-space: nowrap;
+      opacity: 0; visibility: hidden; pointer-events: none;
+      transition: opacity 160ms ease-out, visibility 0s linear 160ms;
+    }
+    .globe__marker[data-visible="true"] { opacity: 1; visibility: visible; pointer-events: auto; transition-delay: 0s; }
+    .globe__marker:hover, .globe__marker:focus-visible, .globe__marker.is-selected {
+      z-index: 2; border-color: var(--primary); outline: 2px solid color-mix(in oklab, var(--primary) 35%, transparent); outline-offset: 2px;
+    }
+    .globe__marker.is-avatars { height: 32px; padding: 0; border: 0; background: transparent; }
+    @media (prefers-reduced-motion: reduce) {
+      .globe__marker { transition-duration: 80ms, 0s; transition-delay: 0s, 80ms; }
+    }
+  `,
+})
+export class Globe {
+  readonly countries = input.required<CountryStats[]>();
+  /** ISO code of the selected country: the globe turns to it. */
+  readonly selected = input<string | null>(null);
+  readonly select = output<string | null>();
+
+  private readonly host = inject(ElementRef<HTMLElement>);
+  private readonly canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
+  private readonly theme = inject(ThemeService);
+
+  protected readonly MAX_ZOOM = MAX_ZOOM;
+  protected readonly failed = signal(false);
+  protected readonly ready = signal(false);
+  protected readonly paused = signal(false);
+  protected readonly zoom = signal(1);
+  protected readonly avatars = computed(() => this.zoom() >= AVATAR_ZOOM);
+  protected readonly markers = computed<GlobeMarker[]>(() => this.countries()
+    .flatMap((country) => {
+      const known = COUNTRIES[country.code];
+      return known?.location ? [{ ...country, name: known.name, location: known.location }] : [];
+    })
+    // The selected country first: it keeps its marker when others overlap it.
+    .sort((a, b) => Number(b.code === this.selected()) - Number(a.code === this.selected()) || b.count - a.count));
+
+  protected readonly number = formatNumber;
+  protected readonly count = (value: number) => `${formatNumber(value)} ${value === 1 ? 'contributor' : 'contributors'}`;
+  protected readonly avatar = (username: string) => `https://avatars.githubusercontent.com/${encodeURIComponent(username)}?s=64`;
+
+  // WebGL and the frame-by-frame camera stay local: none of it is state to share or render.
+  private globe: CobeGlobe | undefined;
+  private frame = 0;
+  private lastTime = 0;
+  private running = false;
+  private resized = true;
+  private width = 1;
+  private height = 1;
+  private onScreen = false;
+  private tabVisible = true;
+  private still = false;
+  private readonly camera = { ...DEFAULT_CAMERA };
+  private phi = DEFAULT_CAMERA.phi;
+  private theta = DEFAULT_CAMERA.theta;
+  private currentZoom = DEFAULT_CAMERA.zoom;
+  private readonly pointers = new Map<number, { x: number, y: number }>();
+  private pinchDistance = 0;
+  private readonly projection = { depth: 0, x: 0, y: 0 };
+
+  constructor() {
+    const destroyRef = inject(DestroyRef);
+
+    afterNextRender(() => {
+      const element = this.host.nativeElement as HTMLElement;
+      const canvas = this.canvas().nativeElement;
+      try {
+        if (!canvas.getContext('webgl2') && !canvas.getContext('webgl')) throw new Error('WebGL unavailable');
+        this.globe = createGlobe(canvas, {
+          width: 1,
+          height: 1,
+          devicePixelRatio: Math.min(devicePixelRatio || 1, innerWidth < 768 ? 1.5 : 2),
+          phi: this.phi,
+          theta: this.theta,
+          scale: 0.98,
+          mapSamples: 32000,
+          markerColor: [0.9, 0.1, 0.35],
+          markers: [],
+          ...palette(this.theme.dark()),
+        });
+      }
+      catch {
+        this.failed.set(true);
+        return;
+      }
+
+      // Frames run only while the globe is on screen, in a visible tab, and moving.
+      const resize = new ResizeObserver(([entry]) => {
+        this.width = Math.max(1, Math.round(entry!.contentRect.width));
+        this.height = Math.max(1, Math.round(entry!.contentRect.height));
+        this.resized = true;
+        this.schedule();
+      });
+      resize.observe(element);
+      const visibility = new IntersectionObserver(([entry]) => {
+        this.onScreen = !!entry?.isIntersecting;
+        if (this.onScreen) this.schedule();
+        else this.pause();
+      });
+      visibility.observe(element);
+      const onVisibility = () => {
+        this.tabVisible = document.visibilityState === 'visible';
+        if (!this.tabVisible) this.pointers.clear();
+        if (this.tabVisible) this.schedule();
+        else this.pause();
+      };
+      document.addEventListener('visibilitychange', onVisibility);
+      const motion = matchMedia('(prefers-reduced-motion: reduce)');
+      const onMotion = () => {
+        this.still = motion.matches;
+        this.schedule();
+      };
+      onMotion();
+      motion.addEventListener('change', onMotion);
+      // Trackpad pinch is a Ctrl+wheel: a plain wheel keeps scrolling the page.
+      const onWheel = (event: WheelEvent) => {
+        if (!event.ctrlKey) return;
+        event.preventDefault();
+        const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? this.height : 1);
+        this.setZoom(this.camera.zoom * Math.exp(-delta * 0.01));
+      };
+      element.addEventListener('wheel', onWheel, { passive: false });
+
+      destroyRef.onDestroy(() => {
+        this.pause();
+        resize.disconnect();
+        visibility.disconnect();
+        document.removeEventListener('visibilitychange', onVisibility);
+        motion.removeEventListener('change', onMotion);
+        element.removeEventListener('wheel', onWheel);
+        this.globe?.destroy();
+        this.globe = undefined;
+      });
+
+      this.ready.set(true);
+      this.focusSelected();
+      this.schedule();
+    });
+
+    // A new selection turns the globe to it; new markers, zoom or pause need a frame.
+    effect(() => {
+      this.selected();
+      untracked(() => this.focusSelected());
+    });
+    effect(() => {
+      this.markers();
+      this.paused();
+      this.avatars();
+      // After the markers render: positions are written to the new elements.
+      untracked(() => queueMicrotask(() => this.schedule()));
+    });
+    effect(() => {
+      const colors = palette(this.theme.dark());
+      untracked(() => {
+        this.globe?.update(colors);
+        this.schedule();
+      });
+    });
+  }
+
+  private schedule(): void {
+    if (!this.globe || !this.onScreen || !this.tabVisible || this.running) return;
+    this.running = true;
+    this.lastTime = performance.now();
+    const tick = (time: number) => {
+      if (!this.running) return;
+      const elapsed = Math.min(time - this.lastTime, 64);
+      this.lastTime = time;
+      this.render(elapsed);
+      if (this.running) this.frame = requestAnimationFrame(tick);
+    };
+    this.frame = requestAnimationFrame(tick);
+  }
+
+  private pause(): void {
+    this.running = false;
+    cancelAnimationFrame(this.frame);
+  }
+
+  private render(elapsed: number): void {
+    const { width, height } = this;
+    const rotating = !this.paused() && !this.pointers.size && !this.still;
+    if (rotating) this.camera.phi += elapsed * 0.00006;
+    const progress = this.still || this.pointers.size ? 1 : 1 - Math.exp(-elapsed / 110);
+    this.phi += angleDelta(this.phi, this.camera.phi) * progress;
+    this.theta += (this.camera.theta - this.theta) * progress;
+    this.currentZoom += (this.camera.zoom - this.currentZoom) * progress;
+    const scale = Math.min(width, height) / height * 0.98 * this.currentZoom;
+    this.globe?.update({ phi: this.phi, theta: this.theta, scale, ...(this.resized ? { width, height } : {}) });
+    this.resized = false;
+
+    // Markers are HTML on top of the canvas: hide the ones behind the globe, out of the frame, or over another.
+    const element = this.host.nativeElement as HTMLElement;
+    const occupied: Array<{ x: number, y: number, width: number }> = [];
+    const frame = Math.min(width, height) / 2 * FRAME;
+    const avatars = this.avatars();
+    const markerHeight = avatars ? 32 : 28;
+    for (const country of this.markers()) {
+      const marker = element.querySelector<HTMLElement>(`.globe__marker[data-code="${country.code}"]`);
+      if (!marker) continue;
+      projectOnGlobe(this.projection, country.location, this.phi, this.theta, scale);
+      const x = width / 2 + this.projection.x * height / 2;
+      const y = height / 2 + this.projection.y * height / 2;
+      const markerWidth = avatars
+        ? (country.code === this.selected() ? 32 + (country.top.length - 1) * 24 : 32)
+        : 20 + formatNumber(country.count).length * 7;
+      const wasVisible = marker.dataset['visible'] === 'true';
+      const front = this.projection.depth > (wasVisible ? 0.1 : 0.14);
+      const fits = Math.hypot(x - width / 2, y - height / 2) < frame - Math.max(markerWidth, markerHeight) / 2;
+      const gap = wasVisible ? 4 : 8;
+      const hasRoom = occupied.every(other => Math.abs(other.x - x) > (other.width + markerWidth) / 2 + gap || Math.abs(other.y - y) > 28 + gap);
+      const show = front && fits && hasRoom;
+      if (show !== wasVisible) {
+        marker.dataset['visible'] = String(show);
+        marker.inert = !show;
+      }
+      if (show || wasVisible) {
+        // Sub-pixel, like the globe under it: whole pixels made the markers step while it turned smoothly.
+        const transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) translate(-50%, -50%)`;
+        if (marker.style.transform !== transform) marker.style.transform = transform;
+      }
+      if (show) occupied.push({ x, y, width: markerWidth });
+    }
+    const moving = Math.abs(angleDelta(this.phi, this.camera.phi)) > 0.0001 || Math.abs(this.theta - this.camera.theta) > 0.0001 || Math.abs(this.currentZoom - this.camera.zoom) > 0.0001;
+    // Paused and settled: no more frames until something moves.
+    if (!rotating && !moving) this.pause();
+  }
+
+  protected togglePause(): void {
+    this.paused.update(value => !value);
+  }
+
+  protected setZoom(value: number): void {
+    this.paused.set(true);
+    this.zoom.set(clamp(value, 1, MAX_ZOOM));
+    this.camera.zoom = this.zoom();
+    this.schedule();
+  }
+
+  protected reset(): void {
+    this.paused.set(false);
+    Object.assign(this.camera, DEFAULT_CAMERA);
+    this.zoom.set(DEFAULT_CAMERA.zoom);
+    this.select.emit(null);
+    this.schedule();
+  }
+
+  private focusSelected(): void {
+    const code = this.selected();
+    const location = code ? COUNTRIES[code]?.location : undefined;
+    if (!location) return;
+    this.paused.set(true);
+    Object.assign(this.camera, faceOnGlobe(location), { zoom: Math.max(this.camera.zoom, 1.8) });
+    this.zoom.set(this.camera.zoom);
+    this.schedule();
+  }
+
+  private pinch(): number {
+    const [first, second] = [...this.pointers.values()];
+    return first && second ? Math.hypot(first.x - second.x, first.y - second.y) : 0;
+  }
+
+  protected pointerDown(event: PointerEvent): void {
+    this.paused.set(true);
+    this.canvas().nativeElement.setPointerCapture(event.pointerId);
+    this.pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    this.pinchDistance = this.pinch();
+  }
+
+  protected pointerMove(event: PointerEvent): void {
+    const previous = this.pointers.get(event.pointerId);
+    if (!previous) return;
+    this.pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    if (this.pointers.size > 1) {
+      const next = this.pinch();
+      if (this.pinchDistance > 0) this.setZoom(this.camera.zoom * next / this.pinchDistance);
+      this.pinchDistance = next;
+      return;
+    }
+    // Slower when zoomed in: the same drag moves the same distance on screen.
+    this.camera.phi += (event.clientX - previous.x) / (180 * this.camera.zoom);
+    this.camera.theta = clamp(this.camera.theta + (event.clientY - previous.y) / (240 * this.camera.zoom), -1.45, 1.45);
+    this.schedule();
+  }
+
+  protected pointerEnd(event: PointerEvent): void {
+    this.pointers.delete(event.pointerId);
+    const canvas = this.canvas().nativeElement;
+    if (canvas.hasPointerCapture(event.pointerId)) canvas.releasePointerCapture(event.pointerId);
+    this.pinchDistance = this.pinch();
+  }
+
+  protected keydown(event: KeyboardEvent): void {
+    const move = KEY_MOVES[event.key];
+    if (move) {
+      event.preventDefault();
+      this.paused.set(true);
+      this.camera.phi += move[0];
+      this.camera.theta = clamp(this.camera.theta + move[1], -1.45, 1.45);
+      this.schedule();
+    }
+    else if (['+', '=', '-', '0'].includes(event.key)) {
+      event.preventDefault();
+      if (event.key === '0') this.reset();
+      else this.setZoom(this.zoom() + (event.key === '-' ? -0.25 : 0.25));
+    }
+  }
+
+  protected contextLost(event: Event): void {
+    event.preventDefault();
+    this.failed.set(true);
+    this.pause();
+  }
+}
