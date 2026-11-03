@@ -1,8 +1,9 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 /**
- * The Angularians mark: a rounded A with a spark (a rank, a star), in the brand gradient.
- * Our own mark, not the Angular shield: this is a community project, it does not use Google's trademarks as its logo.
+ * The Angularians mark: a shield split in two, the right half a step higher (moving up the leaderboard), in one
+ * flat brand colour. Adapted from the Angular shield the way the Angular press kit invites communities to, and kept
+ * distinct from the Angular logo itself: no A, no gradient.
  */
 @Component({
   selector: 'app-logo-mark',
@@ -10,23 +11,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   host: { class: 'inline-block' },
   template: `
     <svg viewBox="0 0 24 24" class="size-full" aria-hidden="true">
-      <defs>
-        <linearGradient id="logo-mark-gradient" x1="0" y1="1" x2="1" y2="0">
-          <stop offset="0" stop-color="var(--color-brand-from)" />
-          <stop offset="1" stop-color="var(--color-brand-to)" />
-        </linearGradient>
-      </defs>
-      <!-- The A: two legs and a crossbar, with the counter cut out (even-odd) -->
-      <path
-        fill="url(#logo-mark-gradient)"
-        fill-rule="evenodd"
-        stroke="url(#logo-mark-gradient)"
-        stroke-width="1.6"
-        stroke-linejoin="round"
-        d="M10.4 3.6h3.2l6.2 16.6h-3.6l-1.3-3.6H9.1l-1.3 3.6H4.2zM12 8.4l-2 5.4h4z"
-      />
-      <!-- The spark: a rank, a star -->
-      <path fill="url(#logo-mark-gradient)" d="M20 1.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z" />
+      <path fill="var(--color-brand-from)" d="M10.81 3.36V23.7L2.71 19.2 1.27 6.78ZM13.19.48 22.73 3.9 21.49 16.32 13.19 20.82Z" />
     </svg>
   `,
 })
