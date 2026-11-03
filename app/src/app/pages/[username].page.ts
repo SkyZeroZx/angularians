@@ -14,7 +14,7 @@ import {
   lucidePackage, lucideSmilePlus, lucideTrophy,
 } from '@ng-icons/lucide';
 import {
-  simpleAngular, simpleBluesky, simpleFacebook, simpleGithub, simpleInstagram, simpleMastodon, simpleNpm, simpleReddit, simpleThreads, simpleTwitch, simpleX,
+  simpleBluesky, simpleFacebook, simpleGithub, simpleInstagram, simpleMastodon, simpleNpm, simpleReddit, simpleThreads, simpleTwitch, simpleX,
   simpleYoutube,
 } from '@ng-icons/simple-icons';
 import { HlmDialogImports } from '@spartan-ng/helm/dialog';
@@ -24,6 +24,7 @@ import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import { HlmTooltip } from '@spartan-ng/helm/tooltip';
 import { getContributor } from '../data/contributors.server';
+import { AngularLogo } from '../layout/angular-logo';
 import { Container } from '../layout/container';
 import { avatarUrl, formatNumber, formatPoints, plural, profileQuery } from '../leaderboard/format';
 import { PeriodTabs } from '../leaderboard/period-tabs';
@@ -53,12 +54,12 @@ const REPO = 'angular/angular';
 
 @Component({
   selector: 'app-profile',
-  imports: [Container, HlmButton, HlmDialogImports, HlmSkeleton, HlmTooltip, NgIcon, NgTemplateOutlet, PeriodTabs, RouterLink, ScoreBreakdown],
+  imports: [AngularLogo, Container, HlmButton, HlmDialogImports, HlmSkeleton, HlmTooltip, NgIcon, NgTemplateOutlet, PeriodTabs, RouterLink, ScoreBreakdown],
   providers: [provideIcons({
     lucideArrowLeft, lucideArrowUpRight, lucideAward, lucideCalendar, lucideCircleDot, lucideGitPullRequest, lucideGlobe, lucideInfo,
     lucideBadgeCheck, lucideChevronDown, lucideChevronUp, lucideCrown, lucideFileCode, lucideLink, lucideLinkedin, lucideMapPin, lucideMessageCircle,
     lucidePackage, lucideSmilePlus, lucideTrophy,
-    simpleAngular, simpleBluesky, simpleFacebook, simpleGithub, simpleInstagram, simpleMastodon, simpleNpm, simpleReddit, simpleThreads, simpleTwitch, simpleX,
+    simpleBluesky, simpleFacebook, simpleGithub, simpleInstagram, simpleMastodon, simpleNpm, simpleReddit, simpleThreads, simpleTwitch, simpleX,
     simpleYoutube,
   })],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -140,7 +141,12 @@ const REPO = 'angular/angular';
                 <ul class="flex flex-wrap gap-2" aria-label="Badges">
                   @for (badge of badges(); track badge.label) {
                     <li [class]="'inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-sm ring-1 ' + badge.style" [hlmTooltip]="badge.title">
-                      <ng-icon [name]="badge.icon" aria-hidden="true" />{{ badge.label }}
+                      @if (badge.icon === 'angular') {
+                        <app-angular-logo class="size-4" />
+                      } @else {
+                        <ng-icon [name]="badge.icon" aria-hidden="true" />
+                      }
+                      {{ badge.label }}
                     </li>
                   }
                 </ul>
@@ -332,8 +338,8 @@ export default class Profile {
     const strong = 'bg-primary/10 text-primary ring-primary/30';
     const neutral = 'bg-muted/50 ring-border';
     const badges: Array<{ label: string, title: string, icon: string, style: string }> = [];
-    // The Angular logo, only to say "member of the Angular team" (the site's own mark stays the Angularians A).
-    if (person.team) badges.push({ label: 'Angular team', title: 'A public member of the angular organization on GitHub', icon: 'simpleAngular', style: 'bg-[#dd0031]/10 text-[#dd0031] ring-[#dd0031]/30 dark:text-[#ff4f6d]' });
+    // The gradient Angular logo of the press kit, only to say "member of the Angular team" (the site's mark stays the A).
+    if (person.team) badges.push({ label: 'Angular team', title: 'A public member of the angular organization on GitHub', icon: 'angular', style: 'bg-[#dc087d]/10 text-foreground ring-[#dc087d]/40' });
     if (person.rank <= 10) badges.push({ label: 'Top 10 all time', title: `#${formatNumber(person.rank)} of all time`, icon: 'lucideTrophy', style: strong });
     for (const year of this.years().filter(row => row.rank === 1).slice(0, 3)) {
       badges.push({ label: `#1 in ${year.period}`, title: `The top Angularian of ${year.period}`, icon: 'lucideCrown', style: strong });
