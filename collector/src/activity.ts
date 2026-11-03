@@ -1,7 +1,7 @@
 // Ported from nuxt/nuxters `collectIssues` and `collectComments` (MIT, Copyright (c) 2023 Nuxt), plus inline review
 // comments. Every page is counted as it arrives: a full run of angular/angular streams ~500,000 comments.
 import type { CommentInput, ContributorsAccumulator, IssueInput } from '@angularians/shared'
-import { paginate } from './github.ts'
+import { GitHubError, paginate } from './github.ts'
 
 type Repo = { owner: string, name: string }
 
@@ -18,6 +18,8 @@ export interface ActivityStats {
  * page simply has no `next` link. A full angular/angular run has ~500,000 comments.
  */
 export const LIST_PAGE_CAP = 300
+const MAX_PER_PAGE = 100
+const MIN_PER_PAGE = 25
 /** Pages between two progress lines in the log. */
 const PROGRESS_EVERY = 100
 
@@ -30,22 +32,34 @@ type Listed = { id?: number, created_at: string, updated_at?: string }
 export async function* walkCappedList<T extends Listed>(path: string, params: Record<string, string>, since: Date | null, pageCap = LIST_PAGE_CAP): AsyncGenerator<T[]> {
   const seen = new Set<number>()
   let from = since
+  let perPage = MAX_PER_PAGE
   for (;;) {
-    const query = new URLSearchParams({ per_page: '100', sort: 'updated', direction: 'asc', ...params, ...(from ? { since: from.toISOString() } : {}) })
+    const query = new URLSearchParams({ per_page: String(perPage), sort: 'updated', direction: 'asc', ...params, ...(from ? { since: from.toISOString() } : {}) })
     let pages = 0
     let lastUpdated: string | undefined
     let fresh = 0
-    for await (const page of paginate<T>(`${path}?${query}`)) {
-      pages++
-      const items = page.filter((item) => {
-        if (item.id === undefined) return true
-        if (seen.has(item.id)) return false
-        seen.add(item.id)
-        return true
-      })
-      fresh += items.length
-      lastUpdated = page.at(-1)?.updated_at ?? lastUpdated
-      yield items
+    try {
+      for await (const page of paginate<T>(`${path}?${query}`)) {
+        pages++
+        const items = page.filter((item) => {
+          if (item.id === undefined) return true
+          if (seen.has(item.id)) return false
+          seen.add(item.id)
+          return true
+        })
+        fresh += items.length
+        lastUpdated = page.at(-1)?.updated_at ?? lastUpdated
+        yield items
+      }
+    }
+    catch (error) {
+      // A page GitHub keeps failing to build (502 on review comments, which carry their diff hunks): start over
+      // from the last update seen, with smaller pages.
+      if (!(error instanceof GitHubError) || error.status < 500 || perPage <= MIN_PER_PAGE) throw error
+      perPage = Math.max(MIN_PER_PAGE, perPage / 2)
+      if (lastUpdated) from = new Date(lastUpdated)
+      console.log(`  ${path}: GitHub ${error.status} kept failing, continuing from ${from?.toISOString() ?? 'the start'} with ${perPage} per page`)
+      continue
     }
     if (pages < pageCap) return
     // The window hit the cap: the next one starts where this one stopped.

@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { ContributorsAccumulator } from '@angularians/shared'
 import { collectActivity, walkCappedList } from '../src/activity.ts'
+import { retryTiming } from '../src/github.ts'
 
 const ann = { login: 'ann', id: 1 }
 const bot = { login: 'angular-robot', id: 2 }
@@ -85,6 +86,47 @@ describe('walkCappedList', () => {
     }
     expect(ids).toEqual([1, 2, 3, 4, 5])
     expect(urls).toHaveLength(3)
+  })
+
+  it('continues from the last update with smaller pages when GitHub keeps failing a page', async () => {
+    retryTiming.scale = 0
+    const comment = (id: number, day: string) => ({ id, created_at: at(day), updated_at: at(day) })
+    const asked: string[] = []
+    vi.stubGlobal('fetch', vi.fn(async (input: string) => {
+      const url = new URL(input)
+      asked.push(`${url.pathname} ${url.searchParams.get('per_page') ?? ''} ${url.searchParams.get('since') ?? ''}`.trim())
+      if (url.pathname === '/next/broken') return new Response('{"message":"Server Error"}', { status: 502 })
+      if (url.searchParams.get('since')) return new Response(JSON.stringify([comment(2, '01-02'), comment(3, '01-03')]))
+      return new Response(JSON.stringify([comment(1, '01-01'), comment(2, '01-02')]), { headers: { link: '<https://api.github.com/next/broken>; rel="next"' } })
+    }))
+    const ids: number[] = []
+    try {
+      for await (const page of walkCappedList<{ id: number, created_at: string, updated_at: string }>('/repos/angular/angular/pulls/comments', {}, null)) {
+        ids.push(...page.map(item => item.id))
+      }
+    }
+    finally {
+      retryTiming.scale = 1
+    }
+    expect(ids).toEqual([1, 2, 3])
+    expect(asked[0]).toBe('/repos/angular/angular/pulls/comments 100')
+    expect(asked.at(-1)).toBe(`/repos/angular/angular/pulls/comments 50 ${new Date(at('01-02')).toISOString()}`)
+  })
+
+  it('gives up on a failing page at the smallest page size', async () => {
+    retryTiming.scale = 0
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('{}', { status: 502 })))
+    const walk = async () => {
+      for await (const _page of walkCappedList('/repos/angular/angular/pulls/comments', {}, null)) { /* drain */ }
+    }
+    try {
+      await expect(walk()).rejects.toThrow(/GitHub 502/)
+      // 100, 50 and 25 per page, each with its own retries.
+      expect(vi.mocked(fetch).mock.calls.map(([url]) => new URL(url as string).searchParams.get('per_page'))).toEqual(['100', '100', '100', '100', '100', '100', '50', '50', '50', '50', '50', '50', '25', '25', '25', '25', '25', '25'])
+    }
+    finally {
+      retryTiming.scale = 1
+    }
   })
 
   it('stops instead of looping when a capped window brings nothing new', async () => {

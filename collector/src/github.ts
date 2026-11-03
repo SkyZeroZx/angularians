@@ -17,7 +17,10 @@ export class GitHubError extends Error {
   }
 }
 
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+/** Tests set `scale` to 0 to retry without waiting. */
+export const retryTiming = { scale: 1 }
+
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms * retryTiming.scale))
 
 function headers(token: string | undefined): Record<string, string> {
   return {
