@@ -1,17 +1,17 @@
 {
-  "collectedAt": "2026-11-03T05:13:36.895Z",
+  "collectedAt": "2026-11-03T13:20:56.334Z",
   "repos": [
     "angular/angular"
   ],
   "partial": false,
   "since": null,
-  "contributors": 2194,
-  "landedPullRequests": 24019,
-  "profiles": null,
-  "pulls": 38258,
-  "commits": 39197,
+  "contributors": 2196,
+  "landedPullRequests": 24028,
+  "profiles": 2017,
+  "pulls": 38440,
+  "commits": 39198,
   "prCloseCommits": 24570,
   "multiPrCommits": 45,
-  "landedMerged": 7311,
-  "landedByPrClose": 16708
+  "landedMerged": 7318,
+  "landedByPrClose": 16710
 }

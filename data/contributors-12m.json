@@ -1,7 +1,7 @@
 [
 {"githubId":73321943,"username":"SkyZeroZx","score":1619,"pullRequests":{"feat":74,"fix":52,"docs":154,"chore":75,"all":355},"firstContributionAt":"2025-04-24T22:08:52.000Z"},
-{"githubId":1300985,"username":"JeanMeche","score":1413,"pullRequests":{"feat":27,"fix":65,"docs":95,"chore":173,"all":360},"firstContributionAt":"2022-11-07T20:32:42.000Z"},
-{"githubId":479713,"username":"atscott","score":1202,"pullRequests":{"feat":56,"fix":64,"docs":31,"chore":122,"all":273},"firstContributionAt":"2019-08-20T16:56:54.000Z"},
+{"githubId":1300985,"username":"JeanMeche","score":1423,"pullRequests":{"feat":28,"fix":65,"docs":95,"chore":174,"all":362},"firstContributionAt":"2022-11-07T20:32:42.000Z"},
+{"githubId":479713,"username":"atscott","score":1205,"pullRequests":{"feat":56,"fix":64,"docs":31,"chore":123,"all":274},"firstContributionAt":"2019-08-20T16:56:54.000Z"},
 {"githubId":88717125,"username":"erkamyaman","score":1077,"pullRequests":{"feat":16,"fix":66,"docs":134,"chore":33,"all":249},"firstContributionAt":"2026-03-09T17:29:16.000Z"},
 {"githubId":4450522,"username":"crisbeto","score":1007,"pullRequests":{"feat":52,"fix":92,"docs":9,"chore":49,"all":202},"firstContributionAt":"2018-11-12T20:47:07.000Z"},
 {"githubId":17563226,"username":"alan-agius4","score":909,"pullRequests":{"feat":23,"fix":67,"docs":29,"chore":99,"all":218},"firstContributionAt":"2017-08-17T23:01:10.000Z"},
@@ -19,7 +19,7 @@
 {"githubId":11010321,"username":"dgp1130","score":220,"pullRequests":{"feat":12,"fix":9,"docs":4,"chore":25,"all":50},"firstContributionAt":"2019-11-05T00:55:17.000Z"},
 {"githubId":973550,"username":"pkozlowski-opensource","score":207,"pullRequests":{"feat":20,"fix":0,"docs":13,"chore":5,"all":38},"firstContributionAt":"2015-02-09T08:03:26.000Z"},
 {"githubId":4836334,"username":"bencodezen","score":195,"pullRequests":{"feat":5,"fix":0,"docs":40,"chore":0,"all":45},"firstContributionAt":"2023-08-21T23:37:08.000Z"},
-{"githubId":3197814,"username":"amishne","score":130,"pullRequests":{"feat":12,"fix":0,"docs":10,"chore":2,"all":24},"firstContributionAt":"2025-11-07T18:12:31.000Z"},
+{"githubId":3197814,"username":"amishne","score":133,"pullRequests":{"feat":12,"fix":0,"docs":10,"chore":3,"all":25},"firstContributionAt":"2025-11-07T18:12:31.000Z"},
 {"githubId":411874,"username":"cexbrayat","score":128,"pullRequests":{"feat":0,"fix":10,"docs":15,"chore":6,"all":31},"firstContributionAt":"2016-10-19T16:49:02.000Z"},
 {"githubId":19598772,"username":"clydin","score":124,"pullRequests":{"feat":1,"fix":3,"docs":12,"chore":18,"all":34},"firstContributionAt":"2018-09-21T17:21:28.000Z"},
 {"githubId":39253660,"username":"AleksanderBodurri","score":105,"pullRequests":{"feat":7,"fix":7,"docs":3,"chore":3,"all":20},"firstContributionAt":"2020-05-01T16:50:28.000Z"},
