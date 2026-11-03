@@ -1,0 +1,26 @@
+{
+  "name": "angular-contributors",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm --filter @angular-contributors/app dev",
+    "build": "pnpm --filter @angular-contributors/app build",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck",
+    "collect": "pnpm --filter @angular-contributors/collector collect"
+  },
+  "packageManager": "pnpm@10.28.0",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "@parcel/watcher",
+      "lmdb",
+      "msgpackr-extract"
+    ]
+  },
+  "description": "Everyone whose pull requests landed in angular/angular, ranked. A community project.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.18"
+  }
+}
