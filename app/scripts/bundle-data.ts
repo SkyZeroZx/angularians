@@ -9,7 +9,7 @@ import { existsSync } from 'node:fs'
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { parseContributorsFile, parseProfilesFile, periodFromFile, PROFILES_FILE } from '@angularians/shared'
+import { PACKAGES_FILE, parseContributorsFile, parsePackagesFile, parseProfilesFile, parseTeamFile, periodFromFile, PROFILES_FILE, TEAM_FILE } from '@angularians/shared'
 import type { DataBundle } from '../src/server/data/bundle.ts'
 
 const here = dirname(fileURLToPath(import.meta.url))
@@ -17,7 +17,7 @@ const dataDir = resolve(process.argv[2] ?? process.env['CONTRIBUTORS_DATA_DIR'] 
 const output = join(here, '../src/server/data/bundle.generated.json')
 
 const files = existsSync(dataDir) ? await readdir(dataDir) : []
-const bundle: DataBundle = { meta: null, periods: {}, profiles: [] }
+const bundle: DataBundle = { meta: null, periods: {}, profiles: [], packages: [], team: [] }
 
 for (const file of files.sort()) {
   const period = periodFromFile(file)
@@ -29,6 +29,12 @@ for (const file of files.sort()) {
 }
 if (files.includes(PROFILES_FILE)) {
   bundle.profiles = parseProfilesFile(JSON.parse(await readFile(join(dataDir, PROFILES_FILE), 'utf8')))
+}
+if (files.includes(PACKAGES_FILE)) {
+  bundle.packages = parsePackagesFile(JSON.parse(await readFile(join(dataDir, PACKAGES_FILE), 'utf8')))
+}
+if (files.includes(TEAM_FILE)) {
+  bundle.team = parseTeamFile(JSON.parse(await readFile(join(dataDir, TEAM_FILE), 'utf8')))
 }
 if (files.includes('meta.json')) {
   const meta = JSON.parse(await readFile(join(dataDir, 'meta.json'), 'utf8')) as Record<string, unknown>
@@ -43,4 +49,4 @@ await mkdir(dirname(output), { recursive: true })
 await writeFile(output, JSON.stringify(bundle), 'utf8')
 const counts = Object.entries(bundle.periods).map(([period, rows]) => `${period}: ${rows.length}`).join(', ')
 console.log(`Bundled ${dataDir} → ${output}`)
-console.log(`  ${counts || 'no period files (the site shows an empty leaderboard)'}; ${bundle.profiles.length} profiles`)
+console.log(`  ${counts || 'no period files (the site shows an empty leaderboard)'}; ${bundle.profiles.length} profiles, ${bundle.packages.length} with packages, ${bundle.team.length} team members`)

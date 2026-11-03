@@ -1,7 +1,7 @@
 // Ported from nuxt.com `app/pages/nuxters/[username].vue` (MIT, Copyright (c) 2022-2023 NuxtLabs).
 // Without the Nuxt-only parts: modules, blog posts, hackathons, the share card and the signed-in owner view.
 import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, effect, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { Router, RouterLink } from '@angular/router';
 import { injectServerFn, type RouteMeta } from '@analogjs/router';
@@ -10,10 +10,11 @@ import { countryName, DEFAULT_PERIOD, isPeriod, periodPhrase, type ContributorPr
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucideArrowLeft, lucideArrowUpRight, lucideAward, lucideCalendar, lucideCircleDot, lucideGitPullRequest, lucideGlobe, lucideInfo,
-  lucideLink, lucideLinkedin, lucideMapPin, lucideMessageCircle, lucideSmilePlus,
+  lucideBadgeCheck, lucideChevronDown, lucideChevronUp, lucideCrown, lucideFileCode, lucideLink, lucideLinkedin, lucideMapPin, lucideMessageCircle,
+  lucidePackage, lucideSmilePlus, lucideTrophy,
 } from '@ng-icons/lucide';
 import {
-  simpleBluesky, simpleFacebook, simpleGithub, simpleInstagram, simpleMastodon, simpleNpm, simpleReddit, simpleThreads, simpleTwitch, simpleX,
+  simpleAngular, simpleBluesky, simpleFacebook, simpleGithub, simpleInstagram, simpleMastodon, simpleNpm, simpleReddit, simpleThreads, simpleTwitch, simpleX,
   simpleYoutube,
 } from '@ng-icons/simple-icons';
 import { HlmDialogImports } from '@spartan-ng/helm/dialog';
@@ -26,6 +27,7 @@ import { getContributor } from '../data/contributors.server';
 import { Container } from '../layout/container';
 import { avatarUrl, formatNumber, formatPoints, plural, profileQuery } from '../leaderboard/format';
 import { PeriodTabs } from '../leaderboard/period-tabs';
+import { packageLabel } from '../profile/packages';
 import { ScoreBreakdown } from '../profile/score-breakdown';
 
 export const routeMeta = {
@@ -54,8 +56,9 @@ const REPO = 'angular/angular';
   imports: [Container, HlmButton, HlmDialogImports, HlmSkeleton, HlmTooltip, NgIcon, NgTemplateOutlet, PeriodTabs, RouterLink, ScoreBreakdown],
   providers: [provideIcons({
     lucideArrowLeft, lucideArrowUpRight, lucideAward, lucideCalendar, lucideCircleDot, lucideGitPullRequest, lucideGlobe, lucideInfo,
-    lucideLink, lucideLinkedin, lucideMapPin, lucideMessageCircle, lucideSmilePlus,
-    simpleBluesky, simpleFacebook, simpleGithub, simpleInstagram, simpleMastodon, simpleNpm, simpleReddit, simpleThreads, simpleTwitch, simpleX,
+    lucideBadgeCheck, lucideChevronDown, lucideChevronUp, lucideCrown, lucideFileCode, lucideLink, lucideLinkedin, lucideMapPin, lucideMessageCircle,
+    lucidePackage, lucideSmilePlus, lucideTrophy,
+    simpleAngular, simpleBluesky, simpleFacebook, simpleGithub, simpleInstagram, simpleMastodon, simpleNpm, simpleReddit, simpleThreads, simpleTwitch, simpleX,
     simpleYoutube,
   })],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -133,6 +136,15 @@ const REPO = 'angular/angular';
                   </a>
                 }
               </p>
+              @if (badges().length) {
+                <ul class="flex flex-wrap gap-2" aria-label="Badges">
+                  @for (badge of badges(); track badge.label) {
+                    <li [class]="'inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-sm ring-1 ' + badge.style" [hlmTooltip]="badge.title">
+                      <ng-icon [name]="badge.icon" aria-hidden="true" />{{ badge.label }}
+                    </li>
+                  }
+                </ul>
+              }
             </div>
           </div>
 
@@ -173,6 +185,35 @@ const REPO = 'angular/angular';
           </div>
         </div>
       </app-container>
+
+      @if (person.packages.length) {
+        <app-container class="pb-12">
+          <section aria-labelledby="packages-title">
+            <h2 id="packages-title" class="mb-1 text-2xl font-medium tracking-tight">Contributed to</h2>
+            <p class="mb-6 text-muted-foreground">Merged PRs in {{ plural(person.packages.length, 'package', 'packages') }} of angular/angular, by PRs.</p>
+            <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              @for (item of shownPackages(); track item.name) {
+                <li class="flex items-center gap-3 rounded-lg px-3 py-2 ring-1 ring-border">
+                  <span class="grid size-9 shrink-0 place-items-center rounded-md bg-primary/10 text-primary">
+                    <ng-icon name="lucidePackage" aria-hidden="true" />
+                  </span>
+                  <span class="min-w-0 flex-1">
+                    <span class="block truncate text-sm font-medium">{{ item.name }}</span>
+                    <span class="block truncate text-xs text-muted-foreground">{{ packageLabel(item.name) }}</span>
+                  </span>
+                  <span class="text-sm tabular-nums text-muted-foreground">{{ plural(item.pullRequests, 'PR', 'PRs') }}</span>
+                </li>
+              }
+            </ul>
+            @if (person.packages.length > PACKAGES_SHOWN) {
+              <button hlmBtn variant="ghost" type="button" class="mt-4" (click)="allPackages.set(!allPackages())">
+                {{ allPackages() ? 'Show less' : 'Show all ' + person.packages.length }}
+                <ng-icon [name]="allPackages() ? 'lucideChevronUp' : 'lucideChevronDown'" aria-hidden="true" />
+              </button>
+            }
+          </section>
+        </app-container>
+      }
 
       @if (years().length > 1) {
         <app-container class="pb-16">
@@ -275,6 +316,30 @@ export default class Profile {
         tint: 'bg-amber-500/5 ring-amber-500', text: 'text-amber-700 dark:text-amber-400',
       },
     ];
+  });
+  protected readonly PACKAGES_SHOWN = 12;
+  protected readonly allPackages = signal(false);
+  protected readonly shownPackages = computed(() => {
+    const packages = this.profile.value()?.packages ?? [];
+    return this.allPackages() ? packages : packages.slice(0, this.PACKAGES_SHOWN);
+  });
+  protected readonly packageLabel = packageLabel;
+  protected readonly plural = plural;
+  /** Earned from the data: the Angular team, the all-time top 10, #1 of a year, 100+ review comments. */
+  protected readonly badges = computed(() => {
+    const person = this.profile.value();
+    if (!person) return [];
+    const strong = 'bg-primary/10 text-primary ring-primary/30';
+    const neutral = 'bg-muted/50 ring-border';
+    const badges: Array<{ label: string, title: string, icon: string, style: string }> = [];
+    // The Angular logo, only to say "member of the Angular team" (the site's own mark stays the Angularians A).
+    if (person.team) badges.push({ label: 'Angular team', title: 'A public member of the angular organization on GitHub', icon: 'simpleAngular', style: 'bg-[#dd0031]/10 text-[#dd0031] ring-[#dd0031]/30 dark:text-[#ff4f6d]' });
+    if (person.rank <= 10) badges.push({ label: 'Top 10 all time', title: `#${formatNumber(person.rank)} of all time`, icon: 'lucideTrophy', style: strong });
+    for (const year of this.years().filter(row => row.rank === 1).slice(0, 3)) {
+      badges.push({ label: `#1 in ${year.period}`, title: `The top Angularian of ${year.period}`, icon: 'lucideCrown', style: strong });
+    }
+    if (person.reviewComments >= 100) badges.push({ label: 'Reviewer', title: `${formatNumber(person.reviewComments)} review comments on code`, icon: 'lucideFileCode', style: neutral });
+    return badges;
   });
   /** The contributor's rank in each period they contributed in, for the period tabs. */
   protected readonly ranks = computed(() => Object.fromEntries((this.profile.value()?.periods ?? []).map(row => [row.period, row.rank])));
