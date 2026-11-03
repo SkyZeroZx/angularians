@@ -154,7 +154,7 @@ export class Globe {
     .sort((a, b) => Number(b.code === this.selected()) - Number(a.code === this.selected()) || b.count - a.count));
 
   protected readonly number = formatNumber;
-  protected readonly count = (value: number) => `${formatNumber(value)} ${value === 1 ? 'contributor' : 'contributors'}`;
+  protected readonly count = (value: number) => `${formatNumber(value)} ${value === 1 ? 'Angularian' : 'Angularians'}`;
   protected readonly avatar = (username: string) => `https://avatars.githubusercontent.com/${encodeURIComponent(username)}?s=64`;
 
   // WebGL and the frame-by-frame camera stay local: none of it is state to share or render.

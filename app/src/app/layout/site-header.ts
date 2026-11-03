@@ -14,7 +14,7 @@ import { ThemeToggle } from './theme-toggle';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'sticky top-0 z-40 block border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60' },
   template: `
-    <app-container class="flex h-14 items-center gap-4">
+    <app-container class="flex h-16 items-center gap-4">
       <a routerLink="/" class="flex items-center gap-2 font-semibold tracking-tight">
         <app-logo-mark class="size-6" />
         <span>Angularians</span>

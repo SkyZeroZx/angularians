@@ -13,11 +13,12 @@ const RANK = new Intl.NumberFormat('en-US')
   selector: 'app-period-tabs',
   imports: [HlmSelectImports, HlmTabsImports],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'flex flex-wrap items-center gap-2' },
+  // One pill: the tabs, then the year picker inside it (Nuxters).
+  host: { class: 'inline-flex max-w-full items-center rounded-lg bg-muted p-[3px]' },
   template: `
     @if (tabs().length) {
       <hlm-tabs [tab]="activeTab()" (tabActivated)="pickTab($event)">
-        <hlm-tabs-list [attr.aria-label]="label()">
+        <hlm-tabs-list [attr.aria-label]="label()" class="bg-transparent p-0">
           @for (tab of tabs(); track tab.value) {
             <button [hlmTabsTrigger]="tab.value" type="button">
               {{ tab.label }}
@@ -32,7 +33,12 @@ const RANK = new Intl.NumberFormat('en-US')
     }
     @if (years().length) {
       <hlm-select [value]="year()" (valueChange)="pickYear($event)" [itemToString]="yearLabel">
-        <hlm-select-trigger [class]="(ranks() ? 'w-32' : 'w-28') + (year() ? ' border-primary text-foreground' : '')" buttonAriaLabel="Year">
+        <hlm-select-trigger
+          [class]="'h-[calc(100%-1px)] border-transparent bg-transparent shadow-none hover:text-foreground dark:bg-transparent '
+            + (year() ? 'bg-background text-foreground shadow-sm dark:bg-input/30' : 'text-foreground/60 dark:text-muted-foreground')"
+          size="sm"
+          buttonAriaLabel="Year"
+        >
           <hlm-select-value placeholder="Year" />
         </hlm-select-trigger>
         <hlm-select-content *hlmSelectPortal>

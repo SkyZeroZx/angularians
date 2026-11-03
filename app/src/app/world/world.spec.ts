@@ -45,7 +45,7 @@ describe('World', () => {
     const element: HTMLElement = render(null).nativeElement;
     const rows = [...element.querySelectorAll('ol li button')].map(button => button.textContent!.replace(/\s+/g, ' ').trim());
     expect(rows).toEqual(['United States4', 'Turkey2']);
-    expect(element.textContent).toContain('6 of 10 contributors set one');
+    expect(element.textContent).toContain('6 of 10 Angularians set one');
   });
 
   it('emits the picked country, and null to unpick it', () => {
@@ -62,7 +62,7 @@ describe('World', () => {
   it('shows a card with one tile per contributor, skeletons while they load', () => {
     const loading: HTMLElement = render('TR').nativeElement;
     expect(loading.textContent).toContain('Turkey');
-    expect(loading.textContent).toContain('2 contributors · #2 country');
+    expect(loading.textContent).toContain('2 Angularians · #2 country');
     expect(loading.querySelectorAll('[aria-label="Best ranked from Turkey"] li [hlmSkeleton]').length).toBeGreaterThan(0);
 
     TestBed.resetTestingModule();

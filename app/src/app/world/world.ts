@@ -8,7 +8,7 @@ import { lucideArrowUp, lucideX } from '@ng-icons/lucide';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import { HlmTooltip } from '@spartan-ng/helm/tooltip';
-import { avatarUrl, formatNumber, plural } from '../leaderboard/format';
+import { avatarUrl, flagUrl, formatNumber, plural } from '../leaderboard/format';
 import { Globe } from './globe';
 
 /** People shown on the card of a country. */
@@ -24,6 +24,7 @@ const CARD_TILES = 12;
     <ng-template #card let-shown>
       <div class="rounded-lg border bg-background/90 p-4 shadow-lg backdrop-blur">
         <div class="flex items-center gap-3">
+          <img [src]="flag(shown.code)" alt="" width="40" height="40" class="size-10 shrink-0" />
           <div class="min-w-0 flex-1">
             <p class="truncate font-semibold">{{ name(shown.code) }}</p>
             <p class="text-sm text-muted-foreground">{{ count(shown.count) }} · #{{ rankOf(shown.code) }} country</p>
@@ -45,8 +46,8 @@ const CARD_TILES = 12;
             </li>
           }
         </ul>
-        <button hlmBtn variant="link" class="mt-3 px-0" type="button" (click)="leaderboard.emit()">
-          See {{ shown.count === 1 ? 'the contributor' : 'the ' + number(shown.count) + ' contributors' }} from {{ name(shown.code) }}
+        <button hlmBtn variant="link" class="mt-3 px-0 text-muted-foreground hover:text-foreground" type="button" (click)="leaderboard.emit()">
+          See {{ shown.count === 1 ? 'the Angularian' : 'the ' + number(shown.count) + ' Angularians' }} from {{ name(shown.code) }}
           <ng-icon name="lucideArrowUp" aria-hidden="true" />
         </button>
       </div>
@@ -76,6 +77,7 @@ const CARD_TILES = 12;
               [attr.aria-pressed]="item.code === selected()"
               (click)="select.emit(item.code === selected() ? null : item.code)"
             >
+              <img [src]="flag(item.code)" alt="" width="20" height="20" loading="lazy" class="size-5 shrink-0" />
               <span class="min-w-0 flex-1">
                 <span class="block truncate">{{ name(item.code) }}</span>
                 <span class="mt-1 block h-1 rounded-full bg-primary/60" [style.width.%]="barWidth(item)"></span>
@@ -86,7 +88,7 @@ const CARD_TILES = 12;
         }
       </ol>
       <p class="text-xs text-muted-foreground">
-        From the location on each GitHub profile, matched to a country: {{ number(map().located) }} of {{ number(map().total) }} contributors set one.
+        From the location on each GitHub profile, matched to a country: {{ number(map().located) }} of {{ number(map().total) }} Angularians set one.
       </p>
     </div>
 
@@ -114,7 +116,8 @@ export class World {
 
   protected readonly name = countryName;
   protected readonly number = formatNumber;
-  protected readonly count = (value: number) => plural(value, 'contributor', 'contributors');
+  protected readonly count = (value: number) => plural(value, 'Angularian', 'Angularians');
+  protected readonly flag = flagUrl;
   protected readonly avatar = (person: ContributorSummary) => avatarUrl(person.githubId, 56);
   protected readonly rankOf = (code: string) => this.map().countries.findIndex(item => item.code === code) + 1;
   protected readonly barWidth = (item: CountryStats) => Math.max(2, item.count / this.largest() * 100);
