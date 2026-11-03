@@ -1,10 +1,12 @@
 # Netlify: the Analog app in app/, server-rendered by one function (Nitro's netlify preset).
 [build]
   command = "pnpm --filter @angular-contributors/app build"
-  # Static assets (JS, CSS, favicon) are served by the CDN. Every other path goes to the server function,
-  # which the build writes to app/.netlify/functions-internal/server (see app/vite.config.ts): Netlify finds it
-  # there without a `functions` setting, whatever the site's base or package directory.
+  # Paths are from the repository root (the site's base directory).
+  # Static assets (JS, CSS, favicon) are served by the CDN...
   publish = "app/dist/analog/public"
+  # ...and every other path by the server function. On Netlify (NETLIFY=true) Analog writes it to
+  # app/netlify/functions/server, not dist/analog/server (see app/scripts/netlify-function.ts).
+  functions = "app/netlify/functions"
 
 [build.environment]
   # 24: the collector and the build scripts run TypeScript directly (type stripping).
