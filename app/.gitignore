@@ -54,3 +54,6 @@ src/server/data/bundle.generated.json
 
 # Netlify
 .netlify
+
+# Netlify function, written by the build on Netlify
+/netlify
