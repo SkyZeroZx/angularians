@@ -96,7 +96,7 @@ const REPO = 'angular/angular';
 
           <div class="flex flex-col gap-6 lg:col-span-3">
             <div class="flex lg:justify-end">
-              <app-period-tabs [period]="period()" [periods]="available()" (periodChange)="setPeriod($event)" />
+              <app-period-tabs [period]="period()" [periods]="available()" [ranks]="ranks()" label="Profile period" (periodChange)="setPeriod($event)" />
             </div>
 
             <ul class="grid grid-cols-2 gap-4" [attr.aria-label]="'Contributions ' + phrase(period())">
@@ -250,6 +250,8 @@ export default class Profile {
       },
     ];
   });
+  /** The contributor's rank in each period they contributed in, for the period tabs. */
+  protected readonly ranks = computed(() => Object.fromEntries((this.profile.value()?.periods ?? []).map(row => [row.period, row.rank])));
   protected readonly years = computed(() => (this.profile.value()?.periods ?? []).filter(row => /^\d{4}$/.test(row.period)));
   /** Best rank; on a tie (#1 several years), the year with the most points. */
   protected readonly best = computed(() => this.years().reduce<ReturnType<typeof this.years>[number] | undefined>(
