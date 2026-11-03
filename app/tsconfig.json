@@ -1,0 +1,58 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "ignoreDeprecations": "6.0",
+    "baseUrl": "./",
+    "outDir": "./dist/out-tsc",
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "sourceMap": true,
+    "declaration": false,
+    "downlevelIteration": true,
+    "experimentalDecorators": true,
+    "moduleResolution": "bundler",
+    "isolatedModules": true,
+    "importHelpers": true,
+    "target": "ES2022",
+    "module": "ES2022",
+    "lib": ["ES2022", "dom"],
+    "useDefineForClassFields": false,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "rewriteRelativeImportExtensions": true,
+    "paths": {
+      "@spartan-ng/helm/button": ["./src/ui/button/src/index.ts"],
+      "@spartan-ng/helm/utils": ["./src/ui/utils/src/index.ts"],
+      "@spartan-ng/helm/badge": ["./src/ui/badge/src/index.ts"],
+      "@spartan-ng/helm/skeleton": ["./src/ui/skeleton/src/index.ts"],
+      "@spartan-ng/helm/tooltip": ["./src/ui/tooltip/src/index.ts"],
+      "@spartan-ng/helm/tabs": ["./src/ui/tabs/src/index.ts"],
+      "@spartan-ng/helm/select": ["./src/ui/select/src/index.ts"],
+      "@spartan-ng/helm/autocomplete": ["./src/ui/autocomplete/src/index.ts"],
+      "@spartan-ng/helm/popover": ["./src/ui/popover/src/index.ts"],
+      "@spartan-ng/helm/input-group": ["./src/ui/input-group/src/index.ts"],
+      "@spartan-ng/helm/input": ["./src/ui/input/src/index.ts"],
+      "@spartan-ng/helm/textarea": ["./src/ui/textarea/src/index.ts"],
+      "@spartan-ng/helm/avatar": ["./src/ui/avatar/src/index.ts"],
+      "@spartan-ng/helm/card": ["./src/ui/card/src/index.ts"],
+      "@spartan-ng/helm/kbd": ["./src/ui/kbd/src/index.ts"],
+      "@spartan-ng/helm/progress": ["./src/ui/progress/src/index.ts"],
+      "@spartan-ng/helm/separator": ["./src/ui/separator/src/index.ts"]
+    }
+  },
+  "angularCompilerOptions": {
+    "enableI18nLegacyMessageIdFormat": false,
+    "strictInjectionParameters": true,
+    "strictInputAccessModifiers": true,
+    "strictTemplates": true
+  },
+  "references": [
+    {
+      "path": "tsconfig.spec.json"
+    }
+  ]
+}
