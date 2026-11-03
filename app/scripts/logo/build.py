@@ -3,6 +3,7 @@
   pip install shapely
   python3 build.py regular   # the header logo (24px and up): app/src/app/layout/logo-mark.ts
   python3 build.py small     # the favicon (16px): a wider stripe and gap so they stay a full pixel: app/public/favicon.svg
+  python3 build.py regular --parts   # JSON: the piece with the A and the wing apart, and how far each one moved
 
 Prints the path data (`d`) of the mark in a 24 x 24 view box.
 """
@@ -51,7 +52,16 @@ def ring(coords):
     pts = list(coords)[:-1]
     fmt = lambda v: (f'{v:.2f}'.rstrip('0').rstrip('.')) or '0'
     return 'M' + 'L'.join(f'{fmt(x)} {fmt(y)}' for x, y in pts) + 'Z'
-polys = list(mark.geoms) if hasattr(mark, 'geoms') else [mark]
-d = ''.join(ring(p.exterior.coords) + ''.join(ring(h.coords) for h in p.interiors) for p in polys)
-print(f'{VARIANT}: pieces={len(polys)} bounds={tuple(round(v, 2) for v in mark.bounds)} apex={AY:.2f} chars={len(d)}', file=sys.stderr)
-print(d)
+def path(g):
+    polys = list(g.geoms) if hasattr(g, 'geoms') else [g]
+    return ''.join(ring(p.exterior.coords) + ''.join(ring(h.coords) for h in p.interiors) for p in polys)
+
+if '--parts' in sys.argv:
+    import json
+    # Each part in its final place, and the move (final units) that took it there from the whole shield.
+    print(json.dumps({'piece': path(fit(piece)), 'wing': path(fit(wing)),
+                      'pieceMove': [round(dl[0] * sc, 3), round(dl[1] * sc, 3)], 'wingMove': [round(dr[0] * sc, 3), round(dr[1] * sc, 3)]}))
+else:
+    d = path(mark)
+    print(f'{VARIANT}: bounds={tuple(round(v, 2) for v in mark.bounds)} apex={AY:.2f} chars={len(d)}', file=sys.stderr)
+    print(d)
