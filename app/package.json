@@ -16,7 +16,8 @@
     "bundle-data": "node scripts/bundle-data.ts",
     "predev": "node scripts/bundle-data.ts",
     "prebuild": "node scripts/bundle-data.ts",
-    "pretest": "node scripts/bundle-data.ts"
+    "pretest": "node scripts/bundle-data.ts",
+    "postbuild": "node scripts/netlify-function.ts"
   },
   "private": true,
   "dependencies": {
