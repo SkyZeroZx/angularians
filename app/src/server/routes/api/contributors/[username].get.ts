@@ -9,7 +9,7 @@ export default defineEventHandler((event) => {
   const username = v.safeParse(UsernameSchema, getRouterParam(event, 'username', { decode: true }));
   if (!username.success) throw createError({ statusCode: 400, statusMessage: 'Not a GitHub username' });
   const profile = contributorsData().profile(username.output);
-  if (!profile) throw createError({ statusCode: 404, statusMessage: 'No landed pull requests for this username' });
+  if (!profile) throw createError({ statusCode: 404, statusMessage: 'No contributions for this username' });
   cacheJson(event);
   return profile;
 });

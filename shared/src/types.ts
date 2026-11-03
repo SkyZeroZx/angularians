@@ -32,13 +32,29 @@ export interface LandedPullRequest {
  * One line of `contributors.json` (all time) or `contributors-<period>.json`, as the collector writes it.
  * Sorted by score, then username.
  */
-export interface ContributorRecord {
+export interface ContributorRecord extends ActivityCounts {
   githubId: number
   username: string
   score: number
   pullRequests: PullRequestCounts
-  /** ISO date of the first landed PR, across all periods. `null` when unknown. */
+  /** ISO date of the first counted contribution (landed PR, issue, comment or review comment). `null` when unknown. */
   firstContributionAt: string | null
+}
+
+/** What a contributor did besides landing PRs, in one period. */
+export interface ActivityCounts {
+  /** Issues opened (not PRs). */
+  issues: number
+  /** Of those: closed as completed, or 3+ reactions, or 5+ comments. */
+  helpfulIssues: number
+  /** Conversation comments on issues and PRs. */
+  comments: number
+  /** Of those: 3+ reactions. */
+  helpfulComments: number
+  /** Inline comments on the code of PRs. */
+  reviewComments: number
+  /** Received on the contributor's issues, PRs and comments, counted on the day of the item. */
+  reactions: number
 }
 
 /** A contributor's stats over one period, ranked. */
@@ -99,6 +115,10 @@ export interface LeaderboardPage {
   total: number
   /** PRs landed in the period (and country). */
   landedPullRequests: number
+  /** Issues, conversation comments and review comments made in the period (and country). */
+  issues: number
+  comments: number
+  reviewComments: number
   items: ContributorSummary[]
   /** When the data was collected, ISO date. */
   collectedAt: string | null

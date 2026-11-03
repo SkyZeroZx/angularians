@@ -2,7 +2,7 @@
 // and nuxt/nuxters `saveContributors` (MIT, Copyright (c) 2022-2023 NuxtLabs, Copyright (c) 2023 Nuxt).
 import { countryCode } from './countries.ts'
 import { compareRecords, emptyCounts, score } from './scoring.ts'
-import type { Contributor, ProfileRecord, PullRequestCounts, SocialAccount } from './types.ts'
+import type { ActivityCounts, Contributor, ProfileRecord, PullRequestCounts, SocialAccount } from './types.ts'
 
 /** The all-time profiles of the contributors: not a period. */
 export const PROFILES_FILE = 'profiles.json'
@@ -33,7 +33,7 @@ function text(value: unknown, max = MAX_TEXT_LENGTH): string | null {
 
 /**
  * Validate a contributor file and rank it: score, then username.
- * The score is recomputed from the PR counts, so the file cannot rank anyone higher than their PRs.
+ * The score is recomputed from the counts, so the file cannot rank anyone higher than what they did.
  * Invalid entries and duplicates are skipped, not fatal: one bad record must not block the import.
  */
 export function parseContributorsFile(data: unknown): Contributor[] {
@@ -53,13 +53,26 @@ export function parseContributorsFile(data: unknown): Contributor[] {
     const pullRequests: PullRequestCounts = { ...emptyCounts(), feat: count(prs['feat']), fix: count(prs['fix']), docs: count(prs['docs']), chore: count(prs['chore']) }
     pullRequests.all = pullRequests.feat + pullRequests.fix + pullRequests.docs + pullRequests.chore
 
+    // v1 files (landed PRs only) have none of these: they read as 0. A helpful count is never above its total.
+    const issues = count(record['issues'])
+    const comments = count(record['comments'])
+    const activity: ActivityCounts = {
+      issues,
+      helpfulIssues: Math.min(issues, count(record['helpfulIssues'])),
+      comments,
+      helpfulComments: Math.min(comments, count(record['helpfulComments'])),
+      reviewComments: count(record['reviewComments']),
+      reactions: count(record['reactions']),
+    }
+
     const first = typeof record['firstContributionAt'] === 'string' ? new Date(record['firstContributionAt']) : null
     contributors.push({
       githubId: id,
       username,
       rank: 0,
-      score: score(pullRequests),
+      score: score({ pullRequests, ...activity }),
       pullRequests,
+      ...activity,
       firstContributionAt: first && !Number.isNaN(first.getTime()) ? first.toISOString() : null,
     })
   }

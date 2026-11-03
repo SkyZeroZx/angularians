@@ -24,8 +24,7 @@ for (const file of files.sort()) {
   if (period) {
     // Ranked and recomputed from the PR counts, so the bundle can be trusted as is.
     const rows = parseContributorsFile(JSON.parse(await readFile(join(dataDir, file), 'utf8')))
-    bundle.periods[period] = rows.map(({ githubId, username, rank, score, pullRequests, firstContributionAt }) =>
-      ({ githubId, username, rank, score, pullRequests, firstContributionAt }))
+    bundle.periods[period] = rows
   }
 }
 if (files.includes(PROFILES_FILE)) {

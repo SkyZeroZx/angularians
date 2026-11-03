@@ -68,6 +68,9 @@ export class ContributorsData {
       periods: this.periods,
       total: rows.length,
       landedPullRequests: rows.reduce((sum, row) => sum + row.pullRequests.all, 0),
+      issues: rows.reduce((sum, row) => sum + row.issues, 0),
+      comments: rows.reduce((sum, row) => sum + row.comments, 0),
+      reviewComments: rows.reduce((sum, row) => sum + row.reviewComments, 0),
       items: rows.slice(start, start + size).map(toSummary),
       collectedAt: this.collectedAt,
     }
@@ -83,7 +86,9 @@ export class ContributorsData {
       ...allTime,
       periods: this.periods.flatMap((period) => {
         const row = this.byUsername.get(period)?.get(key)
-        return row ? [{ period, rank: row.rank, score: row.score, pullRequests: row.pullRequests }] : []
+        if (!row) return []
+        const { githubId: _id, username: _username, firstContributionAt: _first, ...stats } = row
+        return [{ period, ...stats }]
       }),
       name: links?.name ?? null,
       website: links?.website ?? null,

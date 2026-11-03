@@ -11,7 +11,7 @@ import { contributorsData } from '../../server/data/store'
 export const getLeaderboard = serverFn(LeaderboardInput, ({ period, country, page }) =>
   contributorsData().leaderboard({ period, country, page }))
 
-/** `null` when the username has no landed PR: the page shows "not found". */
+/** `null` when the username has no contribution: the page shows "not found". */
 export const getContributor = serverFn(ContributorInput, ({ username }) => contributorsData().profile(username))
 
 export const searchContributors = serverFn(SearchInput, ({ q }) => contributorsData().search(q))

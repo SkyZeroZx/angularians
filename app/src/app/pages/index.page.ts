@@ -3,9 +3,9 @@ import { afterRenderEffect, ChangeDetectionStrategy, Component, computed, effect
 import { Meta, Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { injectServerFn, type RouteMeta } from '@analogjs/router';
-import { countryCode, countryName, DEFAULT_PERIOD, isPeriod, periodPhrase, PULL_REQUEST_POINTS, type Period } from '@angularians/shared';
+import { ACTIVITY_POINTS, countryCode, countryName, DEFAULT_PERIOD, isPeriod, periodPhrase, PULL_REQUEST_POINTS, type Period } from '@angularians/shared';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideBookOpen, lucideBrushCleaning, lucideCalendar, lucideGitPullRequest, lucideRocket, lucideUsers, lucideWrench } from '@ng-icons/lucide';
+import { lucideBookOpen, lucideBrushCleaning, lucideCalendar, lucideCircleDot, lucideGitPullRequest, lucideMessageCircle, lucideRocket, lucideUsers, lucideWrench } from '@ng-icons/lucide';
 import { injectQueryParams } from 'ngxtension/inject-query-params';
 import { HlmBadge } from '@spartan-ng/helm/badge';
 import { HlmButton } from '@spartan-ng/helm/button';
@@ -22,7 +22,7 @@ import { LeaderboardGrid } from '../leaderboard/leaderboard-grid';
 import { PeriodTabs } from '../leaderboard/period-tabs';
 import { World } from '../world/world';
 
-const SITE_DESCRIPTION = 'Everyone whose pull requests landed in angular/angular since 2014, ranked by what they shipped: features, fixes, docs and chores.';
+const SITE_DESCRIPTION = 'Everyone who has contributed to angular/angular since 2014, ranked: landed pull requests, issues, comments and code reviews.';
 
 export const routeMeta = {
   title: 'Angularians',
@@ -35,7 +35,7 @@ export const routeMeta = {
     ContributorSearch, CountrySelect, HlmBadge, HlmButton, HlmCardImports, HlmSkeleton, LeaderboardGrid, NgIcon,
     PageGrid, PageHero, PageSection, PeriodTabs, World,
   ],
-  providers: [provideIcons({ lucideBookOpen, lucideBrushCleaning, lucideCalendar, lucideGitPullRequest, lucideRocket, lucideUsers, lucideWrench })],
+  providers: [provideIcons({ lucideBookOpen, lucideBrushCleaning, lucideCalendar, lucideCircleDot, lucideGitPullRequest, lucideMessageCircle, lucideRocket, lucideUsers, lucideWrench })],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-page-hero [description]="description">
@@ -60,7 +60,9 @@ export const routeMeta = {
       @if (board(); as page) {
         <ul class="mt-4 mb-6 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-sm text-muted-foreground" aria-label="This leaderboard">
           <li class="flex items-center gap-1.5"><ng-icon name="lucideUsers" aria-hidden="true" /><span><strong class="font-semibold text-foreground tabular-nums">{{ number(page.total) }}</strong> {{ page.total === 1 ? 'contributor' : 'contributors' }}{{ page.country ? ' from ' + countryLabel(page.country) : '' }}</span></li>
-          <li class="flex items-center gap-1.5"><ng-icon name="lucideGitPullRequest" aria-hidden="true" /><span><strong class="font-semibold text-foreground tabular-nums">{{ number(page.landedPullRequests) }}</strong> landed {{ page.landedPullRequests === 1 ? 'PR' : 'PRs' }} {{ phrase(page.period) }}</span></li>
+          <li class="flex items-center gap-1.5"><ng-icon name="lucideGitPullRequest" aria-hidden="true" /><span><strong class="font-semibold text-foreground tabular-nums">{{ number(page.landedPullRequests) }}</strong> landed {{ page.landedPullRequests === 1 ? 'PR' : 'PRs' }}</span></li>
+          <li class="flex items-center gap-1.5"><ng-icon name="lucideCircleDot" aria-hidden="true" /><span><strong class="font-semibold text-foreground tabular-nums">{{ number(page.issues) }}</strong> {{ page.issues === 1 ? 'issue' : 'issues' }}</span></li>
+          <li class="flex items-center gap-1.5"><ng-icon name="lucideMessageCircle" aria-hidden="true" /><span><strong class="font-semibold text-foreground tabular-nums">{{ number(page.comments + page.reviewComments) }}</strong> {{ page.comments + page.reviewComments === 1 ? 'comment' : 'comments' }} {{ phrase(page.period) }}</span></li>
           @if (page.collectedAt) {
             <li class="flex items-center gap-1.5"><ng-icon name="lucideCalendar" aria-hidden="true" /><span>Updated {{ date(page.collectedAt) }}</span></li>
           }
@@ -70,7 +72,7 @@ export const routeMeta = {
           @if (page.total) {
             <app-leaderboard-grid [page]="page" />
           } @else {
-            <p class="py-12 text-center text-muted-foreground">No landed pull requests {{ phrase(page.period) }}{{ page.country ? ' from ' + countryLabel(page.country) : '' }} yet.</p>
+            <p class="py-12 text-center text-muted-foreground">No contributions {{ phrase(page.period) }}{{ page.country ? ' from ' + countryLabel(page.country) : '' }} yet.</p>
           }
         </div>
       } @else if (leaderboard.error()) {
@@ -98,7 +100,7 @@ export const routeMeta = {
       }
     }
 
-    <app-page-section sectionId="how-it-works" title="How the score works" description="Every pull request that landed in angular/angular counts, on the day it landed, for its author. Its type comes from the title (feat, fix, docs…), the convention the repository already enforces.">
+    <app-page-section sectionId="how-it-works" title="How the score works" description="Every contribution to angular/angular counts, for its author, on the day it was made. Pull requests count once they land, by type, from the title (feat, fix, docs…): the convention the repository already enforces.">
       <app-page-grid class="lg:grid-cols-4">
         @for (way of ways; track way.title) {
           <section hlmCard>
@@ -113,16 +115,31 @@ export const routeMeta = {
           </section>
         }
       </app-page-grid>
+      <h3 class="mt-10 mb-4 font-semibold">Everything else counts too</h3>
+      <div class="overflow-x-auto rounded-xl border">
+        <table class="w-full text-sm">
+          <tbody class="divide-y">
+            @for (rule of rules; track rule.what) {
+              <tr>
+                <th scope="row" class="px-4 py-2.5 text-left font-medium">{{ rule.what }}</th>
+                <td class="px-4 py-2.5 text-muted-foreground">{{ rule.when }}</td>
+                <td class="px-4 py-2.5 text-right font-semibold whitespace-nowrap tabular-nums">{{ rule.points }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
       <p class="mt-6 max-w-3xl text-sm text-muted-foreground">
         Most PRs from 2017 to 2025 show as closed on GitHub, not merged: Angular's merge tooling pushes the commits itself and adds
-        <code class="rounded bg-muted px-1 py-0.5 text-xs">PR Close #N</code> to them. Those count as landed too. Bots are left out.
+        <code class="rounded bg-muted px-1 py-0.5 text-xs">PR Close #N</code> to them. Those count as landed too. Reactions count on the day of the
+        issue or comment they are on. Bots are left out. The weights are the ones of Nuxters, plus review comments.
       </p>
     </app-page-section>
 
     <app-page-section>
       <div class="rounded-xl border bg-muted/40 p-8 sm:p-10">
         <h2 class="text-2xl font-semibold tracking-tight">Want to be on the board?</h2>
-        <p class="mt-2 max-w-2xl text-muted-foreground">Fix a bug, improve the docs or ship a feature. Every landed pull request counts, and the board updates every night.</p>
+        <p class="mt-2 max-w-2xl text-muted-foreground">Fix a bug, improve the docs, report an issue or review a pull request. Every contribution counts, and the board updates every night.</p>
         <div class="mt-6 flex flex-wrap gap-3">
           <a hlmBtn href="https://github.com/angular/angular/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener"><ng-icon name="lucideBookOpen" aria-hidden="true" />Contributing guide</a>
           <a hlmBtn variant="outline" href="https://github.com/angular/angular/contribute" target="_blank" rel="noopener">Good first issues</a>
@@ -158,6 +175,15 @@ export default class Home {
     { title: 'Docs', description: 'docs PRs: guides, API docs and examples on angular.dev.', icon: 'lucideBookOpen', points: PULL_REQUEST_POINTS.docs },
     { title: 'Chores', description: 'refactor, test, build, ci, release and reverts.', icon: 'lucideBrushCleaning', points: PULL_REQUEST_POINTS.chore },
   ];
+  /** Everything besides landed PRs, as `ACTIVITY_POINTS` weighs it. */
+  protected readonly rules = [
+    { what: 'Issue', when: 'every issue opened', points: `${ACTIVITY_POINTS.issues} pt` },
+    { what: 'Helpful issue', when: 'on top: closed as completed, or 3+ reactions, or 5+ comments', points: `+${ACTIVITY_POINTS.helpfulIssues} pts` },
+    { what: 'Review comment', when: 'every comment on the code of a pull request', points: `${ACTIVITY_POINTS.reviewComments} pt` },
+    { what: 'Comment', when: 'every comment on an issue or a pull request', points: `${ACTIVITY_POINTS.comments} pt` },
+    { what: 'Helpful comment', when: 'on top: 3+ reactions', points: `+${ACTIVITY_POINTS.helpfulComments} pts` },
+    { what: 'Reaction', when: 'received on your issues, pull requests and comments', points: `${ACTIVITY_POINTS.reactions} pt` },
+  ];
   protected readonly number = formatNumber;
   protected readonly phrase = periodPhrase;
   protected readonly date = formatDate;
@@ -187,7 +213,7 @@ export default class Home {
       const shared = this.requestedPeriod() && page?.total ? page : null;
       const title = shared ? `Top Angularians ${periodPhrase(shared.period)}` : 'Angularians';
       const description = shared
-        ? `${plural(shared.total, 'person', 'people')} landed ${plural(shared.landedPullRequests, 'pull request', 'pull requests')} in angular/angular ${periodPhrase(shared.period)}.`
+        ? `${plural(shared.total, 'person', 'people')} contributed to angular/angular ${periodPhrase(shared.period)}: ${plural(shared.landedPullRequests, 'landed pull request', 'landed pull requests')}, ${plural(shared.issues, 'issue', 'issues')} and ${plural(shared.comments + shared.reviewComments, 'comment', 'comments')}.`
         : SITE_DESCRIPTION;
       this.title.setTitle(title);
       this.meta.updateTag({ name: 'description', content: description });

@@ -1,6 +1,6 @@
 // Ported from nuxt.com `app/pages/nuxters/[username].vue` (MIT, Copyright (c) 2022-2023 NuxtLabs).
 // Without the Nuxt-only parts: modules, blog posts, hackathons, the share card and the signed-in owner view.
-import { DOCUMENT } from '@angular/common';
+import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, effect, inject } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { Router, RouterLink } from '@angular/router';
@@ -9,7 +9,8 @@ import { injectResponse } from '@analogjs/router/tokens';
 import { countryName, DEFAULT_PERIOD, isPeriod, periodPhrase, type ContributorProfile, type Period } from '@angularians/shared';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
-  lucideArrowLeft, lucideArrowUpRight, lucideAward, lucideCalendar, lucideGithub, lucideGitPullRequest, lucideGlobe, lucideLink, lucideMapPin,
+  lucideArrowLeft, lucideArrowUpRight, lucideAward, lucideCalendar, lucideCircleDot, lucideFileCode, lucideGithub, lucideGitPullRequest, lucideGlobe,
+  lucideLink, lucideMapPin, lucideMessageCircle, lucideSmilePlus,
 } from '@ng-icons/lucide';
 import { injectParams } from 'ngxtension/inject-params';
 import { injectQueryParams } from 'ngxtension/inject-query-params';
@@ -31,8 +32,11 @@ const REPO = 'angular/angular';
 
 @Component({
   selector: 'app-profile',
-  imports: [Container, HlmButton, HlmSkeleton, HlmTooltip, NgIcon, PeriodTabs, RouterLink, ScoreBreakdown],
-  providers: [provideIcons({ lucideArrowLeft, lucideArrowUpRight, lucideAward, lucideCalendar, lucideGithub, lucideGitPullRequest, lucideGlobe, lucideLink, lucideMapPin })],
+  imports: [Container, HlmButton, HlmSkeleton, HlmTooltip, NgIcon, NgTemplateOutlet, PeriodTabs, RouterLink, ScoreBreakdown],
+  providers: [provideIcons({
+    lucideArrowLeft, lucideArrowUpRight, lucideAward, lucideCalendar, lucideCircleDot, lucideFileCode, lucideGithub, lucideGitPullRequest, lucideGlobe,
+    lucideLink, lucideMapPin, lucideMessageCircle, lucideSmilePlus,
+  })],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-container class="pt-8">
@@ -95,28 +99,41 @@ const REPO = 'angular/angular';
               <app-period-tabs [period]="period()" [periods]="available()" (periodChange)="setPeriod($event)" />
             </div>
 
-            <a
-              [href]="githubSearch(person)"
-              target="_blank"
-              rel="noopener"
-              class="group relative block rounded-xl bg-primary/5 p-6 ring-1 ring-primary/40 transition hover:bg-primary/10 hover:ring-primary"
-              [attr.aria-label]="githubLabel(person)"
-            >
-              <ng-icon name="lucideArrowUpRight" class="absolute top-5 right-5 text-muted-foreground group-hover:text-foreground" aria-hidden="true" />
-              <ng-icon name="lucideGitPullRequest" class="text-primary" size="22" aria-hidden="true" />
-              <p class="mt-3 text-4xl font-semibold tabular-nums">{{ number(current().pullRequests.all) }}</p>
-              <p class="text-primary">{{ current().pullRequests.all === 1 ? 'Landed pull request' : 'Landed pull requests' }} {{ phrase(period()) }}</p>
-              <p class="mt-1 text-sm text-muted-foreground tabular-nums">
-                {{ number(current().pullRequests.feat) }} feat · {{ number(current().pullRequests.fix) }} fix · {{ number(current().pullRequests.docs) }} docs · {{ number(current().pullRequests.chore) }} chore
-              </p>
-            </a>
+            <ul class="grid grid-cols-2 gap-4" [attr.aria-label]="'Contributions ' + phrase(period())">
+              @for (stat of stats(); track stat.key) {
+                <li [class.col-span-2]="stat.key === 'pullRequests'">
+                  @if (stat.url) {
+                    <a
+                      [href]="stat.url"
+                      target="_blank"
+                      rel="noopener"
+                      [attr.aria-label]="stat.label"
+                      [class]="'group relative block h-full rounded-xl p-5 ring-1 transition ' + stat.tint"
+                    >
+                      <ng-icon name="lucideArrowUpRight" class="absolute top-4 right-4 text-muted-foreground group-hover:text-foreground" aria-hidden="true" />
+                      <ng-container [ngTemplateOutlet]="statBody" [ngTemplateOutletContext]="{ $implicit: stat }" />
+                    </a>
+                  } @else {
+                    <div [class]="'h-full rounded-xl p-5 ring-1 ' + stat.tint">
+                      <ng-container [ngTemplateOutlet]="statBody" [ngTemplateOutletContext]="{ $implicit: stat }" />
+                    </div>
+                  }
+                </li>
+              }
+            </ul>
+            <ng-template #statBody let-stat>
+              <ng-icon [name]="stat.icon" [class]="stat.text" size="20" aria-hidden="true" />
+              <p class="mt-2 text-3xl font-semibold tabular-nums">{{ number(stat.value) }}</p>
+              <p [class]="stat.text">{{ stat.name }}</p>
+              <p class="mt-1 text-sm text-muted-foreground tabular-nums">{{ stat.detail }}</p>
+            </ng-template>
 
             <section class="rounded-xl border p-6" aria-labelledby="score-title">
               <div class="mb-5 flex items-baseline justify-between gap-4">
                 <h2 id="score-title" class="font-semibold">How the {{ number(current().score) }} points add up</h2>
                 <a routerLink="/" fragment="how-it-works" class="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">Scoring</a>
               </div>
-              <app-score-breakdown [pullRequests]="current().pullRequests" />
+              <app-score-breakdown [stats]="current()" />
             </section>
           </div>
         </div>
@@ -133,6 +150,8 @@ const REPO = 'angular/angular';
                     <th scope="col" class="px-4 py-2 font-medium">Year</th>
                     <th scope="col" class="px-4 py-2 text-right font-medium">Rank</th>
                     <th scope="col" class="px-4 py-2 text-right font-medium">Landed PRs</th>
+                    <th scope="col" class="px-4 py-2 text-right font-medium">Issues</th>
+                    <th scope="col" class="px-4 py-2 text-right font-medium">Comments</th>
                     <th scope="col" class="px-4 py-2 text-right font-medium">Points</th>
                   </tr>
                 </thead>
@@ -144,6 +163,8 @@ const REPO = 'angular/angular';
                       </th>
                       <td class="px-4 py-2 text-right">#{{ number(row.rank) }}</td>
                       <td class="px-4 py-2 text-right">{{ number(row.pullRequests.all) }}</td>
+                      <td class="px-4 py-2 text-right">{{ number(row.issues) }}</td>
+                      <td class="px-4 py-2 text-right">{{ number(row.comments + row.reviewComments) }}</td>
                       <td class="px-4 py-2 text-right">{{ number(row.score) }}</td>
                     </tr>
                   }
@@ -162,9 +183,9 @@ const REPO = 'angular/angular';
       </app-container>
     } @else {
       <app-container class="py-14">
-        <h1 class="text-3xl font-bold tracking-tight">No landed pull requests for {{ username() }}</h1>
+        <h1 class="text-3xl font-bold tracking-tight">No contributions from {{ username() }}</h1>
         <p class="mt-2 max-w-xl text-muted-foreground">
-          {{ profile.error() ? 'The profile could not be loaded. Try again in a moment.' : 'Nobody with this GitHub username has a pull request that landed in angular/angular yet, or the data has not caught up: it updates every night.' }}
+          {{ profile.error() ? 'The profile could not be loaded. Try again in a moment.' : 'Nobody with this GitHub username has a landed pull request, an issue or a comment in angular/angular yet, or the data has not caught up: it updates every night.' }}
         </p>
         <a hlmBtn class="mt-6" href="https://github.com/angular/angular/contribute" target="_blank" rel="noopener">Find a first issue</a>
       </app-container>
@@ -184,14 +205,50 @@ export default class Profile {
   protected readonly profile = injectServerFn(getContributor, () => ({ username: this.username() }));
 
   protected readonly available = computed(() => this.profile.value()?.periods.map(row => row.period) ?? ['all']);
-  /** `?period=` when the contributor has landed PRs in it, all time otherwise. */
+  /** `?period=` when the contributor contributed in it, all time otherwise. */
   protected readonly period = computed<Period>(() => {
     const requested = this.requested();
     return requested && this.available().includes(requested) ? requested : 'all';
   });
   protected readonly current = computed(() => {
     const person = this.profile.value()!;
-    return person.periods.find(row => row.period === this.period()) ?? { period: 'all', rank: person.rank, score: person.score, pullRequests: person.pullRequests };
+    return person.periods.find(row => row.period === this.period()) ?? { ...person, period: 'all' };
+  });
+  /** One card per kind of contribution; the ones GitHub can search link to that search. */
+  protected readonly stats = computed(() => {
+    const person = this.profile.value()!;
+    const n = this.current();
+    const prs = n.pullRequests;
+    const search = (q: string, type: 'pullrequests' | 'issues') => `https://github.com/search?${new URLSearchParams({ q: `repo:${REPO} ${q}`, type })}`;
+    return [
+      {
+        key: 'pullRequests', icon: 'lucideGitPullRequest', value: prs.all, name: prs.all === 1 ? 'Landed pull request' : 'Landed pull requests',
+        detail: `${formatNumber(prs.feat)} feat · ${formatNumber(prs.fix)} fix · ${formatNumber(prs.docs)} docs · ${formatNumber(prs.chore)} chore`,
+        // GitHub shows most landed PRs as closed (PR Close): this lists all of them, landed or not.
+        url: this.githubSearch(person), label: `${this.githubLabel(person)}`,
+        tint: 'bg-primary/5 ring-primary/40 hover:bg-primary/10 hover:ring-primary', text: 'text-primary',
+      },
+      {
+        key: 'issues', icon: 'lucideCircleDot', value: n.issues, name: n.issues === 1 ? 'Issue' : 'Issues', detail: `${formatNumber(n.helpfulIssues)} helpful`,
+        url: search(`is:issue author:${person.username}`, 'issues'), label: `${plural(n.issues, 'issue', 'issues')} ${periodPhrase(this.period())}. Opens ${person.username}'s issues on GitHub`,
+        tint: 'bg-sky-500/5 ring-sky-500/30 hover:bg-sky-500/10 hover:ring-sky-500', text: 'text-sky-700 dark:text-sky-400',
+      },
+      {
+        key: 'comments', icon: 'lucideMessageCircle', value: n.comments, name: n.comments === 1 ? 'Comment' : 'Comments', detail: `${formatNumber(n.helpfulComments)} helpful`,
+        url: search(`commenter:${person.username}`, 'issues'), label: `${plural(n.comments, 'comment', 'comments')} ${periodPhrase(this.period())}. Opens the issues and pull requests ${person.username} commented on, on GitHub`,
+        tint: 'bg-violet-500/5 ring-violet-500/30 hover:bg-violet-500/10 hover:ring-violet-500', text: 'text-violet-700 dark:text-violet-400',
+      },
+      {
+        key: 'reviewComments', icon: 'lucideFileCode', value: n.reviewComments, name: n.reviewComments === 1 ? 'Review comment' : 'Review comments', detail: 'on the code of pull requests',
+        url: search(`is:pr reviewed-by:${person.username}`, 'pullrequests'), label: `${plural(n.reviewComments, 'review comment', 'review comments')} ${periodPhrase(this.period())}. Opens the pull requests ${person.username} reviewed, on GitHub`,
+        tint: 'bg-emerald-500/5 ring-emerald-500/30 hover:bg-emerald-500/10 hover:ring-emerald-500', text: 'text-emerald-700 dark:text-emerald-400',
+      },
+      {
+        key: 'reactions', icon: 'lucideSmilePlus', value: n.reactions, name: n.reactions === 1 ? 'Reaction' : 'Reactions', detail: 'received',
+        url: null, label: '',
+        tint: 'bg-amber-500/5 ring-amber-500/30', text: 'text-amber-700 dark:text-amber-400',
+      },
+    ];
   });
   protected readonly years = computed(() => (this.profile.value()?.periods ?? []).filter(row => /^\d{4}$/.test(row.period)));
   /** Best rank; on a tie (#1 several years), the year with the most points. */
@@ -260,7 +317,7 @@ export default class Profile {
     const title = this.period() === 'all'
       ? `${person.username}, Angularian #${formatNumber(current.rank)}`
       : `${person.username}: #${formatNumber(current.rank)} ${periodPhrase(this.period())}`;
-    const description = `${person.username} landed ${plural(current.pullRequests.all, 'pull request', 'pull requests')} in angular/angular ${periodPhrase(this.period())}: #${formatNumber(current.rank)} with ${formatPoints(current.score)}.`;
+    const description = `${person.username} landed ${plural(current.pullRequests.all, 'pull request', 'pull requests')}, opened ${plural(current.issues, 'issue', 'issues')} and wrote ${plural(current.comments + current.reviewComments, 'comment', 'comments')} in angular/angular ${periodPhrase(this.period())}: #${formatNumber(current.rank)} with ${formatPoints(current.score)}.`;
     this.title.setTitle(`${title} · Angularians`);
     this.meta.removeTag('name="robots"');
     this.meta.updateTag({ name: 'description', content: description });

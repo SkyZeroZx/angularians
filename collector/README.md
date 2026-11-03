@@ -1,9 +1,12 @@
 # Collector
 
-Collects the pull requests that landed in angular/angular and writes the contributor files the app reads.
+Collects what everyone contributed to angular/angular (landed pull requests, issues, conversation comments, inline
+review comments, reactions received) and writes the contributor files the app reads.
 Based on [nuxt/nuxters](https://github.com/nuxt/nuxters) (MIT, Copyright (c) 2023 Nuxt).
 
 ## What counts
+
+Every night it re-collects everything, like nuxt/nuxters: no cache, every score recomputed.
 
 A PR has landed if GitHub marks it merged, **or** a commit on the default branch has a `PR Close #N` line for it.
 angular/angular's merge tool pushes the commits itself and closes the PR, so GitHub shows most PRs from
@@ -22,12 +25,24 @@ GITHUB_TOKEN=… pnpm collect -- --since=90d --out=/tmp/test  # a quick test run
 | `--repos=a/b,c/d` | `COLLECT_REPOS` | `angular/angular` | |
 | `--since=90d` or `--since=2026-08-01` | `COLLECT_SINCE` | full history | Test runs only |
 | `--pulls=rest\|search` | `COLLECT_PULLS` | `rest` | `search` when `/pulls` is not reachable: same data, more requests |
+| `--no-activity` | `COLLECT_ACTIVITY=false` | activity on | Landed PRs only: no issues, comments or review comments |
 | `--no-profiles` | `COLLECT_PROFILES=false` | profiles on | Profiles need GraphQL, so a token |
 | `--out=dir` | `CONTRIBUTORS_OUTPUT_DIR` | `data/` | |
 | | `COLLECT_CACHE_DIR` | `.cache/` | The treeless git clone of the repo |
 
 Commits come from a local treeless git clone (commit messages only, about 16 MB), not the API.
-A full run needs about 450 REST requests and a few dozen GraphQL points: the built-in GitHub Actions token is enough.
+A full run needs about 10,000 REST requests (most of them the ~500,000 comments, 100 a page) and some GraphQL
+points: about 2 hours at the 5,000 requests an hour of a personal token. The built-in Actions token (1,000 an hour)
+is not enough.
+
+### The token
+
+A fine-grained personal access token, saved as the repository secret `COLLECT_TOKEN`:
+GitHub → Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token.
+Repository access: **Public repositories (read-only)**; no permissions. It expires: renew it before the date you pick.
+
+A manual run of the workflow with a `since` (e.g. `30d`) is a test: it uploads the files as an artifact and commits
+nothing.
 
 ## Output
 

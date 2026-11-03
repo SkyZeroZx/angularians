@@ -46,14 +46,15 @@ describe('parseConfig', () => {
 
   it('defaults to a full run of angular/angular from the REST API', () => {
     const config = parseConfig([], {}, now)
-    expect(config).toMatchObject({ repos: [{ owner: 'angular', name: 'angular' }], since: null, pulls: 'rest', profiles: true })
+    expect(config).toMatchObject({ repos: [{ owner: 'angular', name: 'angular' }], since: null, pulls: 'rest', activity: true, profiles: true })
     expect(config.outputDir).toMatch(/data$/)
   })
 
   it('reads flags over env vars', () => {
-    const config = parseConfig(['--since=90d', '--pulls=search', '--no-profiles', '--repos=a/b,c/d'], { COLLECT_PULLS: 'rest' }, now)
+    const config = parseConfig(['--since=90d', '--pulls=search', '--no-activity', '--no-profiles', '--repos=a/b,c/d'], { COLLECT_PULLS: 'rest' }, now)
     expect(config.since?.toISOString()).toBe('2026-08-05T00:00:00.000Z')
-    expect(config).toMatchObject({ pulls: 'search', profiles: false, repos: [{ owner: 'a', name: 'b' }, { owner: 'c', name: 'd' }] })
+    expect(config).toMatchObject({ pulls: 'search', activity: false, profiles: false, repos: [{ owner: 'a', name: 'b' }, { owner: 'c', name: 'd' }] })
+    expect(parseConfig([], { COLLECT_ACTIVITY: 'false' }, now).activity).toBe(false)
     expect(parseConfig([], { COLLECT_SINCE: '2026-01-01', COLLECT_PROFILES: 'false' }, now)).toMatchObject({ since: new Date('2026-01-01'), profiles: false })
   })
 

@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import {
-  buildContributorRecords,
+  ContributorsAccumulator,
   landedPullRequests,
   periodFile,
   PROFILES_FILE,
@@ -10,6 +10,7 @@ import {
   toJsonLines,
   type LandedPullRequest,
 } from '@angularians/shared'
+import { collectActivity } from './activity.ts'
 import { gitCommits } from './commits.ts'
 import { parseConfig } from './config.ts'
 import { collectProfiles } from './profiles.ts'
@@ -21,10 +22,14 @@ export const META_FILE = 'meta.json'
 
 const config = parseConfig(process.argv.slice(2), process.env)
 const now = new Date()
-console.log(`Collecting ${config.repos.map(r => `${r.owner}/${r.name}`).join(', ')}${config.since ? ` since ${config.since.toISOString()}` : ', full history'} (PRs from ${config.pulls})`)
+console.log(`Collecting ${config.repos.map(r => `${r.owner}/${r.name}`).join(', ')}${config.since ? ` since ${config.since.toISOString()}` : ', full history'} (PRs from ${config.pulls}${config.activity ? ', with issues, comments and review comments' : ', landed PRs only'})`)
 
+const accumulator = new ContributorsAccumulator(now)
 const landed: LandedPullRequest[] = []
-const stats = { pulls: 0, commits: 0, prCloseCommits: 0, multiPrCommits: 0, landedMerged: 0, landedByPrClose: 0 }
+const stats = {
+  pulls: 0, commits: 0, prCloseCommits: 0, multiPrCommits: 0, landedMerged: 0, landedByPrClose: 0,
+  issues: 0, comments: 0, reviewComments: 0, activityPages: 0,
+}
 
 for (const repo of config.repos) {
   const fullName = `${repo.owner}/${repo.name}`
@@ -44,10 +49,20 @@ for (const repo of config.repos) {
   stats.landedMerged += repoLanded.filter(pull => merged.has(pull.number)).length
   stats.landedByPrClose += repoLanded.filter(pull => !merged.has(pull.number)).length
   landed.push(...repoLanded)
+  for (const pull of repoLanded) accumulator.addLandedPullRequest(pull)
   console.log(`${fullName}: ${pulls.length} closed PRs, ${commits.length} commits, ${repoLanded.length} landed PRs`)
+
+  if (config.activity) {
+    const activity = await collectActivity(repo, config.since, accumulator)
+    stats.issues += activity.issues
+    stats.comments += activity.comments
+    stats.reviewComments += activity.reviewComments
+    stats.activityPages += activity.pages
+    console.log(`${fullName}: ${activity.issues} issues, ${activity.comments} comments, ${activity.reviewComments} review comments (${activity.pages} pages)`)
+  }
 }
 
-const files = buildContributorRecords(landed, now)
+const files = accumulator.records()
 const allTime = files.get('all') ?? []
 if (!allTime.length) {
   console.error('No contributors collected: refusing to write empty files. Check the token and API access.')
@@ -84,6 +99,8 @@ const meta = {
   /** A test run with `--since`: all-time totals and first contributions only cover that window. */
   partial: config.since !== null,
   since: config.since?.toISOString() ?? null,
+  /** Issues, comments and review comments are in the scores. */
+  activity: config.activity,
   contributors: allTime.length,
   landedPullRequests: landed.length,
   profiles,
@@ -92,7 +109,11 @@ const meta = {
 await writeFile(join(config.outputDir, META_FILE), `${JSON.stringify(meta, null, 2)}\n`, 'utf8')
 console.log(meta)
 
-// Logins to check by hand for bots that `isBotAccount` does not catch yet.
-const suspects = allTime.filter(r => /bot|robot|automation|machine|\bci\b|release|sync/i.test(r.username))
-console.log('Possible bots:', suspects.length ? suspects.map(r => `${r.username} (${r.pullRequests.all})`).join(', ') : 'none')
+// Logins to check by hand for bots that `isBotAccount` does not catch yet: by name, and the busiest commenters.
+const suspects = allTime.filter(r => /bot|robot|automation|machine|\bci\b|release|sync|cla\b/i.test(r.username))
+console.log('Possible bots:', suspects.length ? suspects.map(r => `${r.username} (${r.pullRequests.all} PRs, ${r.comments} comments)`).join(', ') : 'none')
+if (config.activity) {
+  const commenters = [...allTime].sort((a, b) => b.comments + b.reviewComments - a.comments - a.reviewComments).slice(0, 20)
+  console.log('Busiest commenters:', commenters.map(r => `${r.username} ${r.comments}+${r.reviewComments}`).join(', '))
+}
 console.log('Top 25:', allTime.slice(0, 25).map(r => `${r.username} ${r.score}`).join(', '))

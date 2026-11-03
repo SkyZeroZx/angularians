@@ -1,8 +1,9 @@
-// Weights ported from nuxt/nuxters `computeScore`, breakdown from nuxt.com `nuxterScoreBreakdown`
-// (MIT, Copyright (c) 2023 Nuxt, Copyright (c) 2022-2023 NuxtLabs). v1 counts landed PRs only: no issues,
-// comments, reactions or core bonus.
+// Weights and "helpful" rules ported from nuxt/nuxters `computeScore` and `addIssueStats`, breakdown from nuxt.com
+// `nuxterScoreBreakdown` (MIT, Copyright (c) 2023 Nuxt, Copyright (c) 2022-2023 NuxtLabs).
+// Differences: no core bonus (one repository), and inline review comments count too (1 point each).
+import { isBotAccount } from './bots.ts'
 import { allPeriods, periodsFor } from './periods.ts'
-import type { ContributorRecord, LandedPullRequest, Period, PullRequestCounts, PullRequestType } from './types.ts'
+import type { ActivityCounts, ContributorRecord, GitHubUser, LandedPullRequest, Period, PullRequestCounts, PullRequestType } from './types.ts'
 
 export const PULL_REQUEST_POINTS: Readonly<Record<PullRequestType, number>> = {
   feat: 7,
@@ -11,39 +12,77 @@ export const PULL_REQUEST_POINTS: Readonly<Record<PullRequestType, number>> = {
   chore: 3,
 }
 
-export const emptyCounts = (): PullRequestCounts => ({ feat: 0, fix: 0, docs: 0, chore: 0, all: 0 })
-
-export function score(counts: PullRequestCounts): number {
-  return counts.feat * PULL_REQUEST_POINTS.feat
-    + counts.fix * PULL_REQUEST_POINTS.fix
-    + counts.docs * PULL_REQUEST_POINTS.docs
-    + counts.chore * PULL_REQUEST_POINTS.chore
+/** Points of everything besides landed PRs. */
+export const ACTIVITY_POINTS: Readonly<Record<keyof ActivityCounts, number>> = {
+  helpfulIssues: 3,
+  helpfulComments: 2,
+  issues: 1,
+  reviewComments: 1,
+  comments: 0.5,
+  reactions: 0.1,
 }
 
+/** An issue is helpful when it was closed as completed, or got this many reactions or comments. */
+export const HELPFUL_ISSUE_REACTIONS = 3
+export const HELPFUL_ISSUE_COMMENTS = 5
+/** A comment is helpful with this many reactions. */
+export const HELPFUL_COMMENT_REACTIONS = 3
+
+export const emptyCounts = (): PullRequestCounts => ({ feat: 0, fix: 0, docs: 0, chore: 0, all: 0 })
+export const emptyActivity = (): ActivityCounts => ({ issues: 0, helpfulIssues: 0, comments: 0, helpfulComments: 0, reviewComments: 0, reactions: 0 })
+
+export type ScoredStats = { pullRequests: PullRequestCounts } & ActivityCounts
+
+/** The sum of every row of `scoreBreakdown`, rounded once (as Nuxters does). */
+export function score(stats: ScoredStats): number {
+  const prs = stats.pullRequests
+  const total = prs.feat * PULL_REQUEST_POINTS.feat
+    + prs.fix * PULL_REQUEST_POINTS.fix
+    + prs.docs * PULL_REQUEST_POINTS.docs
+    + prs.chore * PULL_REQUEST_POINTS.chore
+    + stats.helpfulIssues * ACTIVITY_POINTS.helpfulIssues
+    + stats.helpfulComments * ACTIVITY_POINTS.helpfulComments
+    + stats.issues * ACTIVITY_POINTS.issues
+    + stats.reviewComments * ACTIVITY_POINTS.reviewComments
+    + stats.comments * ACTIVITY_POINTS.comments
+    + stats.reactions * ACTIVITY_POINTS.reactions
+  return Math.round(total)
+}
+
+export type ScoreRowKey = PullRequestType | keyof ActivityCounts
+
 export interface ScoreRow {
-  type: PullRequestType
+  key: ScoreRowKey
   label: string
   /** A Lucide icon name (`@ng-icons/lucide`: `lucideRocket`…). */
   icon: string
   points: number
   amount: number
+  /** amount × points, to one decimal. */
   total: number
 }
 
-const ROWS: ReadonlyArray<Omit<ScoreRow, 'points' | 'amount' | 'total'>> = [
-  { type: 'feat', label: 'Feature PRs', icon: 'rocket' },
-  { type: 'fix', label: 'Fix PRs', icon: 'wrench' },
-  { type: 'docs', label: 'Docs PRs', icon: 'book-open' },
-  { type: 'chore', label: 'Chore PRs', icon: 'brush-cleaning' },
+const ROWS: ReadonlyArray<Pick<ScoreRow, 'key' | 'label' | 'icon'>> = [
+  { key: 'feat', label: 'Feature PRs', icon: 'rocket' },
+  { key: 'fix', label: 'Fix PRs', icon: 'wrench' },
+  { key: 'docs', label: 'Docs PRs', icon: 'book-open' },
+  { key: 'chore', label: 'Chore PRs', icon: 'brush-cleaning' },
+  { key: 'helpfulIssues', label: 'Helpful issues', icon: 'lightbulb' },
+  { key: 'helpfulComments', label: 'Helpful comments', icon: 'message-circle-heart' },
+  { key: 'issues', label: 'Issues', icon: 'circle-dot' },
+  { key: 'reviewComments', label: 'Review comments', icon: 'file-code' },
+  { key: 'comments', label: 'Comments', icon: 'message-circle' },
+  { key: 'reactions', label: 'Reactions received', icon: 'smile-plus' },
 ]
 
-/** One row per PR type, sorted by total (ties in the fixed order above). The totals add up to the score. */
-export function scoreBreakdown(counts: PullRequestCounts): ScoreRow[] {
+/** One row per contribution type, sorted by total (ties in the fixed order above). Rounded, the totals add up to the score. */
+export function scoreBreakdown(stats: ScoredStats): ScoreRow[] {
   return ROWS
     .map((row) => {
-      const points = PULL_REQUEST_POINTS[row.type]
-      const amount = counts[row.type]
-      return { ...row, points, amount, total: amount * points }
+      const isPr = row.key in PULL_REQUEST_POINTS
+      const points = isPr ? PULL_REQUEST_POINTS[row.key as PullRequestType] : ACTIVITY_POINTS[row.key as keyof ActivityCounts]
+      const amount = isPr ? stats.pullRequests[row.key as PullRequestType] : stats[row.key as keyof ActivityCounts]
+      return { ...row, points, amount, total: Math.round(amount * points * 10) / 10 }
     })
     .sort((a, b) => b.total - a.total)
 }
@@ -53,51 +92,136 @@ export function compareRecords(a: Pick<ContributorRecord, 'score' | 'username'>,
   return b.score - a.score || a.username.localeCompare(b.username)
 }
 
-/**
- * The contributor files of a collection run: every landed PR counts in all time, its rolling windows
- * and its year, for its author. Every period gets an entry, even an empty one, so readers can rely on it.
- * Contributors are keyed by GitHub id: a renamed account keeps its PRs, under its latest login.
- */
-export function buildContributorRecords(pulls: Iterable<LandedPullRequest>, now: Date): Map<Period, ContributorRecord[]> {
-  const byPeriod = new Map<Period, Map<number, ContributorRecord>>(allPeriods(now).map(period => [period, new Map()]))
-  const first = new Map<number, number>()
-  const latest = new Map<number, { login: string, time: number }>()
+/** An issue or a PR, as `GET /repos/{owner}/{repo}/issues?state=all` lists it, the fields used here. */
+export interface IssueInput {
+  user: { login?: string | null, id?: number | null } | null
+  created_at: string
+  /** Present on PRs: they count for their reactions only (the PR itself counts when it lands). */
+  pull_request?: object | null
+  state_reason?: string | null
+  comments?: number
+  reactions?: { total_count?: number } | null
+}
 
-  for (const pull of pulls) {
-    const time = Date.parse(pull.landedAt)
-    const id = pull.author.id
-    if (!Number.isNaN(time)) {
-      if (time < (first.get(id) ?? Infinity)) first.set(id, time)
-      if (time >= (latest.get(id)?.time ?? -Infinity)) latest.set(id, { login: pull.author.login, time })
+/** A conversation comment (`/issues/comments`) or an inline review comment (`/pulls/comments`). */
+export interface CommentInput {
+  user: { login?: string | null, id?: number | null } | null
+  created_at: string
+  reactions?: { total_count?: number } | null
+}
+
+type Counts = { pullRequests: PullRequestCounts } & ActivityCounts
+
+/**
+ * The contributor files of a collection run, built one event at a time (a full run streams ~500,000 comments).
+ * Every event counts in all time, its rolling windows and its year, for its author; bots and deleted accounts are
+ * left out. Contributors are keyed by GitHub id: a renamed account stays one person, under its latest login.
+ */
+export class ContributorsAccumulator {
+  private readonly now: Date
+  private readonly byPeriod: Map<Period, Map<number, Counts>>
+  private readonly logins = new Map<number, { login: string, time: number }>()
+  private readonly first = new Map<number, number>()
+
+  constructor(now: Date) {
+    this.now = now
+    this.byPeriod = new Map(allPeriods(now).map(period => [period, new Map()]))
+  }
+
+  addLandedPullRequest(pull: LandedPullRequest): void {
+    this.add(pull.author, pull.landedAt, true, (counts) => {
+      counts.pullRequests[pull.type] += 1
+      counts.pullRequests.all += 1
+    })
+  }
+
+  /** Issues count, with their reactions; PRs only for their reactions. */
+  addIssue(issue: IssueInput): void {
+    const user = toUser(issue.user)
+    if (!user) return
+    const reactions = issue.reactions?.total_count ?? 0
+    if (issue.pull_request) {
+      if (reactions) this.add(user, issue.created_at, false, counts => (counts.reactions += reactions))
+      return
     }
-    for (const period of periodsFor(pull.landedAt, now)) {
-      let contributors = byPeriod.get(period)
+    const helpful = issue.state_reason === 'completed' || reactions >= HELPFUL_ISSUE_REACTIONS || (issue.comments ?? 0) >= HELPFUL_ISSUE_COMMENTS
+    this.add(user, issue.created_at, true, (counts) => {
+      counts.issues += 1
+      if (helpful) counts.helpfulIssues += 1
+      counts.reactions += reactions
+    })
+  }
+
+  addComment(comment: CommentInput): void {
+    const user = toUser(comment.user)
+    if (!user) return
+    const reactions = comment.reactions?.total_count ?? 0
+    this.add(user, comment.created_at, true, (counts) => {
+      counts.comments += 1
+      if (reactions >= HELPFUL_COMMENT_REACTIONS) counts.helpfulComments += 1
+      counts.reactions += reactions
+    })
+  }
+
+  /** Inline review comments: 1 point each, no "helpful" rule (they rarely get reactions). */
+  addReviewComment(comment: CommentInput): void {
+    const user = toUser(comment.user)
+    if (!user) return
+    this.add(user, comment.created_at, true, counts => (counts.reviewComments += 1))
+  }
+
+  /** Every period, even an empty one, so readers can rely on its file. */
+  records(): Map<Period, ContributorRecord[]> {
+    const files = new Map<Period, ContributorRecord[]>()
+    for (const [period, contributors] of this.byPeriod) {
+      const records = [...contributors].map(([id, counts]): ContributorRecord => {
+        const firstTime = this.first.get(id)
+        return {
+          githubId: id,
+          username: this.logins.get(id)!.login,
+          score: score(counts),
+          ...counts,
+          pullRequests: { ...counts.pullRequests },
+          firstContributionAt: firstTime === undefined ? null : new Date(firstTime).toISOString(),
+        }
+      })
+      files.set(period, records.sort(compareRecords))
+    }
+    return files
+  }
+
+  /** `contribution`: the event is a contribution of its own (reactions received are not). */
+  private add(user: GitHubUser, date: string, contribution: boolean, update: (counts: Counts) => void): void {
+    const time = Date.parse(date)
+    const login = this.logins.get(user.id)
+    if (!login || (!Number.isNaN(time) && time >= login.time)) this.logins.set(user.id, { login: user.login, time: Number.isNaN(time) ? -Infinity : time })
+    if (contribution && !Number.isNaN(time) && time < (this.first.get(user.id) ?? Infinity)) this.first.set(user.id, time)
+    for (const period of periodsFor(date, this.now)) {
+      let contributors = this.byPeriod.get(period)
       if (!contributors) {
         contributors = new Map()
-        byPeriod.set(period, contributors)
+        this.byPeriod.set(period, contributors)
       }
-      let record = contributors.get(id)
-      if (!record) {
-        record = { githubId: id, username: pull.author.login, score: 0, pullRequests: emptyCounts(), firstContributionAt: null }
-        contributors.set(id, record)
+      let counts = contributors.get(user.id)
+      if (!counts) {
+        counts = { pullRequests: emptyCounts(), ...emptyActivity() }
+        contributors.set(user.id, counts)
       }
-      record.pullRequests[pull.type] += 1
-      record.pullRequests.all += 1
+      update(counts)
     }
   }
+}
 
-  const files = new Map<Period, ContributorRecord[]>()
-  for (const [period, contributors] of byPeriod) {
-    const records = [...contributors.values()].map((record) => {
-      const firstTime = first.get(record.githubId)
-      return {
-        ...record,
-        username: latest.get(record.githubId)?.login ?? record.username,
-        score: score(record.pullRequests),
-        firstContributionAt: firstTime === undefined ? null : new Date(firstTime).toISOString(),
-      }
-    })
-    files.set(period, records.sort(compareRecords))
-  }
-  return files
+/** Landed PRs only: the v1 entry point, kept for its callers and tests. */
+export function buildContributorRecords(pulls: Iterable<LandedPullRequest>, now: Date): Map<Period, ContributorRecord[]> {
+  const accumulator = new ContributorsAccumulator(now)
+  for (const pull of pulls) accumulator.addLandedPullRequest(pull)
+  return accumulator.records()
+}
+
+function toUser(user: IssueInput['user']): GitHubUser | null {
+  const login = user?.login
+  const id = user?.id
+  if (!login || typeof id !== 'number' || !Number.isSafeInteger(id) || id <= 0 || isBotAccount(login)) return null
+  return { login, id }
 }

@@ -13,7 +13,7 @@ import { Container } from './container';
         Angular is a trademark of Google LLC.
       </p>
       <p>
-        Counts the pull requests that landed in
+        Counts landed pull requests, issues, comments and code reviews in
         <a class="underline underline-offset-4 hover:text-foreground" href="https://github.com/angular/angular" target="_blank" rel="noopener">angular/angular</a>,
         updated nightly. Inspired by and ported from
         <a class="underline underline-offset-4 hover:text-foreground" href="https://nuxt.com/nuxters" target="_blank" rel="noopener">Nuxters</a>
