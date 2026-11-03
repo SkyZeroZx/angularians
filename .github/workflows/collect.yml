@@ -1,0 +1,39 @@
+name: collect
+
+on:
+  schedule:
+    # Nightly, off the hour (runs at :00 are often delayed).
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: collect
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          # 24: runs the TypeScript sources directly (type stripping).
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @angular-contributors/collector collect
+        env:
+          # The built-in token: 1,000 requests an hour, a full run needs about 450 plus a few dozen GraphQL points.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Commit the data
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data
+          git diff --cached --quiet || git commit -m 'chore(data): update contributors'
+          git push

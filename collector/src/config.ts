@@ -1,0 +1,60 @@
+import { resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+export interface Config {
+  repos: Array<{ owner: string, name: string }>
+  /** Only PRs closed and commits made since then: a test run, its files are marked partial. */
+  since: Date | null
+  pulls: 'rest' | 'search'
+  profiles: boolean
+  outputDir: string
+  cacheDir: string
+}
+
+const ROOT = fileURLToPath(new URL('../../', import.meta.url))
+const DAY_MS = 24 * 60 * 60 * 1000
+
+/** `90d` → 90 days before `now`, `2026-08-01` → that day (UTC). */
+export function parseSince(value: string, now = new Date()): Date {
+  const days = /^(\d+)d$/.exec(value)
+  const date = days ? new Date(now.getTime() - Number(days[1]) * DAY_MS) : new Date(value)
+  if (Number.isNaN(date.getTime())) throw new Error(`Invalid --since "${value}": use a date (2026-08-01) or days (90d)`)
+  return date
+}
+
+export function parseRepos(value: string): Config['repos'] {
+  return value.split(',').map(repo => repo.trim()).filter(Boolean).map((repo) => {
+    const [owner, name, ...rest] = repo.split('/')
+    if (!owner || !name || rest.length) throw new Error(`Invalid repository "${repo}", expected owner/name`)
+    return { owner, name }
+  })
+}
+
+/**
+ * `node src/main.ts [--since=90d] [--pulls=rest|search] [--no-profiles] [--out=dir] [--repos=a/b,c/d]`,
+ * or the same as env vars: COLLECT_SINCE, COLLECT_PULLS, COLLECT_PROFILES=false, CONTRIBUTORS_OUTPUT_DIR, COLLECT_REPOS.
+ */
+export function parseConfig(argv: string[], env: NodeJS.ProcessEnv, now = new Date()): Config {
+  const flags = new Map<string, string>()
+  for (const arg of argv) {
+    // `pnpm collect -- --since=90d` can pass the `--` on.
+    if (arg === '--') continue
+    const match = /^--(no-)?([a-z-]+)(?:=(.*))?$/.exec(arg)
+    if (!match) throw new Error(`Unknown argument "${arg}"`)
+    flags.set(match[2]!, match[1] ? 'false' : match[3] ?? 'true')
+  }
+  const known = new Set(['since', 'pulls', 'profiles', 'out', 'repos'])
+  for (const flag of flags.keys()) if (!known.has(flag)) throw new Error(`Unknown flag --${flag}`)
+
+  const pulls = flags.get('pulls') ?? env['COLLECT_PULLS'] ?? 'rest'
+  if (pulls !== 'rest' && pulls !== 'search') throw new Error(`--pulls must be rest or search, not "${pulls}"`)
+  const since = flags.get('since') ?? env['COLLECT_SINCE']
+  return {
+    repos: parseRepos(flags.get('repos') ?? env['COLLECT_REPOS'] ?? 'angular/angular'),
+    since: since ? parseSince(since, now) : null,
+    pulls,
+    profiles: (flags.get('profiles') ?? env['COLLECT_PROFILES'] ?? 'true') !== 'false',
+    outputDir: resolve(flags.get('out') ?? env['CONTRIBUTORS_OUTPUT_DIR'] ?? `${ROOT}data`),
+    cacheDir: resolve(env['COLLECT_CACHE_DIR'] ?? `${ROOT}.cache`),
+  }
+}
