@@ -16,7 +16,7 @@ import { ThemeToggle } from './theme-toggle';
   template: `
     <app-container class="flex h-14 items-center gap-4">
       <a routerLink="/" class="flex items-center gap-2 font-semibold tracking-tight">
-        <app-logo-mark class="size-6" />
+        <app-logo-mark class="size-6" animated />
         <span>Angularians</span>
       </a>
       <nav class="ml-auto flex items-center gap-1" aria-label="Site">
