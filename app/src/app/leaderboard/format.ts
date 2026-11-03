@@ -1,0 +1,23 @@
+import type { Period } from '@angular-contributors/shared'
+
+const number = new Intl.NumberFormat('en-US')
+const date = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeZone: 'UTC' })
+
+export const formatNumber = (value: number): string => number.format(value)
+export const formatPoints = (score: number): string => `${number.format(score)} ${score === 1 ? 'pt' : 'pts'}`
+export const plural = (count: number, one: string, many: string): string => `${number.format(count)} ${count === 1 ? one : many}`
+/** UTC, so the server and the browser print the same day (no hydration mismatch). */
+export const formatDate = (iso: string): string => date.format(new Date(iso))
+
+/**
+ * A GitHub avatar by account id: stable across renames, served by GitHub's CDN.
+ * `size` is in CSS pixels; GitHub gets twice that for 2x screens.
+ */
+export function avatarUrl(githubId: number, size: number): string {
+  return `https://avatars.githubusercontent.com/u/${githubId}?s=${size * 2}&v=4`
+}
+
+/** The profile opens on the period of the board it was picked from (all time is its default). */
+export function profileQuery(period: Period): Record<string, string> {
+  return period === 'all' ? {} : { period }
+}
