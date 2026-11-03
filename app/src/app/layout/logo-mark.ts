@@ -24,7 +24,7 @@ let nextId = 0;
             <g transform="translate(-0.5 0.67)">
               <g [attr.clip-path]="'url(#' + id + '-a)'">
                 <path [attr.d]="shield" fill="#fff" stroke="#fff" stroke-width="1" stroke-linejoin="round" />
-                <path fill="#000" d="M12 5.6 18.9 20.2H15.7L14.09 16.8H9.91L8.3 20.2H5.1ZM12 12.37 10.94 14.6H13.06Z" />
+                <path fill="#000" d="M12 5.6 20.7 24H17.5L14.09 16.8H9.91L6.5 24H3.3ZM12 12.37 10.94 14.6H13.06Z" />
               </g>
             </g>
             <!-- The wing, a step higher -->
