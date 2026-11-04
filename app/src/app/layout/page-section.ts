@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 import { Container } from './container';
 
 /** A titled block of a page (Nuxt UI `UPageSection`). `sectionId` makes it a link target. */
@@ -10,7 +10,12 @@ import { Container } from './container';
     <app-container [class]="flush() ? 'pb-12 sm:pb-16' : 'py-12 sm:py-16'">
       @if (title()) {
         <header class="mb-8">
-          <h2 [id]="headingId()" class="text-2xl font-medium tracking-tight sm:text-3xl">{{ title() }} <ng-content select="[sectionTitleNote]" /></h2>
+          <h2 [id]="headingId()" class="text-2xl font-medium tracking-tight sm:text-3xl">
+            @for (part of titleParts(); track $index) {
+              @if ($odd) { <span class="brand text-primary">{{ part }}</span> } @else { {{ part }} }
+            }
+            <ng-content select="[sectionTitleNote]" />
+          </h2>
           @if (description()) {
             <p class="mt-2 max-w-2xl text-pretty text-muted-foreground">{{ description() }}</p>
           }
@@ -22,6 +27,8 @@ import { Container } from './container';
 })
 export class PageSection {
   readonly title = input('')
+  /** Every other part is the word "Angularian(s)", in the brand font. */
+  protected readonly titleParts = computed(() => this.title().split(/(Angularians?)/))
   readonly description = input<string | null>(null)
   readonly sectionId = input<string | null>(null)
   /** No top padding: the section continues the one above (the leaderboard under the hero, as on Nuxters). */
