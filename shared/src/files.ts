@@ -4,6 +4,9 @@ import { countryCode } from './countries.ts'
 import { compareRecords, emptyCounts, score } from './scoring.ts'
 import type { ActivityCounts, Contributor, PackagesRecord, ProfileRecord, PullRequestCounts, SocialAccount, TeamRecord } from './types.ts'
 
+/** GitHub's rule for a username: letters, digits and single hyphens between them, 39 characters at most. */
+export const GITHUB_USERNAME_RE = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i
+
 /** The all-time profiles of the contributors: not a period. */
 export const PROFILES_FILE = 'profiles.json'
 

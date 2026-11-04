@@ -11,7 +11,7 @@ import { AuthService } from '../auth/auth.service'
 import { AngularLogo } from '../layout/angular-logo'
 import { ScoreDialog } from '../profile/score-dialog'
 import { Share } from '../profile/share'
-import { avatarUrl, formatNumber } from './format'
+import { avatarUrl, formatNumber, formatPoints } from './format'
 
 const CARD = 'flex w-full flex-col rounded-xl bg-muted/40 p-6 ring-1 ring-border sm:p-8'
 /**
@@ -64,7 +64,7 @@ const SIGNED_OUT = 'min-h-64 lg:min-h-80'
                 <p class="flex items-center gap-1 text-muted-foreground">
                   <span class="tabular-nums">#{{ number(person.rank) }}</span>
                   <span aria-hidden="true">·</span>
-                  <span class="tabular-nums">{{ number(person.score) }} pts</span>
+                  <span class="tabular-nums">{{ points(person.score) }}</span>
                   <app-score-dialog [stats]="person" />
                 </p>
               } @else {
@@ -161,4 +161,5 @@ export class MeCard {
 
   protected readonly avatar = (githubId: number) => avatarUrl(githubId, 64)
   protected readonly number = formatNumber
+  protected readonly points = formatPoints
 }

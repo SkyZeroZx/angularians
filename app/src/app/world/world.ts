@@ -22,7 +22,7 @@ const CARD_TILES = 12;
   host: { class: 'grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] lg:gap-12' },
   template: `
     <ng-template #card let-shown>
-      <div class="rounded-lg border bg-background/90 p-4 shadow-lg backdrop-blur">
+      <div class="rounded-lg border bg-background p-4 shadow-lg">
         <div class="flex items-center gap-3">
           <img [src]="flag(shown.code)" alt="" width="40" height="40" class="size-10 shrink-0" />
           <div class="min-w-0 flex-1">

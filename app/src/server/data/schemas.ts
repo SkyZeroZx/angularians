@@ -1,8 +1,5 @@
-import { countryCode, DEFAULT_PERIOD, isPeriod } from '@angularians/shared'
+import { countryCode, DEFAULT_PERIOD, GITHUB_USERNAME_RE, isPeriod } from '@angularians/shared'
 import * as v from 'valibot'
-
-/** GitHub logins: letters, digits and single hyphens, 39 characters at most. */
-const USERNAME_RE = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i
 
 export const PeriodSchema = v.pipe(v.string(), v.check(value => isPeriod(value), 'Unknown period'))
 export const CountrySchema = v.pipe(
@@ -10,7 +7,7 @@ export const CountrySchema = v.pipe(
   v.transform(value => countryCode(value)),
   v.check(value => value !== null, 'Unknown country code'),
 )
-export const UsernameSchema = v.pipe(v.string(), v.regex(USERNAME_RE, 'Not a GitHub username'))
+export const UsernameSchema = v.pipe(v.string(), v.regex(GITHUB_USERNAME_RE, 'Not a GitHub username'))
 
 export const LeaderboardInput = v.object({
   period: v.optional(PeriodSchema, DEFAULT_PERIOD),

@@ -6,7 +6,7 @@ import { Meta, Title } from '@angular/platform-browser';
 import { Router, RouterLink } from '@angular/router';
 import { injectServerFn, type RouteMeta } from '@analogjs/router';
 import { injectResponse } from '@analogjs/router/tokens';
-import { countryName, DEFAULT_PERIOD, isPeriod, periodPhrase, reposQuery, type ContributorProfile, type Period } from '@angularians/shared';
+import { countryName, DEFAULT_PERIOD, GITHUB_USERNAME_RE, isPeriod, periodPhrase, reposQuery, type ContributorProfile, type Period } from '@angularians/shared';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucideArrowLeft, lucideArrowUpRight, lucideAward, lucideCircleDot, lucideGitPullRequest, lucideInfo,
@@ -129,7 +129,7 @@ export function yearRanges(years: readonly number[]): string {
                 }
                 @if (best(); as year) {
                   <a [routerLink]="[]" [queryParams]="{ period: year.period }" replaceUrl class="inline-flex items-center gap-1.5 tabular-nums hover:text-foreground">
-                    <ng-icon name="lucideAward" aria-hidden="true" />Best year {{ year.period }}, #{{ number(year.rank) }} with {{ number(year.score) }} pts
+                    <ng-icon name="lucideAward" aria-hidden="true" />Best year {{ year.period }}, #{{ number(year.rank) }} with {{ points(year.score) }}
                   </a>
                 }
               </p>
@@ -250,7 +250,7 @@ export function yearRanges(years: readonly number[]): string {
           </section>
         </app-container>
       }
-    } @else if (profile.isLoading()) {
+    } @else if (profile.isLoading() && validUsername()) {
       <!-- The shape of the profile below, so nothing jumps when it arrives. -->
       <app-container class="py-8 lg:py-14" aria-busy="true">
         <span class="sr-only">Loading the profile of {{ username() }}</span>
@@ -315,7 +315,9 @@ export default class Profile {
   protected readonly profile = injectServerFn(getContributor, () => ({ username: this.username() }));
   /** Signed in as this contributor (by GitHub id). */
   /** In the class, not the template: an apostrophe in a template string ends it. */
-  protected readonly notFoundText = computed(() => this.profile.error()
+  /** GitHub's rule for a username; anything else is not found, not a failed load. */
+  protected readonly validUsername = computed(() => GITHUB_USERNAME_RE.test(this.username()));
+  protected readonly notFoundText = computed(() => this.profile.error() && this.validUsername()
     ? 'The profile could not be loaded. Try again in a moment.'
     : "Nobody with this GitHub username has a merged pull request, an issue or a comment in Angular's repositories yet, or the data has not caught up: it updates every night.");
   protected readonly isOwner = computed(() => {
@@ -377,6 +379,7 @@ export default class Profile {
   protected readonly packageLabel = packageLabel;
   protected readonly icon = packageIcon;
   protected readonly plural = plural;
+  protected readonly points = formatPoints;
   /** Earned from the data: the Angular team, the all-time top 10, #1 of a year, 100+ review comments. */
   protected readonly badges = computed(() => {
     const person = this.profile.value();
@@ -437,7 +440,8 @@ export default class Profile {
   constructor() {
     effect(() => {
       const person = this.profile.value();
-      if (person === null && this.response) this.response.statusCode = 404;
+      // Nobody with this username, or a path that cannot be one (`/-x-`): not found.
+      if ((person === null || !this.validUsername()) && this.response) this.response.statusCode = 404;
       // One URL per profile: /CrisBeto → /crisbeto, keeping the period.
       if (person && person.username !== this.username()) {
         void this.router.navigate(['/', person.username], { queryParamsHandling: 'preserve', replaceUrl: true });
