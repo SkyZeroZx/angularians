@@ -1,6 +1,6 @@
 // Ported from nuxt.com `app/components/nuxters/NuxtersWorld.vue` (MIT, Copyright (c) 2022-2023 NuxtLabs).
-import { NgTemplateOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { isPlatformBrowser, NgTemplateOutlet } from '@angular/common';
+import { afterNextRender, ChangeDetectionStrategy, Component, computed, DestroyRef, ElementRef, inject, input, output, PLATFORM_ID, signal, viewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { countryName, type ContributorsMap, type ContributorSummary, type CountryStats } from '@angularians/shared';
 import { NgIcon, provideIcons } from '@ng-icons/core';
@@ -54,8 +54,10 @@ const CARD_TILES = 12;
     </ng-template>
 
     <!-- The card floats on the globe: picking a country moves nothing on the page -->
-    <div class="relative mx-auto aspect-square w-full max-w-[36rem]">
-      @defer (on viewport) {
+    <!-- \`when\`, not \`on viewport\`: Angular's viewport trigger creates its IntersectionObserver during server rendering too
+         (after-render hooks run there in this app), where none exists. -->
+    <div #globeBox class="relative mx-auto aspect-square w-full max-w-[36rem]">
+      @defer (when inView()) {
         <app-globe [countries]="map().countries" [selected]="selected()" (select)="select.emit($event)" />
       } @placeholder {
         <div class="size-full rounded-full bg-muted/50 ring-1 ring-border"></div>
@@ -101,6 +103,28 @@ const CARD_TILES = 12;
   `,
 })
 export class World {
+  private readonly globeBox = viewChild.required<ElementRef<HTMLElement>>('globeBox');
+  /** Set once the globe's box nears the screen, in the browser only: then the globe loads. */
+  protected readonly inView = signal(false);
+
+  constructor() {
+    if (!isPlatformBrowser(inject(PLATFORM_ID))) return;
+    const destroyRef = inject(DestroyRef);
+    afterNextRender(() => {
+      if (typeof IntersectionObserver === 'undefined') {
+        this.inView.set(true);
+        return;
+      }
+      const observer = new IntersectionObserver((entries) => {
+        if (!entries.some(entry => entry.isIntersecting)) return;
+        this.inView.set(true);
+        observer.disconnect();
+      }, { rootMargin: '200px' });
+      observer.observe(this.globeBox().nativeElement);
+      destroyRef.onDestroy(() => observer.disconnect());
+    });
+  }
+
   readonly map = input.required<ContributorsMap>();
   readonly selected = input<string | null>(null);
   /** The best ranked contributors of the selected country: the first page of its board, empty while it loads. */

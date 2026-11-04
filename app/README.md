@@ -17,7 +17,7 @@ pnpm test    # Vitest
 | `src/app/pages/` | Routes: `index.page.ts` (leaderboard and globe), `[username].page.ts` (profile), `[...not-found].page.ts` |
 | `src/app/leaderboard/` | Period tabs, country filter, search, the avatar grid |
 | `src/app/profile/` | Score breakdown, sharing, package labels |
-| `src/app/world/` | The globe (`cobe`, loaded with `@defer (on viewport)`) and the country list |
+| `src/app/world/` | The globe (`cobe`, loaded with `@defer` when it nears the screen) and the country list |
 | `src/app/layout/` | Header, footer, theme toggle, page layout pieces |
 | `src/app/data/contributors.server.ts` | Server functions the pages call (in-process during SSR) |
 | `src/server/routes/` | The public JSON API, sign-in (`api/auth`) and the Angularian card (`[username]/card.png`) |
