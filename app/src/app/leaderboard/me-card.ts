@@ -10,6 +10,7 @@ import { HlmSkeleton } from '@spartan-ng/helm/skeleton'
 import { HlmTooltip } from '@spartan-ng/helm/tooltip'
 import { AuthService } from '../auth/auth.service'
 import { AngularLogo } from '../layout/angular-logo'
+import { LogoMark } from '../layout/logo-mark'
 import { ScoreDialog } from '../profile/score-dialog'
 import { Share } from '../profile/share'
 import { avatarUrl, formatNumber, formatPoints } from './format'
@@ -27,7 +28,7 @@ const SIGNED_OUT = 'min-h-64 lg:min-h-80'
 /** The signed-in Angularian, or a sign-in. */
 @Component({
   selector: 'app-me-card',
-  imports: [AngularLogo, HlmButton, HlmSkeleton, HlmTooltip, NgIcon, RouterLink, ScoreDialog, Share],
+  imports: [AngularLogo, HlmButton, HlmSkeleton, HlmTooltip, LogoMark, NgIcon, RouterLink, ScoreDialog, Share],
   providers: [provideIcons({ lucideArrowRight, lucideAward, lucideCircleDot, lucideGitPullRequest, lucideInfo, lucideMessageCircleHeart, simpleGithub })],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block w-full' },
@@ -100,9 +101,14 @@ const SIGNED_OUT = 'min-h-64 lg:min-h-80'
                 <span class="inline-flex items-center gap-1.5 rounded-md bg-[#dc087d]/10 px-2 py-0.5 text-sm font-medium ring-1 ring-[#dc087d]/40">
                   <app-angular-logo class="size-4" />{{ badge }}
                 </span>
+              } @else if (badge === 'Angularian') {
+                <!-- Our own badge: the mark, and the word in the brand font -->
+                <span class="inline-flex h-7 items-center gap-1.5 rounded-md bg-primary/10 px-2 text-sm font-medium text-primary">
+                  <app-logo-mark class="size-4" /><span class="brand leading-none">{{ badge }}</span>
+                </span>
               } @else {
                 <span class="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-0.5 text-sm font-medium text-primary">
-                  <ng-icon name="lucideAward" aria-hidden="true" /><span [class.brand]="badge === 'Angularian'">{{ badge }}</span>
+                  <ng-icon name="lucideAward" aria-hidden="true" />{{ badge }}
                 </span>
               }
             } @empty {
