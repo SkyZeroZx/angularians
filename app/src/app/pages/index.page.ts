@@ -17,6 +17,7 @@ import { PageHero } from '../layout/page-hero';
 import { PageSection } from '../layout/page-section';
 import { ContributorSearch } from '../leaderboard/contributor-search';
 import { CountrySelect } from '../leaderboard/country-select';
+import { FindProfile } from '../leaderboard/find-profile';
 import { formatDate, formatNumber, plural } from '../leaderboard/format';
 import { LeaderboardGrid } from '../leaderboard/leaderboard-grid';
 import { PeriodTabs } from '../leaderboard/period-tabs';
@@ -32,7 +33,7 @@ export const routeMeta = {
 @Component({
   selector: 'app-home',
   imports: [
-    ContributorSearch, CountrySelect, HlmBadge, HlmButton, HlmCardImports, HlmSkeleton, LeaderboardGrid, NgIcon,
+    ContributorSearch, CountrySelect, FindProfile, HlmBadge, HlmButton, HlmCardImports, HlmSkeleton, LeaderboardGrid, NgIcon,
     PageGrid, PageHero, PageSection, PeriodTabs, World,
   ],
   providers: [provideIcons({ lucideBookOpen, lucideBrushCleaning, lucideCalendar, lucideCircleDot, lucideGitPullRequest, lucideMessageCircle, lucideMessageCircleHeart, lucideRocket, lucideUsers, lucideWrench })],
@@ -45,6 +46,7 @@ export const routeMeta = {
         <a hlmBtn href="#how-it-works">How the score works</a>
         <a hlmBtn variant="outline" href="https://github.com/angular/angular/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">How to contribute</a>
       </ng-container>
+      <app-find-profile heroAside [top]="board()?.items?.slice(0, 5) ?? []" [total]="board()?.total ?? 0" />
     </app-page-hero>
 
     <app-page-section sectionId="leaderboard" [flush]="true">
@@ -171,7 +173,7 @@ export default class Home {
     computation: (value, previous) => value ?? previous?.value,
   });
 
-  protected readonly description = SITE_DESCRIPTION;
+  protected readonly description = 'The people behind Angular, its CLI and its components, ranked by their contributions since 2014: merged pull requests, issues, comments and code reviews. Thanks to every one of them.';
   protected readonly placeholders = Array.from({ length: 30 }, (_, index) => index);
   protected readonly ways = [
     { title: 'Features', description: 'feat and perf PRs: new APIs, capabilities and speed.', icon: 'lucideRocket', points: PULL_REQUEST_POINTS.feat },
