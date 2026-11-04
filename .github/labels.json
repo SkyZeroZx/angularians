@@ -1,0 +1,22 @@
+[
+  { "name": "bug", "color": "d73a4a", "description": "Something isn't working" },
+  { "name": "feature", "color": "14632e", "description": "A new feature or request" },
+  { "name": "needs triage", "color": "fbca04", "description": "Not looked at yet" },
+  { "name": "needs reproduction", "color": "f9d0c4", "description": "Needs a way to reproduce it" },
+  { "name": "ready for development", "color": "5eb572", "description": "Clear enough to work on" },
+  { "name": "good first issue", "color": "7057ff", "description": "Good for newcomers" },
+  { "name": "help wanted", "color": "008672", "description": "Extra attention is needed" },
+  { "name": "question", "color": "d876e3", "description": "Further information is requested" },
+  { "name": "documentation", "color": "0075ca", "description": "Docs, the README or comments" },
+  { "name": "dependencies", "color": "0366d6", "description": "Updates a dependency" },
+  { "name": "blocked", "color": "b60205", "description": "Waiting on something else first" },
+  { "name": "duplicate", "color": "cfd3d7", "description": "This issue or pull request already exists" },
+  { "name": "invalid", "color": "e4e669", "description": "This doesn't seem right" },
+  { "name": "wontfix", "color": "ffffff", "description": "This will not be worked on" },
+  { "name": "site", "color": "c5def5", "description": "The website: pages, profiles, the leaderboard" },
+  { "name": "collector", "color": "bfdadc", "description": "The nightly collection of contributions" },
+  { "name": "data", "color": "d4c5f9", "description": "A missing contributor, a bot on the board, a wrong country" },
+  { "name": "scoring", "color": "fef2c0", "description": "How the score is counted" },
+  { "name": "accessibility", "color": "1d76db", "description": "Keyboard, screen readers, contrast" },
+  { "name": "design", "color": "e99695", "description": "The look: the brand, the layout, the logo" }
+]

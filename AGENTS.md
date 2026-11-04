@@ -14,6 +14,7 @@ Angularians ranks everyone who has contributed to the Angular repositories: a co
 | `app/src/server` | the API, sign-in (`auth/`), the Angularian card (`card/`), the data store |
 | `data/` | written by the collector; never edit by hand, except to remove a bot from a run |
 | `.github/workflows/collect.yml` | the nightly collection, one job per repository |
+| `.github/labels.json` | the issue labels; `.github/workflows/labels.yml` applies them on main |
 | `docs/` | architecture, scoring |
 
 ## Commands
