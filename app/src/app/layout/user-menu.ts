@@ -1,20 +1,19 @@
-// After nuxt.com's `HeaderUserMenu.vue` (MIT, Copyright (c) 2022-2023 NuxtLabs): signed in, the header's GitHub link and
-// theme button make way for the avatar, and its menu has the profile, the theme and signing out.
+// After nuxt.com's `HeaderUserMenu.vue` (MIT, Copyright (c) 2022-2023 NuxtLabs): signed in, the avatar joins the header's GitHub
+// link and theme button, and its menu has the profile and signing out.
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core'
 import { RouterLink } from '@angular/router'
 import { NgIcon, provideIcons } from '@ng-icons/core'
-import { lucideAward, lucideCheck, lucideLogOut, lucideMoon, lucideSun } from '@ng-icons/lucide'
+import { lucideAward, lucideLogOut } from '@ng-icons/lucide'
 import { HlmPopoverImports } from '@spartan-ng/helm/popover'
 import { AuthService } from '../auth/auth.service'
 import { avatarUrl } from '../leaderboard/format'
-import { ThemeService } from '../theme.service'
 
 const ITEM = 'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm outline-none hover:bg-muted focus-visible:bg-muted'
 
 @Component({
   selector: 'app-user-menu',
   imports: [HlmPopoverImports, NgIcon, RouterLink],
-  providers: [provideIcons({ lucideAward, lucideCheck, lucideLogOut, lucideMoon, lucideSun })],
+  providers: [provideIcons({ lucideAward, lucideLogOut })],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'flex' },
   template: `
@@ -38,16 +37,6 @@ const ITEM = 'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left te
             <p class="px-2 py-1.5 text-sm text-muted-foreground">No contributions on record yet.</p>
           }
           <div class="my-1 h-px bg-border" role="separator"></div>
-          <p class="px-2 pt-1 pb-0.5 text-xs text-muted-foreground">Appearance</p>
-          <button type="button" [class]="item" [attr.aria-pressed]="!theme.dark()" (click)="setTheme('light')">
-            <ng-icon name="lucideSun" aria-hidden="true" /> Light
-            @if (!theme.dark()) { <ng-icon name="lucideCheck" class="ml-auto" aria-hidden="true" /> }
-          </button>
-          <button type="button" [class]="item" [attr.aria-pressed]="theme.dark()" (click)="setTheme('dark')">
-            <ng-icon name="lucideMoon" aria-hidden="true" /> Dark
-            @if (theme.dark()) { <ng-icon name="lucideCheck" class="ml-auto" aria-hidden="true" /> }
-          </button>
-          <div class="my-1 h-px bg-border" role="separator"></div>
           <form method="post" action="/api/auth/logout">
             <button type="submit" [class]="item"><ng-icon name="lucideLogOut" aria-hidden="true" /> Sign out</button>
           </form>
@@ -58,12 +47,7 @@ const ITEM = 'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left te
 })
 export class UserMenu {
   private readonly auth = inject(AuthService)
-  protected readonly theme = inject(ThemeService)
   protected readonly user = computed(() => this.auth.state()?.user ?? null)
   protected readonly item = ITEM
   protected readonly avatar = (githubId: number) => avatarUrl(githubId, 28)
-
-  protected setTheme(theme: 'light' | 'dark'): void {
-    if ((theme === 'dark') !== this.theme.dark()) this.theme.toggle()
-  }
 }
