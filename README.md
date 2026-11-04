@@ -38,7 +38,25 @@ The data is already in `data/`: you do not need a GitHub token to work on the si
 - The last 30 days, the last 12 months, all time and every year, by country, with a globe.
 - A profile for everyone: stats, badges, the packages they contributed to, year by year.
 - Sign in with GitHub to see your rank and badges, share your profile and add your Angularian card to your GitHub README.
+- Link previews for every profile and period, drawn on the server: share a link and it shows your card.
+- Dark and light themes; signed in, a colour picker to try another brand colour on the live site (in your browser only).
 - A public JSON API. How it all fits: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+## Built with
+
+[Angular](https://angular.dev) and [AnalogJS](https://analogjs.org) for the site, server-rendered;
+[spartan/ui](https://spartan.ng) for the components; [Tailwind CSS](https://tailwindcss.com) for the styles;
+[satori](https://github.com/vercel/satori) and [resvg](https://github.com/thx/resvg-js) for the share cards;
+GitHub Actions for the nightly collection, and [Netlify](https://www.netlify.com) to host it all.
+
+<p>
+  <img src="https://img.shields.io/badge/Angular-0F0F11?logo=angular&logoColor=white" alt="Angular">
+  <img src="https://img.shields.io/badge/AnalogJS-0F0F11" alt="AnalogJS">
+  <img src="https://img.shields.io/badge/spartan%2Fui-0F0F11" alt="spartan/ui">
+  <img src="https://img.shields.io/badge/Tailwind_CSS-0F0F11?logo=tailwindcss&logoColor=38BDF8" alt="Tailwind CSS">
+  <img src="https://img.shields.io/badge/TypeScript-0F0F11?logo=typescript&logoColor=3178C6" alt="TypeScript">
+  <img src="https://img.shields.io/badge/Netlify-0F0F11?logo=netlify&logoColor=00C7B7" alt="Netlify">
+</p>
 
 ## The brand
 
@@ -48,7 +66,8 @@ graph on the other, in forest green (`#14632E`, and the brighter `#5EB572` on da
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) and the [Code of Conduct](CODE_OF_CONDUCT.md). Report security problems through
+See [CONTRIBUTING.md](CONTRIBUTING.md) and the [Code of Conduct](CODE_OF_CONDUCT.md). New here? Start with a
+[good first issue](https://github.com/erkamyaman/angularians/labels/good%20first%20issue). Report security problems through
 [SECURITY.md](SECURITY.md).
 
 ## Maintainers
