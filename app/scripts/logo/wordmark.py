@@ -16,7 +16,7 @@ glyphs, cmap, hmtx = f.getGlyphSet(), f.getBestCmap(), f['hmtx']
 CAP = 735                             # Norse's cap height, in font units
 LOGO = 1.75 * CAP                     # the mark's box, as in the site's header
 GAP, TRACK = 0.14 * CAP, 20           # between the mark and the word; between the letters
-BASE = (LOGO + CAP) / 2               # the capitals centred on the mark's box
+BASE = (LOGO + CAP) / 2 + LOGO * .035  # the capitals centred on the mark's bright A half (as on the site)
 
 paths, x = [], LOGO + GAP
 for ch in 'ANGULARIANS':
