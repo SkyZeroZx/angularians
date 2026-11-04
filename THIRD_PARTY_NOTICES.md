@@ -80,7 +80,8 @@ The hero's "Angularians" is set in Norse Bold by Joël Carrouché (https://www.j
 Angularians mark is its capital A. Its free font licence allows personal and commercial use and embedding in web
 pages, but not modifying or sharing the font files. So the font is not in this repository:
 `app/scripts/fetch-fonts.ts` downloads it unmodified from https://www.1001fonts.com/norse-font.html at build time,
-and the site serves it as a web font. The mark uses only the outline of the A (`app/scripts/logo/build.py`).
+and the site serves it as a web font. The mark uses only the outline of the A (`app/scripts/logo/build.py`), and the
+README's wordmark draws the word from its outlines (`app/scripts/logo/wordmark.py`): no font file in either.
 
 ## Data
 
