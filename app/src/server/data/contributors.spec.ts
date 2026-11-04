@@ -68,8 +68,16 @@ describe('ContributorsData', () => {
     expect(data.search('  CHR ').map(item => item.username)).toEqual(['christian'])
     expect(data.search('builder').map(item => item.username)).toEqual(['bob'])
     expect(data.search('t').map(item => item.username)).toEqual(['crisbeto', 'Cristina', 'atscott', 'bob', 'christian'])
-    expect(data.search('', 8)).toEqual([])
-    expect(data.search('c', 1).map(item => item.username)).toEqual(['crisbeto'])
+    expect(data.search('', { limit: 8 })).toEqual([])
+    expect(data.search('c', { limit: 1 }).map(item => item.username)).toEqual(['crisbeto'])
+  })
+
+  it('searches only the selected country', () => {
+    expect(data.search('cris', { country: 'TR' }).map(item => item.username)).toEqual(['Cristina'])
+    expect(data.search('builder', { country: 'TR' }).map(item => item.username)).toEqual(['bob'])
+    expect(data.search('cris', { country: 'BG' }).map(item => item.username)).toEqual(['crisbeto'])
+    expect(data.search('atscott', { country: 'TR' })).toEqual([])
+    expect(data.search('cris', { country: null }).map(item => item.username)).toEqual(['crisbeto', 'Cristina'])
   })
 
   it('counts contributors by country with the best ranked first', () => {

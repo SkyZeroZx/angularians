@@ -117,12 +117,13 @@ export class ContributorsData {
   }
 
   /** All-time contributors by username: prefix matches first, then anywhere in the username or name, by rank. */
-  search(query: string, limit = SEARCH_LIMIT): ContributorSummary[] {
+  search(query: string, { country = null, limit = SEARCH_LIMIT }: { country?: string | null, limit?: number } = {}): ContributorSummary[] {
     const q = query.trim().toLowerCase()
     if (!q) return []
     const prefix: Contributor[] = []
     const other: Contributor[] = []
     for (const row of this.byPeriod.get('all') ?? []) {
+      if (country && this.countryOf(row.githubId) !== country) continue
       const username = row.username.toLowerCase()
       if (username.startsWith(q)) prefix.push(row)
       else if (username.includes(q) || this.profiles.get(row.githubId)?.name?.toLowerCase().includes(q)) other.push(row)

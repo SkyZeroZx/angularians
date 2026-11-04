@@ -68,7 +68,7 @@ export const routeMeta = {
         <app-period-tabs [period]="period()" [periods]="board()?.periods ?? []" (periodChange)="setPeriod($event)" />
         <div class="flex flex-col gap-3 sm:flex-row">
           <app-country-select [countries]="map.value()?.countries ?? []" [value]="country()" (valueChange)="setCountry($event)" />
-          <app-contributor-search [period]="period()" />
+          <app-contributor-search [period]="period()" [country]="country()" />
         </div>
       </div>
 

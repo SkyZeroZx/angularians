@@ -50,7 +50,7 @@ The App's callback URL is `https://angularians.dev/api/auth/callback`.
 | --- | --- |
 | `GET /api/contributors?period=12m&country=TR&page=1` | One page (100) of the leaderboard |
 | `GET /api/contributors/:username` | A profile: all-time stats, rank in each period, links |
-| `GET /api/search/contributors?q=cris` | Up to 8 contributors |
+| `GET /api/search/contributors?q=cris&country=TR` | Up to 8 contributors, of that country if given |
 | `GET /api/map/contributors?period=all` | Contributors by country |
 | `GET /:username/card.png?period=2025` | The Angularian card, 1200×630: the README card and the profile's link preview |
 | `GET /og.png?period=2025` | The home page's link preview, 1200×630: all time, or the top of a period |

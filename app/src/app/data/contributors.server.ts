@@ -14,6 +14,6 @@ export const getLeaderboard = serverFn(LeaderboardInput, ({ period, country, pag
 /** `null` when the username has no contribution: the page shows "not found". */
 export const getContributor = serverFn(ContributorInput, ({ username }) => contributorsData().profile(username))
 
-export const searchContributors = serverFn(SearchInput, ({ q }) => contributorsData().search(q))
+export const searchContributors = serverFn(SearchInput, ({ q, country }) => contributorsData().search(q, { country }))
 
 export const getContributorsMap = serverFn(MapInput, ({ period }) => contributorsData().map(period))

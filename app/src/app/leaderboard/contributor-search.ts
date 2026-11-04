@@ -1,9 +1,9 @@
 // Ported from nuxt.com `app/components/nuxters/NuxtersSearch.vue` (MIT, Copyright (c) 2022-2023 NuxtLabs).
 import { DOCUMENT } from '@angular/common'
-import { Component, DestroyRef, effect, ElementRef, inject, input, signal, viewChild } from '@angular/core'
+import { Component, computed, DestroyRef, effect, ElementRef, inject, input, signal, viewChild } from '@angular/core'
 import { Router } from '@angular/router'
 import { injectServerFnMutation } from '@analogjs/router'
-import type { ContributorSummary, Period } from '@angularians/shared'
+import { countryName, type ContributorSummary, type Period } from '@angularians/shared'
 import { HlmAutocompleteImports } from '@spartan-ng/helm/autocomplete'
 import { HlmKbd } from '@spartan-ng/helm/kbd'
 import { searchContributors } from '../data/contributors.server'
@@ -11,7 +11,7 @@ import { avatarUrl, formatNumber, formatPoints, profileQuery } from './format'
 
 const DEBOUNCE_MS = 200
 
-/** Search everyone, all time. Nothing loads until you type; `/` focuses it. */
+/** Search everyone, all time, in the selected country if there is one. Nothing loads until you type; `/` focuses it. */
 @Component({
   selector: 'app-contributor-search',
   imports: [HlmAutocompleteImports, HlmKbd],
@@ -24,7 +24,7 @@ const DEBOUNCE_MS = 200
         }
       </hlm-autocomplete-input>
       <hlm-autocomplete-content *hlmAutocompletePortal>
-        <hlm-autocomplete-empty>{{ term().trim() && !loading() ? 'Nobody found' : 'Type a GitHub username' }}</hlm-autocomplete-empty>
+        <hlm-autocomplete-empty>{{ term().trim() && !loading() ? nobodyFound() : 'Type a GitHub username' }}</hlm-autocomplete-empty>
         <div hlmAutocompleteList aria-label="Contributors">
           @for (item of results(); track item.githubId) {
             <hlm-autocomplete-item [value]="item">
@@ -41,6 +41,7 @@ const DEBOUNCE_MS = 200
 export class ContributorSearch {
   /** The profile opens on this period. */
   readonly period = input.required<Period>()
+  readonly country = input<string | null>(null)
 
   private readonly router = inject(Router)
   private readonly document = inject(DOCUMENT)
@@ -51,6 +52,10 @@ export class ContributorSearch {
   protected readonly term = signal('')
   protected readonly results = signal<ContributorSummary[]>([])
   protected readonly loading = signal(false)
+  protected readonly nobodyFound = computed(() => {
+    const country = this.country()
+    return country ? `Nobody found in ${countryName(country)}` : 'Nobody found'
+  })
   protected readonly username = (item: ContributorSummary | null) => item?.username ?? ''
   protected readonly avatar = (item: ContributorSummary) => avatarUrl(item.githubId, 24)
   protected readonly rank = (item: ContributorSummary) => formatNumber(item.rank)
@@ -62,6 +67,7 @@ export class ContributorSearch {
     // One request per pause in typing; a slower, older answer never replaces a newer one.
     effect((onCleanup) => {
       const query = this.term().trim()
+      const country = this.country()
       const current = ++this.request
       if (!query) {
         this.results.set([])
@@ -71,7 +77,7 @@ export class ContributorSearch {
       this.loading.set(true)
       const timer = setTimeout(async () => {
         // On an error, no results rather than stale ones.
-        const items = await this.search({ q: query }).catch(() => [])
+        const items = await this.search({ q: query, country }).catch(() => [])
         if (current !== this.request) return
         this.results.set(items)
         this.loading.set(false)

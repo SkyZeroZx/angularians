@@ -17,7 +17,10 @@ export const LeaderboardInput = v.object({
 export type LeaderboardInput = v.InferInput<typeof LeaderboardInput>
 
 export const ContributorInput = v.object({ username: UsernameSchema })
-export const SearchInput = v.object({ q: v.pipe(v.string(), v.trim(), v.maxLength(100)) })
+export const SearchInput = v.object({
+  q: v.pipe(v.string(), v.trim(), v.maxLength(100)),
+  country: v.optional(v.nullable(CountrySchema), null),
+})
 export const MapInput = v.object({ period: v.optional(PeriodSchema, DEFAULT_PERIOD) })
 
 /** Query strings are strings: `?page=2` → `2`. Anything else stays as is for the schema to reject. */
