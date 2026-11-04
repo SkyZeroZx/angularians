@@ -3,7 +3,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core'
 import { RouterLink } from '@angular/router'
 import { NgIcon, provideIcons } from '@ng-icons/core'
-import { lucideArrowRight, lucideAward, lucideCircleDot, lucideGitPullRequest, lucideGithub, lucideInfo, lucideMessageCircleHeart } from '@ng-icons/lucide'
+import { lucideArrowRight, lucideAward, lucideCircleDot, lucideGitPullRequest, lucideInfo, lucideMessageCircleHeart } from '@ng-icons/lucide'
+import { simpleGithub } from '@ng-icons/simple-icons'
 import { HlmButton } from '@spartan-ng/helm/button'
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton'
 import { HlmTooltip } from '@spartan-ng/helm/tooltip'
@@ -27,7 +28,7 @@ const SIGNED_OUT = 'min-h-64 lg:min-h-80'
 @Component({
   selector: 'app-me-card',
   imports: [AngularLogo, HlmButton, HlmSkeleton, HlmTooltip, NgIcon, RouterLink, ScoreDialog, Share],
-  providers: [provideIcons({ lucideArrowRight, lucideAward, lucideCircleDot, lucideGitPullRequest, lucideGithub, lucideInfo, lucideMessageCircleHeart })],
+  providers: [provideIcons({ lucideArrowRight, lucideAward, lucideCircleDot, lucideGitPullRequest, lucideInfo, lucideMessageCircleHeart, simpleGithub })],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block w-full' },
   template: `
@@ -121,7 +122,7 @@ const SIGNED_OUT = 'min-h-64 lg:min-h-80'
       <!-- Signed out, or not known yet (and not signed in last time): the sign-in, at once -->
       <section [class]="card + ' ' + signedOut" aria-labelledby="me-card-title">
         <div class="my-auto flex flex-col items-center gap-4 text-center">
-          <ng-icon name="lucideGithub" size="2rem" aria-hidden="true" />
+          <ng-icon name="simpleGithub" size="2rem" aria-hidden="true" />
           <p id="me-card-title" class="text-lg font-medium">Discover your contributions</p>
           <p class="-mt-2 max-w-sm text-muted-foreground">
             @if (state()?.enabled !== false) {
@@ -132,7 +133,7 @@ const SIGNED_OUT = 'min-h-64 lg:min-h-80'
           </p>
           @if (state()?.enabled !== false) {
             <a hlmBtn class="bg-foreground text-background hover:bg-foreground/90" [href]="loginUrl">
-              <ng-icon name="lucideGithub" aria-hidden="true" /> Sign in with GitHub
+              <ng-icon name="simpleGithub" aria-hidden="true" /> Sign in with GitHub
             </a>
           }
         </div>
