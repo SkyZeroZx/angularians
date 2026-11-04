@@ -32,7 +32,7 @@ const ITEM = 'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left te
           <div class="my-1 h-px bg-border" role="separator"></div>
           @if (me.angularian; as person) {
             <a [class]="item" [routerLink]="['/', person.username]" (click)="ctx.close()">
-              <ng-icon name="lucideAward" aria-hidden="true" /> My Angularian profile
+              <ng-icon name="lucideAward" aria-hidden="true" /> My <span class="brand">Angularian</span> profile
             </a>
           } @else {
             <p class="px-2 py-1.5 text-sm text-muted-foreground">No contributions on record yet.</p>

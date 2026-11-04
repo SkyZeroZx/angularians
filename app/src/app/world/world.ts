@@ -8,7 +8,7 @@ import { lucideArrowUp, lucideX } from '@ng-icons/lucide';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import { HlmTooltip } from '@spartan-ng/helm/tooltip';
-import { avatarUrl, flagUrl, formatNumber, plural } from '../leaderboard/format';
+import { avatarUrl, flagUrl, formatNumber } from '../leaderboard/format';
 import { Globe } from './globe';
 
 /** People shown on the card of a country. */
@@ -27,7 +27,7 @@ const CARD_TILES = 12;
           <img [src]="flag(shown.code)" alt="" width="40" height="40" class="size-10 shrink-0" />
           <div class="min-w-0 flex-1">
             <p class="truncate font-semibold">{{ name(shown.code) }}</p>
-            <p class="text-sm text-muted-foreground">{{ count(shown.count) }} · #{{ rankOf(shown.code) }} country</p>
+            <p class="text-sm text-muted-foreground">{{ number(shown.count) }} <span class="brand">{{ shown.count === 1 ? 'Angularian' : 'Angularians' }}</span> · #{{ rankOf(shown.code) }} country</p>
           </div>
           <button hlmBtn variant="ghost" size="icon-sm" type="button" aria-label="Show all countries" (click)="select.emit(null)">
             <ng-icon name="lucideX" aria-hidden="true" />
@@ -47,7 +47,7 @@ const CARD_TILES = 12;
           }
         </ul>
         <button hlmBtn variant="link" class="mt-3 px-0 text-muted-foreground hover:text-foreground" type="button" (click)="leaderboard.emit()">
-          See {{ shown.count === 1 ? 'the Angularian' : 'the ' + number(shown.count) + ' Angularians' }} from {{ name(shown.code) }}
+          See the {{ shown.count === 1 ? '' : number(shown.count) + ' ' }}<span class="brand">{{ shown.count === 1 ? 'Angularian' : 'Angularians' }}</span> from {{ name(shown.code) }}
           <ng-icon name="lucideArrowUp" aria-hidden="true" />
         </button>
       </div>
@@ -90,7 +90,7 @@ const CARD_TILES = 12;
         }
       </ol>
       <p class="text-xs text-muted-foreground">
-        From the location on each GitHub profile, matched to a country: {{ number(map().located) }} of {{ number(map().total) }} Angularians set one.
+        From the location on each GitHub profile, matched to a country: {{ number(map().located) }} of {{ number(map().total) }} <span class="brand">Angularians</span> set one.
       </p>
     </div>
 
@@ -140,7 +140,6 @@ export class World {
 
   protected readonly name = countryName;
   protected readonly number = formatNumber;
-  protected readonly count = (value: number) => plural(value, 'Angularian', 'Angularians');
   protected readonly flag = flagUrl;
   protected readonly avatar = (person: ContributorSummary) => avatarUrl(person.githubId, 56);
   protected readonly rankOf = (code: string) => this.map().countries.findIndex(item => item.code === code) + 1;

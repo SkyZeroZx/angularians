@@ -102,11 +102,11 @@ const SIGNED_OUT = 'min-h-64 lg:min-h-80'
                 </span>
               } @else {
                 <span class="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-0.5 text-sm font-medium text-primary">
-                  <ng-icon name="lucideAward" aria-hidden="true" />{{ badge }}
+                  <ng-icon name="lucideAward" aria-hidden="true" /><span [class.brand]="badge === 'Angularian'">{{ badge }}</span>
                 </span>
               }
             } @empty {
-              <p class="text-sm text-muted-foreground">One merged PR, helpful issue or helpful comment unlocks the Angularian badge.</p>
+              <p class="text-sm text-muted-foreground">One merged PR, helpful issue or helpful comment unlocks the <span class="brand">Angularian</span> badge.</p>
             }
           </div>
 
@@ -126,9 +126,9 @@ const SIGNED_OUT = 'min-h-64 lg:min-h-80'
           <p id="me-card-title" class="text-lg font-medium">Discover your contributions</p>
           <p class="-mt-2 max-w-sm text-muted-foreground">
             @if (state()?.enabled !== false) {
-              Sign in with GitHub to see your score, share your Angularian profile and unlock your badges.
+              Sign in with GitHub to see your score, share your <span class="brand">Angularian</span> profile and unlock your badges.
             } @else {
-              Sign-in with GitHub is coming soon: your score, your Angularian profile to share, and your badges.
+              Sign-in with GitHub is coming soon: your score, your <span class="brand">Angularian</span> profile to share, and your badges.
             }
           </p>
           @if (state()?.enabled !== false) {

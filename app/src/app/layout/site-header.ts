@@ -19,7 +19,7 @@ import { AuthService } from '../auth/auth.service';
     <app-container class="flex h-16 items-center gap-4">
       <a routerLink="/" class="flex items-center gap-2 font-semibold tracking-tight">
         <app-logo-mark class="size-6" animated />
-        <span>Angularians</span>
+        <span class="brand text-[1.35em] text-brand-from">Angularians</span>
       </a>
       <nav class="ml-auto flex items-center gap-1" aria-label="Site">
         <!-- As on nuxt.com: signed in, the avatar and its menu (the theme is in it); signed out, GitHub and the theme -->

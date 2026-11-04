@@ -74,6 +74,14 @@ The gradient Angular icon on the Angular team badge (`app/src/app/layout/angular
 kit, https://angular.dev/press-kit: © Google, CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). It is used
 unchanged and only to show membership of the Angular team; the Angularians mark is our own.
 
+## Norse
+
+The hero's "Angularians" is set in Norse Bold by Joël Carrouché (https://www.joelcarrouche.net), and the A of the
+Angularians mark is its capital A. Its free font licence allows personal and commercial use and embedding in web
+pages, but not modifying or sharing the font files. So the font is not in this repository:
+`app/scripts/fetch-fonts.ts` downloads it unmodified from https://www.1001fonts.com/norse-font.html at build time,
+and the site serves it as a web font. The mark uses only the outline of the A (`app/scripts/logo/build.py`).
+
 ## Data
 
 - Country names and coordinates: [GeoNames](https://www.geonames.org), CC BY 4.0.

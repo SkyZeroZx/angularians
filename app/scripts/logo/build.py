@@ -1,52 +1,60 @@
-"""Builds the Angularians mark as one flat path from its construction, with real boolean operations.
+"""Builds the Angularians mark as flat paths from its construction, with real boolean operations.
 
   pip install shapely
   python3 build.py regular   # the header logo (24px and up): app/src/app/layout/logo-mark.ts
-  python3 build.py small     # the favicon (16px): a wider stripe and gap so they stay a full pixel: app/public/favicon.svg
-  python3 build.py regular --parts   # JSON: the piece with the A and the wing apart, and how far each one moved
+  python3 build.py small     # the favicon (16px) and the cards: a wider rim gap so it stays a full pixel
+  python3 build.py regular --parts   # JSON: the rim and the body apart, for the animation
 
 Prints the path data (`d`) of the mark in a 24 x 24 view box.
+
+The mark: the Angular shield as a Viking one, an iron rim with rivets and boards inside, and the capital A of Norse Bold cut through it
+from the tip of the shield out through its bottom, like the A of the Angular logo.
 """
-import math, sys
-from shapely.geometry import Polygon
+import sys
+from shapely.geometry import LineString, Polygon, box
 from shapely.ops import unary_union
 from shapely import affinity
 
 VARIANT = sys.argv[1] if len(sys.argv) > 1 else 'regular'
-# stripe: the red strip between the A's right leg and the cut; gap: between the two pieces (both perpendicular).
-P = {'regular': dict(stripe=1.4, gap=1.1, sw=3.2), 'small': dict(stripe=1.75, gap=1.6, sw=3.5)}[VARIANT]
+# rim: the width of the iron rim; gap: between the rim and the boards, and between the boards; rivets: how many
+# along the rim, and their radius (all in design units). The small variant has fewer, bigger rivets and wider gaps.
+P = {'regular': dict(rim=1.2, gap=.26, rivets=22, rivet=.24), 'small': dict(rim=1.35, gap=.36, rivets=16, rivet=.3)}[VARIANT]
+BOARDS = (8, 13, 18)                                 # design y of the gaps between the boards
 
 SHIELD = Polygon([(12, .8), (22.6, 4.6), (21, 18.4), (12, 23.4), (3, 18.4), (1.4, 4.6)]).buffer(.5, join_style='round', quad_segs=8)
-K = 6.9 / 14.6                                     # slope of the A's legs (dx per dy)
-s = math.hypot(1, K); n = (1 / s, -K / s)          # unit normal of the cut, pointing right
-STEP, FOOT = 1.8, 26
-cx = lambda y: 12 + (y - .8) * K                   # the cut: parallel to the right leg, through the shield's apex
-left_side = Polygon([(-10, -10), (cx(-10), -10), (cx(40), 40), (-10, 40)])
-right_side = Polygon([(cx(-10), -10), (40, -10), (40, 40), (cx(40), 40)])
-extra = P['gap'] - K * STEP / s                    # the step already opens part of the gap
-dl = (-n[0] * extra / 2, -n[1] * extra / 2 + STEP / 2)
-dr = (n[0] * extra / 2, n[1] * extra / 2 - STEP / 2)
 
-# The fit into the 24 box (1-unit margin) depends only on the shield pieces, so work it out first...
-outline = unary_union([affinity.translate(SHIELD.intersection(left_side), *dl), affinity.translate(SHIELD.intersection(right_side), *dr)])
-minx, miny, maxx, maxy = outline.bounds
+# The capital A of Norse Bold by Joel Carrouche (free for commercial use; the font itself is not in this repository),
+# its outline in font units, y up. Under its crossbar the feet are cut off and the legs go on straight, out
+# through the bottom of the shield.
+A_RINGS = [[(279, 205), (287, 172), (296, 166), (288, 156), (292, 128), (305, 2), (322, -7), (335, -7), (409, 17), (398, 60), (383, 76), (389, 84), (379, 147), (354, 240), (354, 254), (306, 495), (294, 504), (301, 522), (269, 675), (265, 685), (262, 693), (263, 728), (246, 736), (164, 732), (154, 669), (145, 627), (138, 587), (149, 572), (131, 551), (101, 417), (101, 399), (95, 378), (92, 359), (72, 236), (73, 216), (62, 205), (52, 142), (25, 20), (60, -2), (122, -8), (133, 59), (126, 87), (135, 98), (146, 169), (166, 177), (175, 181), (242, 197), (262, 211), (263, 211), (277, 213), (279, 205)], [(187, 434), (182, 450), (192, 455), (212, 577), (227, 471), (231, 453), (235, 401), (255, 293), (227, 286), (162, 266), (163, 273), (175, 338), (174, 337), (187, 434)]]
+CLIP, LONG = 130, -900
+glyph = Polygon(A_RINGS[0], holes=A_RINGS[1:]).intersection(box(-100, CLIP, 600, 900))
+legs = [Polygon([(50, CLIP), (141, CLIP), (141 + .163 * (LONG - CLIP), LONG), (50 + .178 * (LONG - CLIP), LONG)]),
+        Polygon([(290, CLIP), (383, CLIP), (383 - .21 * (LONG - CLIP), LONG), (290 - .21 * (LONG - CLIP), LONG)])]
+A = affinity.scale(unary_union([glyph, *legs]), 1, -1, origin=(0, 0))
+TOP, BAR = -.4, 15                                   # design y of the A's top (above the tip) and of its crossbar
+sa = (BAR - TOP) / (736 - 230)
+A = affinity.scale(A, sa, sa, origin=(0, 0))
+A = affinity.translate(A, 0, TOP + 736 * sa)
+upper = A.intersection(box(-50, -50, 50, 18)).bounds  # centre it on the shield by its part above the bottom
+A = affinity.translate(A, 12 - (upper[0] + upper[2]) / 2, 0)
+
+body = SHIELD.buffer(-P['rim'], join_style='mitre')
+rim = SHIELD.difference(body.buffer(P['gap'] / 2, join_style='mitre')).difference(A)
+inside = body.buffer(-P['gap'] / 2, join_style='mitre').difference(A)
+inside = inside.difference(unary_union([LineString([(-5, y), (30, y)]).buffer(P['gap'] / 2, cap_style='flat') for y in BOARDS]))
+# Rivets along the middle of the rim, but only where they sit whole on it (none at the A).
+middle = SHIELD.buffer(-P['rim'] / 2 + .02, join_style='mitre').exterior
+dots = [middle.interpolate(i / P['rivets'], normalized=True).buffer(P['rivet'], quad_segs=4) for i in range(P['rivets'])]
+safe = rim.buffer(-.12)
+rim = rim.difference(unary_union([d for d in dots if safe.contains(d)]))
+clean = lambda g: unary_union([p for p in getattr(g, 'geoms', [g]) if p.area > .35])
+rim, inside = clean(rim), clean(inside)
+
+# Fit into the 24 box with a 1-unit margin, by the shield's height.
+minx, miny, maxx, maxy = SHIELD.bounds
 sc = 22 / (maxy - miny)
 fit = lambda g: affinity.translate(affinity.scale(g, sc, sc, origin=(0, 0)), 12 - sc * (minx + maxx) / 2, 1 - sc * miny)
-to_design = lambda y_final: (y_final - (1 - sc * miny)) / sc - dl[1]   # a final y on the left piece -> design y
-
-# ...then place the crossbar on whole pixels of the final grid (the left piece holds the A): 15 to 17 at 24px.
-BAR_TOP, BAR_BOTTOM = to_design(15), to_design(17)
-AY = .8 + P['stripe'] * s / K                      # the apex sits so the stripe has its width at the top
-SW = P['sw']
-ox = lambda y: (y - AY) * K
-ix = lambda y: ox(y) - SW
-A = Polygon([(12, AY), (12 + ox(FOOT), FOOT), (12 + ix(FOOT), FOOT), (12 + ix(BAR_BOTTOM), BAR_BOTTOM),
-             (12 - ix(BAR_BOTTOM), BAR_BOTTOM), (12 - ix(FOOT), FOOT), (12 - ox(FOOT), FOOT)],
-            holes=[[(12, AY + SW / K), (12 - ix(BAR_TOP), BAR_TOP), (12 + ix(BAR_TOP), BAR_TOP)]])
-
-piece = affinity.translate(SHIELD.difference(A).intersection(left_side), *dl)
-wing = affinity.translate(SHIELD.intersection(right_side), *dr)
-mark = fit(unary_union([piece, wing]))
 
 def ring(coords):
     pts = list(coords)[:-1]
@@ -58,10 +66,9 @@ def path(g):
 
 if '--parts' in sys.argv:
     import json
-    # Each part in its final place, and the move (final units) that took it there from the whole shield.
-    print(json.dumps({'piece': path(fit(piece)), 'wing': path(fit(wing)),
-                      'pieceMove': [round(dl[0] * sc, 3), round(dl[1] * sc, 3)], 'wingMove': [round(dr[0] * sc, 3), round(dr[1] * sc, 3)]}))
+    print(json.dumps({'rim': path(fit(rim)), 'body': path(fit(inside))}))
 else:
+    mark = fit(unary_union([rim, inside]))
     d = path(mark)
-    print(f'{VARIANT}: bounds={tuple(round(v, 2) for v in mark.bounds)} apex={AY:.2f} chars={len(d)}', file=sys.stderr)
+    print(f'{VARIANT}: bounds={tuple(round(v, 2) for v in mark.bounds)} chars={len(d)}', file=sys.stderr)
     print(d)
