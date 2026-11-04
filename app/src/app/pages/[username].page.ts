@@ -1,7 +1,7 @@
 // Ported from nuxt.com `app/pages/nuxters/[username].vue` (MIT, Copyright (c) 2022-2023 NuxtLabs).
 // Without the Nuxt-only parts: modules, blog posts, hackathons, the share card and the signed-in owner view.
 import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { Router, RouterLink } from '@angular/router';
 import { injectServerFn, type RouteMeta } from '@analogjs/router';
@@ -75,7 +75,6 @@ export function yearRanges(years: readonly number[]): string {
     simpleBluesky, simpleFacebook, simpleGithub, simpleInstagram, simpleMastodon, simpleNpm, simpleReddit, simpleThreads, simpleTwitch, simpleX,
     simpleYoutube, ...PACKAGE_ICONS,
   })],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'relative block isolate' },
   template: `
     <app-container class="pt-8">

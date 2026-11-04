@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideFileText, lucideGlobe } from '@ng-icons/lucide';
@@ -16,7 +16,6 @@ interface FooterLink { label: string; href: string; route?: boolean; icon?: stri
   selector: 'app-site-footer',
   imports: [Container, LogoMark, NgIcon, RouterLink],
   providers: [provideIcons({ lucideFileText, lucideGlobe, simpleGithub, simpleNuxt })],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   host: { role: 'contentinfo', class: 'block border-t' },
   template: `
     <app-container class="block py-12 text-sm">

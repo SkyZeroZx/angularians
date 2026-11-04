@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
 
 let nextId = 0;
 
@@ -9,7 +9,6 @@ let nextId = 0;
  */
 @Component({
   selector: 'app-angular-logo',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'inline-block shrink-0' },
   template: `
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 223 236" class="size-full" aria-hidden="true">

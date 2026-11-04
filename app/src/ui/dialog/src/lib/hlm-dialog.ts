@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, forwardRef } from "@angular/core";
+import { Component, forwardRef } from "@angular/core";
 import {
   BrnDialog,
   provideBrnDialogDefaultOptions,
@@ -18,7 +18,6 @@ import { HlmDialogOverlay } from "./hlm-dialog-overlay";
       // add custom options here
     }),
   ],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <hlm-dialog-overlay />
     <ng-content />

@@ -1,6 +1,6 @@
 // Ported from nuxt.com `app/components/nuxters/NuxtersWorld.vue` (MIT, Copyright (c) 2022-2023 NuxtLabs).
 import { isPlatformBrowser, NgTemplateOutlet } from '@angular/common';
-import { afterNextRender, ChangeDetectionStrategy, Component, computed, DestroyRef, ElementRef, inject, input, output, PLATFORM_ID, signal, viewChild } from '@angular/core';
+import { afterNextRender, Component, computed, DestroyRef, ElementRef, inject, input, output, PLATFORM_ID, signal, viewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { countryName, type ContributorsMap, type ContributorSummary, type CountryStats } from '@angularians/shared';
 import { NgIcon, provideIcons } from '@ng-icons/core';
@@ -18,7 +18,6 @@ const CARD_TILES = 12;
   selector: 'app-world',
   imports: [Globe, HlmButton, HlmSkeleton, HlmTooltip, NgIcon, NgTemplateOutlet, RouterLink],
   providers: [provideIcons({ lucideArrowUp, lucideX })],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] lg:gap-12' },
   template: `
     <ng-template #card let-shown>

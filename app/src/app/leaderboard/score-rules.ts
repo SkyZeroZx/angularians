@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core'
+import { Component } from '@angular/core'
 import { ACTIVITY_POINTS, PULL_REQUEST_POINTS } from '@angularians/shared'
 import { NgIcon, provideIcons } from '@ng-icons/core'
 import { lucideBookOpen, lucideBrushCleaning, lucideRocket, lucideWrench } from '@ng-icons/lucide'
@@ -10,7 +10,6 @@ import { HlmDialogImports } from '@spartan-ng/helm/dialog'
   selector: 'app-score-rules',
   imports: [HlmButton, HlmDialogImports, NgIcon],
   providers: [provideIcons({ lucideBookOpen, lucideBrushCleaning, lucideRocket, lucideWrench })],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'contents' },
   template: `
     <hlm-dialog>

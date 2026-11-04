@@ -1,6 +1,6 @@
 // Ported from nuxt.com `app/components/nuxters/NuxtersSearch.vue` (MIT, Copyright (c) 2022-2023 NuxtLabs).
 import { DOCUMENT } from '@angular/common'
-import { ChangeDetectionStrategy, Component, DestroyRef, effect, ElementRef, inject, input, signal, viewChild } from '@angular/core'
+import { Component, DestroyRef, effect, ElementRef, inject, input, signal, viewChild } from '@angular/core'
 import { Router } from '@angular/router'
 import { injectServerFnMutation } from '@analogjs/router'
 import type { ContributorSummary, Period } from '@angularians/shared'
@@ -15,7 +15,6 @@ const DEBOUNCE_MS = 200
 @Component({
   selector: 'app-contributor-search',
   imports: [HlmAutocompleteImports, HlmKbd],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <hlm-autocomplete [search]="term()" (searchChange)="term.set($event ?? '')" (valueChange)="open($event)" [itemToString]="username" class="w-full sm:w-64">
       <label [for]="inputId" class="sr-only">Search a contributor</label>

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import type { RouteMeta } from '@analogjs/router';
 import { injectResponse } from '@analogjs/router/tokens';
@@ -13,7 +13,6 @@ export const routeMeta = {
 @Component({
   selector: 'app-not-found',
   imports: [HlmButton, PageSection, RouterLink],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-page-section title="Page not found" description="This page does not exist.">
       <a hlmBtn routerLink="/">Back to the leaderboard</a>

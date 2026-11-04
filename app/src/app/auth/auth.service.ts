@@ -1,6 +1,6 @@
 import { DOCUMENT, isPlatformBrowser } from '@angular/common'
 import { injectRequest } from '@analogjs/router/tokens'
-import { inject, Injectable, PLATFORM_ID, signal } from '@angular/core'
+import { inject, PLATFORM_ID, signal, Service } from '@angular/core'
 import type { SignedIn } from '../../server/auth/session'
 import { hasSignedInHint } from './hint'
 
@@ -8,7 +8,7 @@ import { hasSignedInHint } from './hint'
  * Who is signed in, asked in the browser only: pages are cached for everyone, so they never carry it.
  * `null` until known (and on the server).
  */
-@Injectable({ providedIn: 'root' })
+@Service()
 export class AuthService {
   readonly state = signal<SignedIn | null>(null)
   /**

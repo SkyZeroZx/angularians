@@ -1,6 +1,6 @@
 // Ported from nuxt.com `app/pages/nuxters/index.vue` (MIT, Copyright (c) 2022-2023 NuxtLabs).
 import { DOCUMENT } from '@angular/common';
-import { afterRenderEffect, ChangeDetectionStrategy, Component, computed, effect, inject, linkedSignal, untracked } from '@angular/core';
+import { afterRenderEffect, Component, computed, effect, inject, linkedSignal, untracked } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { injectServerFn, type RouteMeta } from '@analogjs/router';
@@ -42,7 +42,6 @@ export const routeMeta = {
     PageGrid, PageHero, PageSection, PeriodTabs, World,
   ],
   providers: [provideIcons({ lucideBookOpen, lucideCalendar, lucideCircleDot, lucideGitPullRequest, lucideMessageCircle, lucideMessageCircleHeart, lucideMessagesSquare, lucideUsers })],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-page-hero>
       <span heroHeadline hlmBadge variant="secondary" class="mb-4">Updated every day</span>

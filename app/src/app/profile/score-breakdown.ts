@@ -1,6 +1,6 @@
 // Ported from nuxt.com `app/components/nuxters/NuxtersScoreBreakdown.vue` (MIT, Copyright (c) 2022-2023 NuxtLabs).
 // Inline instead of a modal, and no core bonus.
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core'
+import { Component, computed, input } from '@angular/core'
 import { scoreBreakdown, type ScoredStats } from '@angularians/shared'
 import { NgIcon, provideIcons } from '@ng-icons/core'
 import {
@@ -32,7 +32,6 @@ const ICONS: Record<string, string> = {
     lucideBookOpen, lucideBrushCleaning, lucideCircleDot, lucideFileCode, lucideLightbulb, lucideMessageCircle, lucideMessageCircleHeart,
     lucideRocket, lucideSmilePlus, lucideWrench,
   })],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ul class="flex flex-col gap-4">
       @for (row of rows(); track row.key) {

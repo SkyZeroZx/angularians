@@ -1,5 +1,5 @@
 // Ported from nuxt.com `app/components/nuxters/NuxtersLeaderboard.vue` (MIT, Copyright (c) 2022-2023 NuxtLabs).
-import { ChangeDetectionStrategy, Component, computed, inject, Injectable, input, linkedSignal, signal } from '@angular/core'
+import { Component, computed, inject, input, linkedSignal, signal, Service } from '@angular/core'
 import { RouterLink } from '@angular/router'
 import { injectServerFnMutation } from '@analogjs/router'
 import type { ContributorSummary, LeaderboardPage } from '@angularians/shared'
@@ -15,7 +15,7 @@ const AVATAR_SIZE = 112
 
 /** The first page comes server-rendered; "Show more" loads the next ones. */
 /** The extra pages of each board, for as long as the tab is open: a board is its period, country and data night. */
-@Injectable({ providedIn: 'root' })
+@Service()
 export class LeaderboardMemory {
   private readonly pages = new Map<string, ContributorSummary[]>()
   private key(page: LeaderboardPage): string {
@@ -33,7 +33,6 @@ export class LeaderboardMemory {
   selector: 'app-leaderboard-grid',
   imports: [HlmButton, HlmTooltip, NgIcon, RouterLink],
   providers: [provideIcons({ lucidePlus })],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ol class="grid grid-cols-5 gap-3 sm:grid-cols-8 sm:gap-4 md:grid-cols-10" [attr.aria-label]="label()">
       @for (item of items(); track item.githubId) {

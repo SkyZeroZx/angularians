@@ -1,5 +1,5 @@
 // Ported from nuxt.com `app/components/nuxters/NuxtersPeriodTabs.vue` (MIT, Copyright (c) 2022-2023 NuxtLabs).
-import { ChangeDetectionStrategy, Component, computed, input, linkedSignal, output } from '@angular/core'
+import { Component, computed, input, linkedSignal, output } from '@angular/core'
 import { periodPhrase, type Period } from '@angularians/shared'
 import { HlmSelectImports } from '@spartan-ng/helm/select'
 import { HlmTabsImports } from '@spartan-ng/helm/tabs'
@@ -12,7 +12,6 @@ const RANK = new Intl.NumberFormat('en-US')
 @Component({
   selector: 'app-period-tabs',
   imports: [HlmSelectImports, HlmTabsImports],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   // One pill: the tabs, then the year picker inside it (Nuxters).
   host: { class: 'inline-flex max-w-full items-center rounded-lg bg-muted p-[3px]' },
   template: `

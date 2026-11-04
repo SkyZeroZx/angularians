@@ -1,5 +1,5 @@
 // Ported from nuxt.com `app/components/nuxters/NuxtersShare.vue` (MIT, Copyright (c) 2022-2023 NuxtLabs).
-import { ChangeDetectionStrategy, Component, computed, input, linkedSignal, signal } from '@angular/core'
+import { Component, computed, input, linkedSignal, signal } from '@angular/core'
 import { periodLabel, periodPhrase, sortPeriods, type Period } from '@angularians/shared'
 import { NgIcon, provideIcons } from '@ng-icons/core'
 import { lucideCheck, lucideCopy, lucideIdCard, lucideImageOff, lucideLink } from '@ng-icons/lucide'
@@ -19,7 +19,6 @@ const query = (period?: Period) => (!period || period === 'all' ? '' : `?period=
   selector: 'app-share',
   imports: [HlmButton, HlmDialogImports, HlmSelectImports, HlmSkeleton, NgIcon],
   providers: [provideIcons({ lucideCheck, lucideCopy, lucideIdCard, lucideImageOff, lucideLink })],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'flex flex-wrap items-center gap-2' },
   template: `
     <button hlmBtn variant="secondary" size="sm" type="button" (click)="copyLink()">

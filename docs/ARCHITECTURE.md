@@ -16,6 +16,10 @@ into `data/` and commits it; that commit deploys the site. Details: [collector/R
 
 ## Site
 
+Angular 22 uses OnPush change detection and standalone components by default; omit explicit declarations of those defaults.
+Root services use `@Service()` (available since Angular 22.1), which preserves the application-wide, tree-shakable scope of
+`@Injectable({ providedIn: 'root' })`. Keep manual providers when they configure a dependency or give it a local scope.
+
 Every page is server-rendered on Netlify by one function (Nitro's `netlify` preset, configured in [`netlify.toml`](../netlify.toml));
 static assets go to the CDN. Pages and API responses are cached by the CDN for an hour, and each deploy clears that cache.
 
