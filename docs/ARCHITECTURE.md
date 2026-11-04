@@ -47,3 +47,4 @@ The App's callback URL is `https://angularians.netlify.app/api/auth/callback`.
 | `GET /api/search/contributors?q=cris` | Up to 8 contributors |
 | `GET /api/map/contributors?period=all` | Contributors by country |
 | `GET /:username/card.png?period=2025` | The Angularian card, 1200×630: the README card and the profile's link preview |
+| `GET /og.png?period=2025` | The home page's link preview, 1200×630: all time, or the top of a period |

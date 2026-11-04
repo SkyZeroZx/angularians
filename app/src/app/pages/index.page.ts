@@ -1,4 +1,5 @@
 // Ported from nuxt.com `app/pages/nuxters/index.vue` (MIT, Copyright (c) 2022-2023 NuxtLabs).
+import { DOCUMENT } from '@angular/common';
 import { afterRenderEffect, ChangeDetectionStrategy, Component, computed, effect, inject, linkedSignal, untracked } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
@@ -20,6 +21,7 @@ import { ContributorSearch } from '../leaderboard/contributor-search';
 import { CountrySelect } from '../leaderboard/country-select';
 import { MeCard } from '../leaderboard/me-card';
 import { ScoreRules } from '../leaderboard/score-rules';
+import { setCanonical, SITE_URL } from '../site';
 import { formatDate, formatNumber, plural } from '../leaderboard/format';
 import { LeaderboardGrid } from '../leaderboard/leaderboard-grid';
 import { PeriodTabs } from '../leaderboard/period-tabs';
@@ -137,6 +139,7 @@ export default class Home {
   private readonly router = inject(Router);
   private readonly title = inject(Title);
   private readonly meta = inject(Meta);
+  private readonly document = inject(DOCUMENT);
 
   /** `?period=` and `?country=` are the state: shareable, and kept on reload. Unknown values fall back. */
   private readonly requestedPeriod = injectQueryParams(params => (isPeriod(params['period']) ? (params['period'] as Period) : null));
@@ -195,6 +198,15 @@ export default class Home {
       this.meta.updateTag({ name: 'description', content: description });
       this.meta.updateTag({ property: 'og:title', content: title });
       this.meta.updateTag({ property: 'og:description', content: description });
+      // The site's card, or the card of the shared period; the canonical URL has no `?period=`.
+      const query = shared ? `?period=${shared.period}` : '';
+      this.meta.updateTag({ property: 'og:url', content: `${SITE_URL}/${query}` });
+      this.meta.updateTag({ property: 'og:image', content: `${SITE_URL}/og.png${query}` });
+      this.meta.updateTag({ property: 'og:image:width', content: '1200' });
+      this.meta.updateTag({ property: 'og:image:height', content: '630' });
+      this.meta.updateTag({ name: 'twitter:card', content: 'summary_large_image' });
+      this.meta.updateTag({ name: 'twitter:image', content: `${SITE_URL}/og.png${query}` });
+      setCanonical(this.document, '/');
     });
   }
 

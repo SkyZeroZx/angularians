@@ -8,7 +8,7 @@ import { lucidePlus } from '@ng-icons/lucide'
 import { HlmButton } from '@spartan-ng/helm/button'
 import { HlmTooltip } from '@spartan-ng/helm/tooltip'
 import { getLeaderboard } from '../data/contributors.server'
-import { avatarUrl, formatNumber, formatPoints, profileQuery } from './format'
+import { avatarSrcset, avatarUrl, formatNumber, formatPoints, profileQuery } from './format'
 
 /** Avatar cells are 112px at most (10 columns of the container). */
 const AVATAR_SIZE = 112
@@ -30,7 +30,7 @@ const AVATAR_SIZE = 112
             [attr.aria-label]="item.username + ', #' + rank(item) + ', ' + points(item)"
             class="block aspect-square overflow-hidden rounded-lg bg-muted ring-1 ring-border transition hover:ring-2 hover:ring-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           >
-            <img [src]="avatar(item)" alt="" [width]="AVATAR_SIZE" [height]="AVATAR_SIZE" loading="lazy" decoding="async" class="size-full object-cover" />
+            <img [src]="avatar(item)" [srcset]="avatars(item)" alt="" [width]="AVATAR_SIZE" [height]="AVATAR_SIZE" loading="lazy" decoding="async" class="size-full object-cover" />
           </a>
           <span class="pointer-events-none absolute right-1 -bottom-1.5 rounded bg-background px-1 text-xs font-medium tabular-nums ring-1 ring-border" aria-hidden="true">{{ item.rank }}</span>
         </li>
@@ -64,6 +64,7 @@ export class LeaderboardGrid {
   protected readonly label = computed(() => `Contributors, ranked: ${formatNumber(this.items().length)} of ${formatNumber(this.page().total)} shown`)
   protected readonly AVATAR_SIZE = AVATAR_SIZE
   protected readonly avatar = (item: ContributorSummary) => avatarUrl(item.githubId, AVATAR_SIZE)
+  protected readonly avatars = (item: ContributorSummary) => avatarSrcset(item.githubId, AVATAR_SIZE)
   protected readonly rank = (item: ContributorSummary) => formatNumber(item.rank)
   protected readonly points = (item: ContributorSummary) => formatPoints(item.score)
 

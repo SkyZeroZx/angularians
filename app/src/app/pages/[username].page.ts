@@ -31,7 +31,7 @@ import { foldPackages, PACKAGE_ICONS, packageIcon, packageLabel } from '../profi
 import { ScoreDialog } from '../profile/score-dialog';
 import { Share } from '../profile/share';
 import { AuthService } from '../auth/auth.service';
-import { SITE_URL } from '../site';
+import { setCanonical, SITE_URL } from '../site';
 
 export const routeMeta = {
   title: 'Contributor · Angularians',
@@ -487,12 +487,7 @@ export default class Profile {
     this.meta.updateTag({ property: 'og:image:height', content: '630' });
     this.meta.updateTag({ name: 'twitter:card', content: 'summary_large_image' });
     this.meta.updateTag({ name: 'twitter:image', content: card });
-    let canonical = this.document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');
-    if (!canonical) {
-      canonical = this.document.createElement('link');
-      canonical.rel = 'canonical';
-      this.document.head.appendChild(canonical);
-    }
-    canonical.setAttribute('href', `/${person.username}`);
+    this.meta.updateTag({ property: 'og:url', content: `${SITE_URL}/${person.username}${this.period() === 'all' ? '' : `?period=${this.period()}`}` });
+    setCanonical(this.document, `/${person.username}`);
   }
 }

@@ -64,6 +64,30 @@ export function cardTree(profile: ContributorProfile, period: Period, avatar: st
   ])
 }
 
+/**
+ * The home page's link preview: the mark, the title, a line of totals and the first avatars of the board.
+ * After nuxt.com's `/nuxters` card (its `Docs` template with a "Community" headline).
+ */
+export function homeTree(input: { title: string, description: string, avatars: Array<string | null> }): Node {
+  const avatars = input.avatars.slice(0, 8)
+  return h('div', { width: '100%', height: '100%', flexDirection: 'column', justifyContent: 'space-between', backgroundColor: '#0a0a0a', color: '#ffffff', padding: 72, fontFamily: 'Inter' }, [
+    h('div', { flexDirection: 'column' }, [
+      h('div', { alignItems: 'center', gap: 16 }, [
+        h('svg', { width: 56, height: 56 }, h('path', {}, undefined, { d: MARK, fill: BRAND }), { viewBox: '0 0 24 24', width: 56, height: 56 }),
+        h('div', { fontSize: 34, fontWeight: 600 }, 'Angularians'),
+      ]),
+      h('div', { fontSize: 76, fontWeight: 600, marginTop: 48, lineHeight: 1.1 }, input.title),
+      h('div', { fontSize: 32, color: '#a3a3a3', marginTop: 24, maxWidth: 980, lineHeight: 1.35 }, input.description),
+    ]),
+    h('div', { alignItems: 'center', justifyContent: 'space-between' }, [
+      h('div', { alignItems: 'center' }, avatars.map((avatar, index) => avatar
+        ? h('img', { width: 88, height: 88, borderRadius: 9999, border: '4px solid #0a0a0a', marginLeft: index ? -18 : 0 }, undefined, { src: avatar, width: 88, height: 88 })
+        : h('div', { width: 88, height: 88, borderRadius: 9999, border: '4px solid #0a0a0a', backgroundColor: '#262626', marginLeft: index ? -18 : 0 }))),
+      h('div', { fontSize: 26, color: '#737373' }, 'angularians.netlify.app'),
+    ]),
+  ])
+}
+
 export interface CardFonts { regular: ArrayBuffer | Buffer, semibold: ArrayBuffer | Buffer }
 
 export async function renderCard(tree: Node, fonts: CardFonts): Promise<Buffer> {
