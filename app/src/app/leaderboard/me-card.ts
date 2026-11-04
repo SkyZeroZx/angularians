@@ -3,7 +3,8 @@
 import { Component, computed, inject } from '@angular/core'
 import { RouterLink } from '@angular/router'
 import { NgIcon, provideIcons } from '@ng-icons/core'
-import { lucideArrowRight, lucideAward, lucideCircleDot, lucideGitPullRequest, lucideInfo, lucideMessageCircleHeart } from '@ng-icons/lucide'
+import { lucideArrowRight, lucideAward, lucideCircleDot, lucideInfo, lucideMessageCircleHeart, lucideSparkles } from '@ng-icons/lucide'
+import { octGitMerge } from '@ng-icons/octicons'
 import { simpleGithub } from '@ng-icons/simple-icons'
 import { HlmButton } from '@spartan-ng/helm/button'
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton'
@@ -24,12 +25,14 @@ const CARD = 'flex w-full flex-col rounded-xl bg-muted/40 p-6 ring-1 ring-border
 const SIGNED_IN = 'min-h-[29rem] @min-[400px]:min-h-[25.75rem] @min-[460px]:min-h-[24.25rem] @min-[520px]:min-h-[22rem]'
 /** Signed out: as tall as the hero's text on wide screens, so the card does not look lost beside it. */
 const SIGNED_OUT = 'min-h-64 lg:min-h-80'
+const GUIDE = 'flex items-center gap-3 rounded-lg bg-background p-3 shadow-xs ring-1 transition hover:shadow-sm dark:bg-background/60 dark:shadow-none dark:hover:bg-muted dark:hover:shadow-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none'
+const AUTHOR_ID = 88717125
 
 /** The signed-in Angularian, or a sign-in. */
 @Component({
   selector: 'app-me-card',
   imports: [AngularLogo, HlmButton, HlmSkeleton, HlmTooltip, LogoMark, NgIcon, RouterLink, ScoreDialog, Share],
-  providers: [provideIcons({ lucideArrowRight, lucideAward, lucideCircleDot, lucideGitPullRequest, lucideInfo, lucideMessageCircleHeart, simpleGithub })],
+  providers: [provideIcons({ lucideArrowRight, lucideAward, lucideCircleDot, octGitMerge, lucideInfo, lucideMessageCircleHeart, lucideSparkles, simpleGithub })],
   host: { class: 'block w-full' },
   template: `
     @if (state() === null && auth.wasSignedIn()) {
@@ -115,6 +118,39 @@ const SIGNED_OUT = 'min-h-64 lg:min-h-80'
             }
           </div>
 
+          @if (!me.angularian) {
+            <div class="flex flex-col gap-3 border-t border-border pt-4">
+              <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+                <p class="font-medium">Become an <span class="brand text-primary">Angularian</span></p>
+                <a href="https://github.com/erkamyaman" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 rounded-md text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
+                  <img [src]="authorAvatar" alt="" width="20" height="20" class="size-5 rounded-full bg-muted" /> by erkamyaman
+                </a>
+              </div>
+              <p class="text-sm text-muted-foreground">I made these to make your first PR easier. Hope to see you in <span class="brand text-primary whitespace-nowrap">ng-halla</span>.</p>
+              <div class="grid gap-2 @min-[460px]:grid-cols-2">
+                <a [class]="guide + ' ring-[#9A6700]/60 hover:ring-[#9A6700] dark:ring-[#D29922]/60 dark:hover:ring-[#D29922]'" href="https://github.com/erkamyaman/angular-contribution-skill" target="_blank" rel="noopener">
+                  <span class="grid size-10 shrink-0 place-items-center rounded-md bg-[#9A6700]/10 text-[#9A6700] dark:bg-muted dark:text-[#D29922]"><ng-icon name="lucideSparkles" size="1.25rem" aria-hidden="true" /></span>
+                  <span class="min-w-0">
+                    <span class="block font-medium">Agent skill</span>
+                    <span class="block text-sm text-muted-foreground">Contribute by Angular's rules</span>
+                  </span>
+                </a>
+                <a [class]="guide + ' ring-[#FF0000]/60 hover:ring-[#FF0000]'" href="https://www.youtube.com/watch?v=_KfE1fnZphc" target="_blank" rel="noopener">
+                  <span class="grid size-10 shrink-0 place-items-center rounded-md bg-[#FF0000]/10 dark:bg-muted">
+                    <svg viewBox="0 0 24 24" class="size-6" aria-hidden="true">
+                      <path fill="#FF0000" d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814z" />
+                      <path fill="#FFFFFF" d="M9.545 15.568V8.432L15.818 12z" />
+                    </svg>
+                  </span>
+                  <span class="min-w-0">
+                    <span class="block font-medium">Open Source 101</span>
+                    <span class="block text-sm text-muted-foreground">The talk, at Ng Asia</span>
+                  </span>
+                </a>
+              </div>
+            </div>
+          }
+
           <!-- Sharing is the all-time profile: the card does not follow the leaderboard period. -->
           @if (me.angularian && me.badges.length) {
             <div class="border-t border-border pt-4">
@@ -151,6 +187,8 @@ export class MeCard {
   protected readonly card = CARD
   protected readonly signedIn = SIGNED_IN
   protected readonly signedOut = SIGNED_OUT
+  protected readonly guide = GUIDE
+  protected readonly authorAvatar = avatarUrl(AUTHOR_ID, 20)
   protected readonly state = this.auth.state
   protected readonly me = computed(() => this.state()?.user ?? null)
   protected readonly loginUrl = this.auth.loginUrl('/')
@@ -159,9 +197,9 @@ export class MeCard {
   protected readonly unlocks = computed(() => {
     const person = this.me()?.angularian
     return [
-      { label: 'merged pull requests', one: 'merged pull request', value: person?.pullRequests.all ?? 0, hint: null, icon: 'lucideGitPullRequest', color: 'text-primary' },
-      { label: 'helpful issues', one: 'helpful issue', value: person?.helpfulIssues ?? 0, hint: 'Completed, or 3+ reactions, or 5+ comments', icon: 'lucideCircleDot', color: 'text-sky-600 dark:text-sky-400' },
-      { label: 'helpful comments', one: 'helpful comment', value: person?.helpfulComments ?? 0, hint: '3+ reactions', icon: 'lucideMessageCircleHeart', color: 'text-violet-600 dark:text-violet-400' },
+      { label: 'merged pull requests', one: 'merged pull request', value: person?.pullRequests.all ?? 0, hint: null, icon: 'octGitMerge', color: 'text-[#8250DF] dark:text-[#A371F7]' },
+      { label: 'helpful issues', one: 'helpful issue', value: person?.helpfulIssues ?? 0, hint: 'Completed, or 3+ reactions, or 5+ comments', icon: 'lucideCircleDot', color: 'text-[#1A7F37] dark:text-[#3FB950]' },
+      { label: 'helpful comments', one: 'helpful comment', value: person?.helpfulComments ?? 0, hint: '3+ reactions', icon: 'lucideMessageCircleHeart', color: 'text-[#0969DA] dark:text-[#58A6FF]' },
     ]
   })
 

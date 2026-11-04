@@ -1,7 +1,7 @@
 import { Component } from '@angular/core'
 import { ACTIVITY_POINTS, PULL_REQUEST_POINTS } from '@angularians/shared'
 import { NgIcon, provideIcons } from '@ng-icons/core'
-import { lucideBookOpen, lucideBrushCleaning, lucideRocket, lucideWrench } from '@ng-icons/lucide'
+import { lucideBookOpen, lucideBrushCleaning, lucideRocket, lucideTrophy, lucideWrench } from '@ng-icons/lucide'
 import { HlmButton } from '@spartan-ng/helm/button'
 import { HlmDialogImports } from '@spartan-ng/helm/dialog'
 
@@ -9,11 +9,11 @@ import { HlmDialogImports } from '@spartan-ng/helm/dialog'
 @Component({
   selector: 'app-score-rules',
   imports: [HlmButton, HlmDialogImports, NgIcon],
-  providers: [provideIcons({ lucideBookOpen, lucideBrushCleaning, lucideRocket, lucideWrench })],
+  providers: [provideIcons({ lucideBookOpen, lucideBrushCleaning, lucideRocket, lucideTrophy, lucideWrench })],
   host: { class: 'contents' },
   template: `
     <hlm-dialog>
-      <button hlmDialogTrigger hlmBtn type="button">How the score works</button>
+      <button hlmDialogTrigger hlmBtn type="button"><ng-icon name="lucideTrophy" aria-hidden="true" /> How the score works</button>
       <hlm-dialog-content *hlmDialogPortal class="max-h-[90dvh] overflow-y-auto sm:max-w-2xl">
         <hlm-dialog-header>
           <h2 hlmDialogTitle>How the score works</h2>

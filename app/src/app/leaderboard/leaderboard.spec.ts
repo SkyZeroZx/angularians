@@ -1,7 +1,12 @@
 import { onTestFinished } from 'vitest';
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { avatarUrl, formatDate, formatPoints, plural, profileQuery } from './format';
+import { provideRouter } from '@angular/router';
+import { AuthService } from '../auth/auth.service';
+import { avatarUrl, formatDate, formatPoints, matchesCountry, plural, profileQuery } from './format';
 import { CountrySelect } from './country-select';
+import { LeaderboardGrid } from './leaderboard-grid';
+import { MeCard } from './me-card';
 import { PeriodTabs } from './period-tabs';
 
 describe('format', () => {
@@ -114,5 +119,81 @@ describe('CountrySelect', () => {
     expect(visible().map(option => option.getAttribute('data-value'))).toEqual(['BG']);
     visible()[0]!.click();
     expect(picked).toEqual(['BG']);
+  });
+
+  it('highlights the selected country when it opens', async () => {
+    const scrollIntoView = Element.prototype.scrollIntoView;
+    const scrolled: Element[] = [];
+    Element.prototype.scrollIntoView = function () { scrolled.push(this); };
+    onTestFinished(() => {
+      Element.prototype.scrollIntoView = scrollIntoView;
+    });
+    const fixture = TestBed.createComponent(CountrySelect);
+    fixture.componentRef.setInput('countries', [{ code: 'TR', count: 3, top: [] }, { code: 'BG', count: 1, top: [] }]);
+    fixture.componentRef.setInput('value', 'BG');
+    fixture.detectChanges();
+
+    fixture.nativeElement.querySelector('[role="combobox"]').click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const bulgaria = document.querySelector('[role="option"][data-value="BG"]')!;
+    expect(bulgaria.hasAttribute('data-highlighted')).toBe(true);
+    expect(scrolled).toContain(bulgaria);
+  });
+});
+
+describe('matchesCountry', () => {
+  it.each([
+    ['TR', 'turkey'],
+    ['TR', 'Türkiye'],
+    ['TR', 'turkiye'],
+    ['TR', 'TÜRKİYE'],
+    ['TR', 'türkıye'],
+    ['US', 'usa'],
+    ['GB', 'uk'],
+    ['DE', 'deutsch'],
+  ])('%s matches %s', (code, search) => expect(matchesCountry(code, search)).toBe(true));
+
+  it('does not match another country', () => {
+    expect(matchesCountry('DE', 'türkiye')).toBe(false);
+    expect(matchesCountry('ZZ', 'usa')).toBe(false);
+  });
+});
+
+describe('LeaderboardGrid', () => {
+  it('names a contributor by full name and username, once when they are the same', () => {
+    TestBed.configureTestingModule({ providers: [provideRouter([])] });
+    const fixture = TestBed.createComponent(LeaderboardGrid);
+    fixture.componentRef.setInput('page', {
+      period: 'all', country: null, periods: ['all'], total: 3, landedPullRequests: 0, issues: 0, comments: 0, reviewComments: 0, collectedAt: null,
+      items: [
+        { githubId: 1, username: 'mhevery', name: 'Miško Hevery', rank: 1, score: 9761 },
+        { githubId: 2, username: 'crisbeto', name: 'CRISBETO', rank: 2, score: 5 },
+        { githubId: 3, username: 'atscott', rank: 3, score: 1 },
+      ],
+    });
+    fixture.detectChanges();
+    const labels = [...fixture.nativeElement.querySelectorAll('ol a')].map((link: Element) => link.getAttribute('aria-label'));
+    expect(labels).toEqual(['Miško Hevery (mhevery), #1, 9,761 pts', 'crisbeto, #2, 5 pts', 'atscott, #3, 1 pt']);
+  });
+});
+
+describe('MeCard', () => {
+  function render(angularian: object | null) {
+    const state = signal({ enabled: true, user: { githubId: 1, login: 'newcomer', angularian, badges: [] } });
+    TestBed.configureTestingModule({ providers: [provideRouter([]), { provide: AuthService, useValue: { state, wasSignedIn: () => true, loginUrl: () => '/login' } }] });
+    const fixture = TestBed.createComponent(MeCard);
+    fixture.detectChanges();
+    return [...fixture.nativeElement.querySelectorAll('a[target="_blank"]')].map((link: Element) => link.getAttribute('href'));
+  }
+
+  it('offers the first steps to someone with no contributions', () => {
+    expect(render(null)).toEqual(['https://github.com/erkamyaman', 'https://github.com/erkamyaman/angular-contribution-skill', 'https://www.youtube.com/watch?v=_KfE1fnZphc']);
+  });
+
+  it('does not offer them to a contributor', () => {
+    expect(render({ username: 'newcomer', rank: 9, score: 3, periods: [], pullRequests: { all: 1 }, helpfulIssues: 0, helpfulComments: 0, packages: [], socialAccounts: [] })).toEqual([]);
   });
 });

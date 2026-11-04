@@ -52,6 +52,9 @@ importers:
       '@ng-icons/lucide':
         specifier: '>=32.0.0 <34.0.0'
         version: 33.4.0
+      '@ng-icons/octicons':
+        specifier: 33.4.0
+        version: 33.4.0
       '@ng-icons/simple-icons':
         specifier: 33.4.0
         version: 33.4.0
@@ -1872,6 +1875,9 @@ packages:
 
   '@ng-icons/lucide@33.4.0':
     resolution: {integrity: sha512-fOztOy5T+Y07fru7nWq27PC96B35Y2DeJY357ZeKBr5R1yUJhxqQXPRcxOf+wrTJes8I20sKBqfWhHH1eiL9JQ==}
+
+  '@ng-icons/octicons@33.4.0':
+    resolution: {integrity: sha512-wzvLO8/VZLuGptnv7x3cLnNDX6C4qzv1a+cjmTAGI4uJe4jeLWjI06WsabocBNB56H395GLbqOWTgfuCBi6Vfg==}
 
   '@ng-icons/simple-icons@33.4.0':
     resolution: {integrity: sha512-vqtsjDxADRtljCwCnKz2fWv93O/RlU1kk9LwoJ2R/BrCJCVoTKQcE80lUQkZMlaT0tzdees6S7BvYzZ+5rhKng==}
@@ -7836,6 +7842,10 @@ snapshots:
       tslib: 2.9.1
 
   '@ng-icons/lucide@33.4.0':
+    dependencies:
+      tslib: 2.9.1
+
+  '@ng-icons/octicons@33.4.0':
     dependencies:
       tslib: 2.9.1
 

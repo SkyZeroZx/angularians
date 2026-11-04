@@ -8,9 +8,9 @@ import satori from 'satori'
 export const CARD_WIDTH = 1200
 export const CARD_HEIGHT = 630
 
-/** The brand colour and the profile's stat colours (Tailwind sky-400, violet-400, amber-400). */
+/** The brand colour and the profile's stat colours (GitHub's, in its dark theme). */
 const BRAND = '#5EB572'
-const COLORS = { pullRequests: BRAND, issues: '#38BDF8', comments: '#A78BFA', reactions: '#FBBF24' }
+const COLORS = { pullRequests: '#A371F7', issues: '#3FB950', comments: '#58A6FF', reactions: '#D29922' }
 /** The mark, in its dark colours: [fill, path] of each part (app/scripts/logo/build.py). */
 const MARK: Array<[string, string]> = [
   ['#5EB572', 'M10.26 3.2L10.34 3.41L10.44 3.68L11.28 7.69L11.1 8.16L11.41 8.39L12.67 14.71L12.67 15.08L13.33 17.51L13.4 17.96L13.43 17.96L14.21 21.67L15.44 20.98L11.6 2.69L11.55 2.7L10.26 3.16ZM2.34 6.01L2.28 6.06L2.22 6.12L2.18 6.19L2.15 6.27L2.13 6.35L2.14 6.43L3.51 18.32L3.53 18.4L3.56 18.47L3.61 18.54L3.67 18.6L3.73 18.64L4.51 19.07L4.71 17.96L4.69 17.96L4.76 17.64L5.02 15.99L5.31 15.7L5.28 15.18L5.81 11.96L5.88 11.46L6.04 10.91L6.04 10.44L6.83 6.93L7.3 6.37L7.01 5.98L7.19 4.93L7.35 4.21L2.42 5.98ZM11.56 22.98L11.65 23L11.74 23L11.82 22.98L11.9 22.95L12.03 22.88L11 17.96L11.04 17.96L10.94 17.28L11.15 17.02L10.92 16.86L10.71 15.99L10.65 15.78L10.29 15.84L10.26 15.84L9.74 16.2L7.98 16.62L7.75 16.73L7.22 16.94L7.06 17.96L7.09 17.96L6.71 20.3L11.48 22.95ZM9.34 13.87L10.08 13.69L9.55 10.86L9.45 9.49L9.34 9.02L8.95 6.24L8.43 9.44L8.16 9.57L8.3 9.99L7.95 12.53L7.98 12.51L7.67 14.21L7.64 14.39Z'],
@@ -30,9 +30,12 @@ const NUDGE = 0.09
 const markSvg = (size: number): Node =>
   h('svg', { width: size, height: size, position: 'relative', top: -size * .035 }, MARK.map(([fill, d]) => h('path', {}, undefined, { d, fill })), { viewBox: '0 0 24 24', width: size, height: size })
 
+/** GitHub's merge icon (Octicons, MIT): filled, on a 16 grid. */
+const MERGE = ['M5.45 5.154A4.25 4.25 0 0 0 9.25 7.5h1.378a2.251 2.251 0 1 1 0 1.5H9.25A5.734 5.734 0 0 1 5 7.123v3.505a2.25 2.25 0 1 1-1.5 0V5.372a2.25 2.25 0 1 1 1.95-.218ZM4.25 13.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm8.5-4.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5ZM5 3.25a.75.75 0 1 0 0 .005V3.25Z']
+
 /** The profile's stat icons (Lucide, ISC), as paths. */
 const ICONS = {
-  pullRequests: ['M21 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0', 'M9 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0', 'M13 6h3a2 2 0 0 1 2 2v7', 'M6 9v12'],
+  pullRequests: MERGE,
   issues: ['M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0', 'M13 12a1 1 0 1 1-2 0 1 1 0 0 1 2 0'],
   comments: ['M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719'],
   reactions: ['M22 11v1a10 10 0 1 1-9-10', 'M8 14s1.5 2 4 2 4-2 4-2', 'M9 9h.01', 'M15 9h.01', 'M16 5h6', 'M19 2v6'],
@@ -40,7 +43,11 @@ const ICONS = {
 const STAT_ICON_SIZE = 36
 const statIcon = (paths: string[], color: string): Node =>
   h('svg', { position: 'absolute', top: 30, left: 32, width: STAT_ICON_SIZE, height: STAT_ICON_SIZE }, paths.map(d => h('path', {}, undefined, { d })), {
-    viewBox: '0 0 24 24', width: STAT_ICON_SIZE, height: STAT_ICON_SIZE, fill: 'none', stroke: color, strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round',
+    width: STAT_ICON_SIZE,
+    height: STAT_ICON_SIZE,
+    ...(paths === MERGE
+      ? { viewBox: '0 0 16 16', fill: color }
+      : { viewBox: '0 0 24 24', fill: 'none', stroke: color, strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }),
   })
 
 const format = new Intl.NumberFormat('en-US').format

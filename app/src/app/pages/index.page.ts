@@ -6,9 +6,9 @@ import { Router } from '@angular/router';
 import { injectServerFn, type RouteMeta } from '@analogjs/router';
 import { countryCode, countryName, DEFAULT_PERIOD, isPeriod, periodPhrase, type Period } from '@angularians/shared';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideBookOpen, lucideCalendar, lucideCircleDot, lucideGitPullRequest, lucideMessageCircle, lucideMessageCircleHeart, lucideMessagesSquare, lucideUsers } from '@ng-icons/lucide';
+import { lucideBookOpen, lucideCalendar, lucideCircleDot, lucideMessageCircle, lucideMessageCircleHeart, lucideMessagesSquare, lucideUsers } from '@ng-icons/lucide';
+import { octGitMerge } from '@ng-icons/octicons';
 import { injectQueryParams } from 'ngxtension/inject-query-params';
-import { HlmBadge } from '@spartan-ng/helm/badge';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
@@ -38,14 +38,19 @@ export const routeMeta = {
 @Component({
   selector: 'app-home',
   imports: [
-    AngularLogo, ContributorSearch, CountrySelect, HlmBadge, HlmButton, HlmCardImports, HlmSkeleton, LeaderboardGrid, LogoMark, MeCard, NgIcon, ScoreRules,
+    AngularLogo, ContributorSearch, CountrySelect, HlmButton, HlmCardImports, HlmSkeleton, LeaderboardGrid, LogoMark, MeCard, NgIcon, ScoreRules,
     PageGrid, PageHero, PageSection, PeriodTabs, World,
   ],
-  providers: [provideIcons({ lucideBookOpen, lucideCalendar, lucideCircleDot, lucideGitPullRequest, lucideMessageCircle, lucideMessageCircleHeart, lucideMessagesSquare, lucideUsers })],
+  providers: [provideIcons({ lucideBookOpen, lucideCalendar, lucideCircleDot, octGitMerge, lucideMessageCircle, lucideMessageCircleHeart, lucideMessagesSquare, lucideUsers })],
   template: `
     <app-page-hero>
-      <span heroHeadline hlmBadge variant="secondary" class="mb-4">Updated every day</span>
-      <span heroTitle class="group inline-flex items-center gap-x-4"><app-logo-mark class="size-[1.1em] shrink-0 max-sm:hidden" /><span>Meet the <span class="brand whitespace-nowrap text-brand-from">Angularians</span></span></span>
+      <span heroTitle class="flex items-center gap-3">
+        <app-logo-mark class="size-16 shrink-0 translate-y-[3.5%] min-[360px]:size-22 sm:size-32 lg:size-27 xl:size-36 2xl:size-38" />
+        <span class="flex min-w-0 flex-col gap-1 sm:gap-2">
+          <span class="brand text-5xl leading-none whitespace-nowrap text-brand-from sm:text-7xl lg:text-6xl xl:text-[5.5rem] 2xl:text-8xl">Angularians </span>
+          <span class="brand text-xl text-muted-foreground sm:text-3xl lg:text-2xl xl:text-3xl">Carve your name in <span class="whitespace-nowrap text-primary">ng-halla</span></span>
+        </span>
+      </span>
       <!-- @container: the card's height follows its own width -->
       <span heroDescription>
         Every pull request, issue and review that made
@@ -56,7 +61,7 @@ export const routeMeta = {
       </span>
       <ng-container heroActions>
         <app-score-rules />
-        <a hlmBtn variant="outline" href="https://github.com/angular/angular/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">How to contribute</a>
+        <a hlmBtn variant="outline" href="https://github.com/angular/angular/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener"><ng-icon name="lucideBookOpen" aria-hidden="true" /> How to contribute</a>
       </ng-container>
       <div heroAside class="@container"><app-me-card /></div>
     </app-page-hero>
@@ -75,9 +80,10 @@ export const routeMeta = {
       @if (board(); as page) {
         <ul class="mt-4 mb-6 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-sm text-muted-foreground" [attr.aria-label]="'Contributions ' + phrase(page.period)">
           <li class="flex items-center gap-1.5"><ng-icon name="lucideUsers" aria-hidden="true" /><span><strong class="font-semibold text-foreground tabular-nums">{{ number(page.total) }}</strong> {{ page.total === 1 ? 'contributor' : 'contributors' }}{{ page.country ? ' from ' + countryLabel(page.country) : '' }}</span></li>
-          <li class="flex items-center gap-1.5"><ng-icon name="lucideGitPullRequest" aria-hidden="true" /><span><strong class="font-semibold text-foreground tabular-nums">{{ number(page.landedPullRequests) }}</strong> merged {{ page.landedPullRequests === 1 ? 'PR' : 'PRs' }}</span></li>
-          <li class="flex items-center gap-1.5"><ng-icon name="lucideCircleDot" aria-hidden="true" /><span><strong class="font-semibold text-foreground tabular-nums">{{ number(page.issues) }}</strong> {{ page.issues === 1 ? 'issue' : 'issues' }}</span></li>
-          <li class="flex items-center gap-1.5"><ng-icon name="lucideMessageCircle" aria-hidden="true" /><span><strong class="font-semibold text-foreground tabular-nums">{{ number(page.comments + page.reviewComments) }}</strong> {{ page.comments + page.reviewComments === 1 ? 'comment' : 'comments' }}</span></li>
+          <li class="flex items-center gap-1.5"><ng-icon name="octGitMerge" class="text-[#8250DF] dark:text-[#A371F7]" aria-hidden="true" /><span><strong class="font-semibold text-foreground tabular-nums">{{ number(page.landedPullRequests) }}</strong> merged {{ page.landedPullRequests === 1 ? 'PR' : 'PRs' }}</span></li>
+          <li class="flex items-center gap-1.5"><ng-icon name="lucideCircleDot" class="text-[#1A7F37] dark:text-[#3FB950]" aria-hidden="true" /><span><strong class="font-semibold text-foreground tabular-nums">{{ number(page.issues) }}</strong> {{ page.issues === 1 ? 'issue' : 'issues' }}</span></li>
+          <li class="flex items-center gap-1.5"><ng-icon name="lucideMessageCircle" class="text-[#0969DA] dark:text-[#58A6FF]" aria-hidden="true" /><span><strong class="font-semibold text-foreground tabular-nums">{{ number(page.comments + page.reviewComments) }}</strong> {{ page.comments + page.reviewComments === 1 ? 'comment' : 'comments' }}</span></li>
+          <li class="text-xs sm:ml-auto">Updated every day</li>
         </ul>
 
         <div [class.opacity-60]="leaderboard.isLoading()" class="transition-opacity" [attr.aria-busy]="leaderboard.isLoading()">
@@ -167,9 +173,9 @@ export default class Home {
   protected readonly placeholders = Array.from({ length: 30 }, (_, index) => index);
   /** The three ways onto the board (Nuxters' "How to become a Nuxter"). */
   protected readonly becomeWays = [
-    { title: 'Merge a pull request', description: 'Fix a bug, ship a feature or improve the docs in any Angular repository.', icon: 'lucideGitPullRequest', color: 'text-primary', url: 'https://github.com/angular/angular/blob/main/CONTRIBUTING.md' },
-    { title: 'Open a helpful issue', description: 'An issue that gets completed, or collects 3+ reactions or 5+ comments.', icon: 'lucideCircleDot', color: 'text-sky-600 dark:text-sky-400', url: 'https://github.com/angular/angular/issues' },
-    { title: 'Write a helpful comment', description: 'Answer a question or review a PR: a comment with 3+ reactions counts.', icon: 'lucideMessageCircleHeart', color: 'text-violet-600 dark:text-violet-400', url: 'https://github.com/angular/angular/pulls' },
+    { title: 'Merge a pull request', description: 'Fix a bug, ship a feature or improve the docs in any Angular repository.', icon: 'octGitMerge', color: 'text-[#8250DF] dark:text-[#A371F7]', url: 'https://github.com/angular/angular/blob/main/CONTRIBUTING.md' },
+    { title: 'Open a helpful issue', description: 'An issue that gets completed, or collects 3+ reactions or 5+ comments.', icon: 'lucideCircleDot', color: 'text-[#1A7F37] dark:text-[#3FB950]', url: 'https://github.com/angular/angular/issues' },
+    { title: 'Write a helpful comment', description: 'Answer a question or review a PR: a comment with 3+ reactions counts.', icon: 'lucideMessageCircleHeart', color: 'text-[#0969DA] dark:text-[#58A6FF]', url: 'https://github.com/angular/angular/pulls' },
   ];
   protected readonly number = formatNumber;
   protected readonly phrase = periodPhrase;

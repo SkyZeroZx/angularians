@@ -9,10 +9,11 @@ import { injectResponse } from '@analogjs/router/tokens';
 import { countryCode, countryName, DEFAULT_PERIOD, GITHUB_USERNAME_RE, isPeriod, periodPhrase, reposQuery, type ContributorProfile, type Period } from '@angularians/shared';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
-  lucideArrowLeft, lucideArrowUpRight, lucideAward, lucideCircleDot, lucideGitPullRequest, lucideInfo,
+  lucideArrowLeft, lucideArrowUpRight, lucideAward, lucideCircleDot, lucideInfo,
   lucideBadgeCheck, lucideChevronDown, lucideChevronUp, lucideCrown, lucideFileCode, lucideLink, lucideLinkedin, lucideMessageCircle,
   lucideSmilePlus, lucideTrophy,
 } from '@ng-icons/lucide';
+import { octGitMerge } from '@ng-icons/octicons';
 import {
   simpleBluesky, simpleFacebook, simpleGithub, simpleInstagram, simpleMastodon, simpleNpm, simpleReddit, simpleThreads, simpleTwitch, simpleX,
   simpleYoutube,
@@ -69,7 +70,7 @@ export function yearRanges(years: readonly number[]): string {
   selector: 'app-profile',
   imports: [AngularLogo, Container, HlmButton, HlmSkeleton, HlmTooltip, NgIcon, NgTemplateOutlet, PeriodTabs, RouterLink, ScoreDialog, Share],
   providers: [provideIcons({
-    lucideArrowLeft, lucideArrowUpRight, lucideAward, lucideCircleDot, lucideGitPullRequest, lucideInfo,
+    lucideArrowLeft, lucideArrowUpRight, lucideAward, lucideCircleDot, octGitMerge, lucideInfo,
     lucideBadgeCheck, lucideChevronDown, lucideChevronUp, lucideCrown, lucideFileCode, lucideLink, lucideLinkedin, lucideMessageCircle,
     lucideSmilePlus, lucideTrophy,
     simpleBluesky, simpleFacebook, simpleGithub, simpleInstagram, simpleMastodon, simpleNpm, simpleReddit, simpleThreads, simpleTwitch, simpleX,
@@ -89,7 +90,7 @@ export function yearRanges(years: readonly number[]): string {
           <div class="flex min-w-0 flex-col items-start gap-5 lg:col-span-2">
             <!-- w-full: a long name truncates instead of widening the page on phones -->
             <div class="flex w-full min-w-0 items-center gap-4 lg:flex-col lg:items-start lg:gap-6">
-              <img [src]="avatar(person)" [alt]="person.username" width="112" height="112" class="size-20 shrink-0 rounded-xl bg-muted ring-1 ring-border lg:size-28" />
+              <img [src]="avatar(person)" [alt]="person.username" width="160" height="160" class="size-28 shrink-0 rounded-xl bg-muted ring-1 ring-border lg:size-40" />
               <div class="flex min-w-0 flex-1 flex-col gap-1 lg:w-full">
                 <h1 class="truncate text-3xl font-bold tracking-tight sm:text-4xl" [title]="displayName()">{{ displayName() }}</h1>
                 @if (person.name) {
@@ -257,7 +258,7 @@ export function yearRanges(years: readonly number[]): string {
         <div class="grid items-start gap-8 lg:grid-cols-5 lg:gap-12" aria-hidden="true">
           <div class="flex flex-col items-start gap-5 lg:col-span-2">
             <div class="flex w-full items-center gap-4 lg:flex-col lg:items-start lg:gap-6">
-              <div hlmSkeleton class="size-20 shrink-0 rounded-xl lg:size-28"></div>
+              <div hlmSkeleton class="size-28 shrink-0 rounded-xl lg:size-40"></div>
               <div class="flex flex-1 flex-col gap-2 lg:w-full">
                 <div hlmSkeleton class="h-9 w-3/4 max-w-72"></div>
                 <div hlmSkeleton class="h-5 w-32"></div>
@@ -343,28 +344,28 @@ export default class Profile {
     const search = (q: string, type: 'pullrequests' | 'issues') => `https://github.com/search?${new URLSearchParams({ q: `${reposQuery()} ${q}`, type })}`;
     return [
       {
-        key: 'pullRequests', icon: 'lucideGitPullRequest', value: prs.all, name: prs.all === 1 ? 'Merged PR' : 'Merged PRs',
+        key: 'pullRequests', icon: 'octGitMerge', value: prs.all, name: prs.all === 1 ? 'Merged PR' : 'Merged PRs',
         detail: `${formatNumber(prs.feat)} feat · ${formatNumber(prs.fix)} fix · ${formatNumber(prs.docs)} docs · ${formatNumber(prs.chore)} chore`,
         // GitHub shows most landed PRs as closed (PR Close): this lists all of them, landed or not.
         url: this.githubSearch(person), label: `${this.githubLabel(person)}`,
-        tint: 'bg-primary/5 ring-primary hover:bg-primary/10', text: 'text-primary',
+        tint: 'bg-[#8250DF]/5 ring-[#8250DF] hover:bg-[#8250DF]/10 dark:ring-[#A371F7]', text: 'text-[#8250DF] dark:text-[#A371F7]',
       },
       {
         key: 'issues', icon: 'lucideCircleDot', value: n.issues, name: n.issues === 1 ? 'Issue' : 'Issues', detail: `${formatNumber(n.helpfulIssues)} helpful`,
         url: search(`is:issue author:${person.username}`, 'issues'), label: `${plural(n.issues, 'issue', 'issues')} ${periodPhrase(this.period())}. Opens ${person.username}'s issues on GitHub`,
-        tint: 'bg-sky-500/5 ring-sky-500 hover:bg-sky-500/10', text: 'text-sky-700 dark:text-sky-400',
+        tint: 'bg-[#1A7F37]/5 ring-[#1A7F37] hover:bg-[#1A7F37]/10 dark:ring-[#3FB950]', text: 'text-[#1A7F37] dark:text-[#3FB950]',
       },
       {
         key: 'comments', icon: 'lucideMessageCircle', value: n.comments, name: n.comments === 1 ? 'Comment' : 'Comments',
         // Inline review comments score on their own (1 pt each): their count goes with the comments.
         detail: `${formatNumber(n.helpfulComments)} helpful · ${plural(n.reviewComments, 'review comment', 'review comments')} on code`,
         url: search(`commenter:${person.username}`, 'issues'), label: `${plural(n.comments, 'comment', 'comments')} ${periodPhrase(this.period())}. Opens the issues and pull requests ${person.username} commented on, on GitHub`,
-        tint: 'bg-violet-500/5 ring-violet-500 hover:bg-violet-500/10', text: 'text-violet-700 dark:text-violet-400',
+        tint: 'bg-[#0969DA]/5 ring-[#0969DA] hover:bg-[#0969DA]/10 dark:ring-[#58A6FF]', text: 'text-[#0969DA] dark:text-[#58A6FF]',
       },
       {
         key: 'reactions', icon: 'lucideSmilePlus', value: n.reactions, name: n.reactions === 1 ? 'Reaction' : 'Reactions', detail: 'received',
         url: null, label: '',
-        tint: 'bg-amber-500/5 ring-amber-500', text: 'text-amber-700 dark:text-amber-400',
+        tint: 'bg-[#9A6700]/5 ring-[#9A6700] dark:ring-[#D29922]', text: 'text-[#9A6700] dark:text-[#D29922]',
       },
     ];
   });
@@ -384,11 +385,11 @@ export default class Profile {
   protected readonly badges = computed(() => {
     const person = this.profile.value();
     if (!person) return [];
-    // One colour per kind, the profile's stat colours: gold for a #1, sky for the all-time top 10, violet (comments)
+    // One colour per kind, the profile's stat colours: gold for a #1, green for the all-time top 10, blue (comments)
     // for reviews. As soft tints, readable in both themes.
-    const gold = 'bg-amber-500/10 text-amber-700 ring-amber-500/30 dark:text-amber-400';
-    const sky = 'bg-sky-500/10 text-sky-700 ring-sky-500/30 dark:text-sky-400';
-    const violet = 'bg-violet-500/10 text-violet-700 ring-violet-500/30 dark:text-violet-400';
+    const gold = 'bg-[#9A6700]/10 text-[#9A6700] ring-[#9A6700]/30 dark:bg-[#D29922]/10 dark:text-[#D29922] dark:ring-[#D29922]/30';
+    const green = 'bg-[#1A7F37]/10 text-[#1A7F37] ring-[#1A7F37]/30 dark:bg-[#3FB950]/10 dark:text-[#3FB950] dark:ring-[#3FB950]/30';
+    const blue = 'bg-[#0969DA]/10 text-[#0969DA] ring-[#0969DA]/30 dark:bg-[#58A6FF]/10 dark:text-[#58A6FF] dark:ring-[#58A6FF]/30';
     const badges: Array<{ label: string, title: string, icon: string, style: string }> = [];
     // The gradient Angular logo of the press kit, only to say "member of the Angular team" (the site's mark stays the A).
     if (person.team) badges.push({ label: 'Angular team', title: 'A public member of the angular organization on GitHub', icon: 'angular', style: 'bg-[#dc087d]/10 text-foreground ring-[#dc087d]/40' });
@@ -397,8 +398,8 @@ export default class Profile {
     if (firsts.length) {
       badges.push({ label: `#1 in ${yearRanges(firsts)}`, title: `The top Angularian of ${plural(firsts.length, 'year', 'years')}`, icon: 'lucideCrown', style: gold });
     }
-    if (person.rank <= 10) badges.push({ label: 'Top 10 all time', title: `#${formatNumber(person.rank)} of all time`, icon: 'lucideTrophy', style: sky });
-    if (person.reviewComments >= 100) badges.push({ label: 'Reviewer', title: `${formatNumber(person.reviewComments)} review comments on code`, icon: 'lucideFileCode', style: violet });
+    if (person.rank <= 10) badges.push({ label: 'Top 10 all time', title: `#${formatNumber(person.rank)} of all time`, icon: 'lucideTrophy', style: green });
+    if (person.reviewComments >= 100) badges.push({ label: 'Reviewer', title: `${formatNumber(person.reviewComments)} review comments on code`, icon: 'lucideFileCode', style: blue });
     return badges;
   });
   /** The contributor's rank in each period they contributed in, for the period tabs. */
@@ -435,7 +436,7 @@ export default class Profile {
     ...(this.fromCountry() ? { country: this.fromCountry() } : {}),
   }));
 
-  protected readonly avatar = (person: ContributorProfile) => avatarUrl(person.githubId, 112);
+  protected readonly avatar = (person: ContributorProfile) => avatarUrl(person.githubId, 160);
   protected readonly number = formatNumber;
   protected readonly phrase = periodPhrase;
   protected readonly country = countryName;
