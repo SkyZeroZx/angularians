@@ -17,7 +17,7 @@
     "predev": "node scripts/bundle-data.ts && node scripts/copy-flags.ts",
     "prebuild": "node scripts/bundle-data.ts && node scripts/copy-flags.ts",
     "pretest": "node scripts/bundle-data.ts && node scripts/copy-flags.ts",
-    "postbuild": "node scripts/netlify-function.ts"
+    "postbuild": "node scripts/copy-data.ts && node scripts/netlify-function.ts"
   },
   "private": true,
   "dependencies": {

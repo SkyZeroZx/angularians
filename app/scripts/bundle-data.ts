@@ -1,6 +1,6 @@
 /**
- * Before `dev` and `build`: validate the collector's files in `data/` and bundle them into one JSON module
- * that the API routes and the server functions both import. The nightly data commit triggers a new build.
+ * Before `dev` and `build`: validate the collector's files in `data/` and bundle them into one JSON file
+ * that the API routes and the server functions both read (`src/server/data/store.ts`). The nightly data commit triggers a new build.
  *
  *   node scripts/bundle-data.ts [dataDir]
  *   CONTRIBUTORS_DATA_DIR=dir pnpm build   (another data folder, e.g. sample data for testing)
