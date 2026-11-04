@@ -1,5 +1,5 @@
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
-import { computed, effect, inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
+import { computed, effect, inject, PLATFORM_ID, signal, Service } from '@angular/core';
 
 export type Theme = 'light' | 'dark';
 
@@ -10,7 +10,7 @@ export const THEME_STORAGE_KEY = 'theme';
  * Dark by default, light when chosen (and remembered), as the `dark` class on <html> (Spartan's dark variant).
  * The server renders dark (index.html has the class); the inline script switches to a saved light theme before paint.
  */
-@Injectable({ providedIn: 'root' })
+@Service()
 export class ThemeService {
   private readonly document = inject(DOCUMENT)
   private readonly browser = isPlatformBrowser(inject(PLATFORM_ID))

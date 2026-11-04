@@ -1,5 +1,5 @@
 // Ported from nuxt.com `app/components/nuxters/NuxtersCountrySelect.vue` (MIT, Copyright (c) 2022-2023 NuxtLabs).
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core'
+import { Component, computed, input, output } from '@angular/core'
 import { countryName, type CountryStats } from '@angularians/shared'
 import { NgIcon, provideIcons } from '@ng-icons/core'
 import { lucideEarth } from '@ng-icons/lucide'
@@ -13,7 +13,6 @@ const ALL = ''
   selector: 'app-country-select',
   imports: [HlmSelectImports, NgIcon],
   providers: [provideIcons({ lucideEarth })],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (items().length) {
       <hlm-select [value]="value() ?? ALL" (valueChange)="pick($event)" [itemToString]="label">

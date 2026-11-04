@@ -1,7 +1,7 @@
 // Ported from nuxt.com `app/components/nuxters/NuxtersGlobe.vue` (MIT, Copyright (c) 2022-2023 NuxtLabs).
 // Browser only: it is rendered inside `@defer`, and its WebGL setup runs in `afterNextRender`.
 import {
-  afterNextRender, ChangeDetectionStrategy, Component, computed, DestroyRef, effect, ElementRef, inject, input, output, signal, untracked, viewChild,
+  afterNextRender, Component, computed, DestroyRef, effect, ElementRef, inject, input, output, signal, untracked, viewChild,
 } from '@angular/core';
 import { COUNTRIES, type CountryStats } from '@angularians/shared';
 import { NgIcon, provideIcons } from '@ng-icons/core';
@@ -36,7 +36,6 @@ interface GlobeMarker extends CountryStats {
   selector: 'app-globe',
   imports: [HlmButton, NgIcon],
   providers: [provideIcons({ lucideMinus, lucidePause, lucidePlay, lucidePlus, lucideRotateCcw })],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'globe relative block size-full isolate overflow-hidden', '[attr.data-ready]': 'ready() || null' },
   template: `
     <!-- Clipped: a hidden marker keeps its last position, out of the frame it would widen the page -->

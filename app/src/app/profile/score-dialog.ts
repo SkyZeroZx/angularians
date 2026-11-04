@@ -1,6 +1,6 @@
 // Ported from nuxt.com `app/components/nuxters/NuxtersScoreBreakdown.vue` (MIT, Copyright (c) 2022-2023 NuxtLabs):
 // the (i) button by a score, and the breakdown in a modal.
-import { ChangeDetectionStrategy, Component, input } from '@angular/core'
+import { Component, input } from '@angular/core'
 import type { ScoredStats } from '@angularians/shared'
 import { NgIcon, provideIcons } from '@ng-icons/core'
 import { lucideInfo } from '@ng-icons/lucide'
@@ -13,7 +13,6 @@ import { ScoreBreakdown } from './score-breakdown'
   selector: 'app-score-dialog',
   imports: [HlmButton, HlmDialogImports, NgIcon, ScoreBreakdown],
   providers: [provideIcons({ lucideInfo })],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'inline-flex' },
   template: `
     <hlm-dialog>

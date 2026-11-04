@@ -1,11 +1,10 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { Container } from './container';
 
 /** A titled block of a page (Nuxt UI `UPageSection`). `sectionId` makes it a link target. */
 @Component({
   selector: 'app-page-section',
   imports: [Container],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block scroll-mt-20', '[attr.id]': 'sectionId()', '[attr.aria-labelledby]': 'title() ? headingId() : null' },
   template: `
     <app-container [class]="flush() ? 'pb-12 sm:pb-16' : 'py-12 sm:py-16'">

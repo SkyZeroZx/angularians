@@ -30,6 +30,19 @@ const NUDGE = 0.09
 const markSvg = (size: number): Node =>
   h('svg', { width: size, height: size, position: 'relative', top: -size * .035 }, MARK.map(([fill, d]) => h('path', {}, undefined, { d, fill })), { viewBox: '0 0 24 24', width: size, height: size })
 
+/** The profile's stat icons (Lucide, ISC), as paths. */
+const ICONS = {
+  pullRequests: ['M21 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0', 'M9 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0', 'M13 6h3a2 2 0 0 1 2 2v7', 'M6 9v12'],
+  issues: ['M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0', 'M13 12a1 1 0 1 1-2 0 1 1 0 0 1 2 0'],
+  comments: ['M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719'],
+  reactions: ['M22 11v1a10 10 0 1 1-9-10', 'M8 14s1.5 2 4 2 4-2 4-2', 'M9 9h.01', 'M15 9h.01', 'M16 5h6', 'M19 2v6'],
+}
+const STAT_ICON_SIZE = 36
+const statIcon = (paths: string[], color: string): Node =>
+  h('svg', { position: 'absolute', top: 30, left: 32, width: STAT_ICON_SIZE, height: STAT_ICON_SIZE }, paths.map(d => h('path', {}, undefined, { d })), {
+    viewBox: '0 0 24 24', width: STAT_ICON_SIZE, height: STAT_ICON_SIZE, fill: 'none', stroke: color, strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round',
+  })
+
 const format = new Intl.NumberFormat('en-US').format
 const label = (value: number, one: string, many: string) => (value === 1 ? one : many)
 
@@ -57,12 +70,12 @@ export function cardTree(profile: ContributorProfile, period: Period, avatar: st
   const since = profile.firstContributionAt ? new Date(profile.firstContributionAt).getUTCFullYear() : null
   const rows = [
     [
-      { label: label(stats.pullRequests.all, 'Merged PR', 'Merged PRs'), value: stats.pullRequests.all, color: COLORS.pullRequests },
-      { label: label(stats.issues, 'Issue', 'Issues'), value: stats.issues, color: COLORS.issues },
+      { label: label(stats.pullRequests.all, 'Merged PR', 'Merged PRs'), value: stats.pullRequests.all, color: COLORS.pullRequests, icon: ICONS.pullRequests },
+      { label: label(stats.issues, 'Issue', 'Issues'), value: stats.issues, color: COLORS.issues, icon: ICONS.issues },
     ],
     [
-      { label: label(stats.comments + stats.reviewComments, 'Comment', 'Comments'), value: stats.comments + stats.reviewComments, color: COLORS.comments },
-      { label: label(stats.reactions, 'Reaction', 'Reactions'), value: stats.reactions, color: COLORS.reactions },
+      { label: label(stats.comments + stats.reviewComments, 'Comment', 'Comments'), value: stats.comments + stats.reviewComments, color: COLORS.comments, icon: ICONS.comments },
+      { label: label(stats.reactions, 'Reaction', 'Reactions'), value: stats.reactions, color: COLORS.reactions, icon: ICONS.reactions },
     ],
   ]
   return h('div', { width: '100%', height: '100%', flexDirection: 'row', backgroundColor: '#0a0a0a', color: '#ffffff', padding: 64, gap: 64, fontFamily: 'Inter' }, [
@@ -80,7 +93,8 @@ export function cardTree(profile: ContributorProfile, period: Period, avatar: st
     ]),
     h('div', { flexDirection: 'column', flex: 1, gap: 32, justifyContent: 'center' }, rows.map(row =>
       h('div', { flexDirection: 'row', gap: 32 }, row.map(stat =>
-        h('div', { flexDirection: 'column', justifyContent: 'flex-end', flex: 1, height: 220, borderRadius: 24, padding: 32, border: `2px solid ${stat.color}`, backgroundColor: `${stat.color}0D` }, [
+        h('div', { position: 'relative', flexDirection: 'column', justifyContent: 'flex-end', flex: 1, height: 220, borderRadius: 24, padding: 32, border: `2px solid ${stat.color}`, backgroundColor: `${stat.color}0D` }, [
+          statIcon(stat.icon, stat.color),
           h('div', { fontSize: 60, fontWeight: 600 }, format(stat.value)),
           h('div', { fontSize: 30, marginTop: 8, color: stat.color }, stat.label),
         ])),

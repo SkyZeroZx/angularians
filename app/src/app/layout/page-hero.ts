@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { Container } from './container';
 
 /**
@@ -8,7 +8,6 @@ import { Container } from './container';
 @Component({
   selector: 'app-page-hero',
   imports: [Container],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block' },
   template: `
     <app-container class="grid items-center gap-10 pt-16 pb-12 sm:pt-24 sm:pb-16 lg:grid-cols-2 lg:gap-16">

@@ -1,7 +1,7 @@
 // A colour picker for trying brand colours on the live site: for signed-in people, in their browser only. It sets the
 // theme's primary colour (the buttons, the word Angularians, the mark) and derives the mark's grid shades from it.
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, effect, inject, PLATFORM_ID, signal } from '@angular/core';
+import { Component, computed, effect, inject, PLATFORM_ID, signal } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideCheck, lucideCopy, lucidePalette, lucideRotateCcw } from '@ng-icons/lucide';
 import { HlmPopoverImports } from '@spartan-ng/helm/popover';
@@ -39,7 +39,6 @@ const VALID = /^#[0-9a-f]{6}$/i;
   selector: 'app-brand-picker',
   imports: [HlmPopoverImports, NgIcon],
   providers: [provideIcons({ lucideCheck, lucideCopy, lucidePalette, lucideRotateCcw })],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'flex' },
   template: `
     <hlm-popover align="end" sideOffset="8">

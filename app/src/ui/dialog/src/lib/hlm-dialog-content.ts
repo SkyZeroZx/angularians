@@ -3,7 +3,6 @@ import type { ComponentType } from "@angular/cdk/portal";
 import { NgComponentOutlet } from "@angular/common";
 import {
   booleanAttribute,
-  ChangeDetectionStrategy,
   Component,
   computed,
   inject,
@@ -29,7 +28,6 @@ type HlmDialogContentContext = {
   exportAs: "hlmDialogContent",
   imports: [NgComponentOutlet, HlmButton, HlmDialogClose, NgIcon],
   providers: [provideIcons({ lucideX })],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     "data-slot": "dialog-content",
     "[attr.data-state]": "state()",

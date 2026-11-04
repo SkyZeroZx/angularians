@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
 
 /**
  * The Angularians mark: the Angular shield cut in two along the right leg of a rough-cut A (the capital A of
@@ -9,7 +9,6 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
  */
 @Component({
   selector: 'app-logo-mark',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'inline-block' },
   template: `
     <svg viewBox="0 0 24 24" class="block size-full -translate-y-[3.5%] overflow-visible" aria-hidden="true">

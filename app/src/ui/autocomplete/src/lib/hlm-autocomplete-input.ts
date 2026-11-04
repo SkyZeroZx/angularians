@@ -1,7 +1,6 @@
 import { BooleanInput } from "@angular/cdk/coercion";
 import {
   booleanAttribute,
-  ChangeDetectionStrategy,
   Component,
   input,
 } from "@angular/core";
@@ -28,7 +27,6 @@ import { classes } from "@spartan-ng/helm/utils";
     BrnAutocompleteInput,
   ],
   providers: [provideIcons({ lucideSearch, lucideX })],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   hostDirectives: [BrnAutocompleteAnchor, HlmInputGroup],
   template: `
     <input

@@ -1,5 +1,5 @@
 import type { ComponentType } from "@angular/cdk/portal";
-import { inject, Injectable, type TemplateRef } from "@angular/core";
+import { inject, type TemplateRef, Service } from "@angular/core";
 import {
   type BrnDialogOptions,
   type BrnDialogRef,
@@ -16,9 +16,7 @@ export type HlmDialogOptions<DialogContext = unknown> = BrnDialogOptions & {
   context?: DialogContext;
 };
 
-@Injectable({
-  providedIn: "root",
-})
+@Service()
 export class HlmDialogService {
   private readonly _brnDialogService = inject(BrnDialogService);
 

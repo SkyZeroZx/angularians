@@ -1,6 +1,6 @@
 // Ported from nuxt.com `app/components/nuxters/NuxtersMeCard.vue` and `NuxtersMeCardSkeleton.vue`
 // (MIT, Copyright (c) 2022-2023 NuxtLabs). No Discord: the actions are the share buttons.
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core'
+import { Component, computed, inject } from '@angular/core'
 import { RouterLink } from '@angular/router'
 import { NgIcon, provideIcons } from '@ng-icons/core'
 import { lucideArrowRight, lucideAward, lucideCircleDot, lucideGitPullRequest, lucideInfo, lucideMessageCircleHeart } from '@ng-icons/lucide'
@@ -30,7 +30,6 @@ const SIGNED_OUT = 'min-h-64 lg:min-h-80'
   selector: 'app-me-card',
   imports: [AngularLogo, HlmButton, HlmSkeleton, HlmTooltip, LogoMark, NgIcon, RouterLink, ScoreDialog, Share],
   providers: [provideIcons({ lucideArrowRight, lucideAward, lucideCircleDot, lucideGitPullRequest, lucideInfo, lucideMessageCircleHeart, simpleGithub })],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block w-full' },
   template: `
     @if (state() === null && auth.wasSignedIn()) {

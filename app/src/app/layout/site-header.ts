@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideHeart } from '@ng-icons/lucide';
@@ -15,7 +15,6 @@ import { AuthService } from '../auth/auth.service';
   selector: 'app-site-header',
   imports: [BrandPicker, Container, HlmButton, LogoMark, NgIcon, RouterLink, ThemeToggle, UserMenu],
   providers: [provideIcons({ lucideHeart, simpleGithub })],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   host: { role: 'banner', class: 'sticky top-0 z-40 block border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60' },
   template: `
     <app-container class="flex h-16 items-center gap-4">

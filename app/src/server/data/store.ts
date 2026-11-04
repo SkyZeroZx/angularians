@@ -13,12 +13,16 @@ export const DATA_FILE = 'bundle.generated.json'
 
 let data: ContributorsData | undefined
 
-/** The data file in this module's folder or the closest folder above it: `src/server/data` in dev, the server's root once built. */
+/**
+ * The data file in this module's folder or the closest folder above it, or in `src/server/data` of one of those:
+ * dev runs this from the source and from `dist/.nitro/dev`, a build from the server's root.
+ */
 function findDataFile(): string {
   let dir = dirname(fileURLToPath(import.meta.url))
   for (;;) {
-    const file = join(dir, DATA_FILE)
-    if (existsSync(file)) return file
+    for (const file of [join(dir, DATA_FILE), join(dir, 'src/server/data', DATA_FILE)]) {
+      if (existsSync(file)) return file
+    }
     const parent = dirname(dir)
     if (parent === dir) throw new Error(`No ${DATA_FILE} above ${fileURLToPath(import.meta.url)}: run scripts/bundle-data.ts`)
     dir = parent

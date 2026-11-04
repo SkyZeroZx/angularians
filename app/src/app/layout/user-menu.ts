@@ -1,6 +1,6 @@
 // After nuxt.com's `HeaderUserMenu.vue` (MIT, Copyright (c) 2022-2023 NuxtLabs): signed in, the avatar joins the header's GitHub
 // link and theme button, and its menu has the profile and signing out.
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core'
+import { Component, computed, inject } from '@angular/core'
 import { RouterLink } from '@angular/router'
 import { NgIcon, provideIcons } from '@ng-icons/core'
 import { lucideLogOut } from '@ng-icons/lucide'
@@ -15,7 +15,6 @@ const ITEM = 'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left te
   selector: 'app-user-menu',
   imports: [HlmPopoverImports, LogoMark, NgIcon, RouterLink],
   providers: [provideIcons({ lucideLogOut })],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'flex' },
   template: `
     @if (user(); as me) {
