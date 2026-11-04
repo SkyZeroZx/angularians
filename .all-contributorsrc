@@ -33,6 +33,16 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "WuglyakBolgoink",
+      "name": "Ali Elderov",
+      "avatar_url": "https://avatars.githubusercontent.com/u/2271337?v=4",
+      "profile": "https://linktr.ee/ngxsamurai",
+      "contributions": [
+        "ideas",
+        "bug"
+      ]
     }
   ],
   "commitType": "docs"
