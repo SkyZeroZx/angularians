@@ -282,7 +282,7 @@ const SINCE = new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric'
       <app-container class="py-14">
         <h1 class="text-3xl font-bold tracking-tight">No contributions from {{ username() }}</h1>
         <p class="mt-2 max-w-xl text-muted-foreground">
-          {{ profile.error() ? 'The profile could not be loaded. Try again in a moment.' : 'Nobody with this GitHub username has a merged pull request, an issue or a comment in Angular's repositories yet, or the data has not caught up: it updates every night.' }}
+          {{ notFoundText() }}
         </p>
         <a hlmBtn class="mt-6" href="https://github.com/angular/angular/contribute" target="_blank" rel="noopener">Find a first issue</a>
       </app-container>
@@ -302,6 +302,10 @@ export default class Profile {
   /** Every period is in the profile: switching period needs no request. */
   protected readonly profile = injectServerFn(getContributor, () => ({ username: this.username() }));
   /** Signed in as this contributor (by GitHub id). */
+  /** In the class, not the template: an apostrophe in a template string ends it. */
+  protected readonly notFoundText = computed(() => this.profile.error()
+    ? 'The profile could not be loaded. Try again in a moment.'
+    : "Nobody with this GitHub username has a merged pull request, an issue or a comment in Angular's repositories yet, or the data has not caught up: it updates every night.");
   protected readonly isOwner = computed(() => {
     const me = this.auth.state()?.user;
     return !!me && me.githubId === this.profile.value()?.githubId;

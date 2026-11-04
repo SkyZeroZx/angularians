@@ -43,7 +43,7 @@ export const routeMeta = {
   template: `
     <app-page-hero [description]="description">
       <span heroHeadline hlmBadge variant="secondary" class="mb-4">Updated every day</span>
-      <span heroTitle class="group inline-flex flex-wrap items-center gap-x-4"><app-logo-mark class="size-[1.1em] shrink-0" animated /><span>Meet the <span class="text-brand-from">Angularians</span></span></span>
+      <span heroTitle class="group inline-flex flex-wrap items-center gap-x-4"><app-logo-mark class="size-[1.1em] shrink-0 max-sm:hidden" animated /><span>Meet the <span class="text-brand-from">Angularians</span></span></span>
       <!-- @container: the card's height follows its own width -->
       <ng-container heroActions>
         <app-score-rules />

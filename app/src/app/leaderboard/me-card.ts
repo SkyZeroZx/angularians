@@ -13,11 +13,15 @@ import { ScoreDialog } from '../profile/score-dialog'
 import { Share } from '../profile/share'
 import { avatarUrl, formatNumber } from './format'
 
+const CARD = 'flex w-full flex-col rounded-xl bg-muted/40 p-6 ring-1 ring-border sm:p-8'
 /**
- * Every state (signed out, loading, signed in) has the same size, from the width of its container (the signed-in
- * card wraps below 520px): the hero does not move when the session and the stats arrive. Needs an `@container` parent.
+ * The signed-in card's size, from the width of its container (it wraps below 520px), for it and for its skeleton:
+ * the hero does not move when the stats arrive. Needs an `@container` parent. Signed out, the card is only as tall
+ * as its content: most visitors are, and a visitor signed in last time gets the skeleton at this size instead.
  */
-const CARD = 'flex w-full flex-col rounded-xl bg-muted/40 p-6 ring-1 ring-border sm:p-8 min-h-[29rem] @min-[400px]:min-h-[25.75rem] @min-[460px]:min-h-[24.25rem] @min-[520px]:min-h-[22rem]'
+const SIGNED_IN = 'min-h-[29rem] @min-[400px]:min-h-[25.75rem] @min-[460px]:min-h-[24.25rem] @min-[520px]:min-h-[22rem]'
+/** Signed out: as tall as the hero's text on wide screens, so the card does not look lost beside it. */
+const SIGNED_OUT = 'min-h-64 lg:min-h-80'
 
 /** The signed-in Angularian, or a sign-in. */
 @Component({
@@ -27,9 +31,9 @@ const CARD = 'flex w-full flex-col rounded-xl bg-muted/40 p-6 ring-1 ring-border
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block w-full' },
   template: `
-    @if (state() === null) {
+    @if (state() === null && auth.wasSignedIn()) {
       <!-- The session loads in the browser: the skeleton, at the signed-in card's height -->
-      <div [class]="card" aria-hidden="true">
+      <div [class]="card + ' ' + signedIn" aria-hidden="true">
         <div class="flex flex-col gap-6">
           <div class="flex items-center gap-4">
             <div hlmSkeleton class="size-16 shrink-0 rounded-full"></div>
@@ -50,7 +54,7 @@ const CARD = 'flex w-full flex-col rounded-xl bg-muted/40 p-6 ring-1 ring-border
         </div>
       </div>
     } @else if (me(); as me) {
-      <section [class]="card" aria-label="Your Angularian profile">
+      <section [class]="card + ' ' + signedIn" aria-label="Your Angularian profile">
         <div class="flex flex-col gap-6">
           <div class="flex items-center gap-4">
             <img [src]="avatar(me.githubId)" [alt]="me.login" width="64" height="64" class="size-16 shrink-0 rounded-full bg-muted" />
@@ -114,18 +118,19 @@ const CARD = 'flex w-full flex-col rounded-xl bg-muted/40 p-6 ring-1 ring-border
         </div>
       </section>
     } @else {
-      <section [class]="card" aria-labelledby="me-card-title">
+      <!-- Signed out, or not known yet (and not signed in last time): the sign-in, at once -->
+      <section [class]="card + ' ' + signedOut" aria-labelledby="me-card-title">
         <div class="my-auto flex flex-col items-center gap-4 text-center">
           <ng-icon name="lucideGithub" size="2rem" aria-hidden="true" />
           <p id="me-card-title" class="text-lg font-medium">Discover your contributions</p>
           <p class="-mt-2 max-w-sm text-muted-foreground">
-            @if (state()?.enabled) {
+            @if (state()?.enabled !== false) {
               Sign in with GitHub to see your score, share your Angularian profile and unlock your badges.
             } @else {
               Sign-in with GitHub is coming soon: your score, your Angularian profile to share, and your badges.
             }
           </p>
-          @if (state()?.enabled) {
+          @if (state()?.enabled !== false) {
             <a hlmBtn class="bg-foreground text-background hover:bg-foreground/90" [href]="loginUrl">
               <ng-icon name="lucideGithub" aria-hidden="true" /> Sign in with GitHub
             </a>
@@ -136,8 +141,10 @@ const CARD = 'flex w-full flex-col rounded-xl bg-muted/40 p-6 ring-1 ring-border
   `,
 })
 export class MeCard {
-  private readonly auth = inject(AuthService)
+  protected readonly auth = inject(AuthService)
   protected readonly card = CARD
+  protected readonly signedIn = SIGNED_IN
+  protected readonly signedOut = SIGNED_OUT
   protected readonly state = this.auth.state
   protected readonly me = computed(() => this.state()?.user ?? null)
   protected readonly loginUrl = this.auth.loginUrl('/')
