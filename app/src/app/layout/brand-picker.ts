@@ -1,4 +1,4 @@
-// A colour picker for trying brand colours on the live site: signed out only, in this browser only. It sets the
+// A colour picker for trying brand colours on the live site: for signed-in people, in their browser only. It sets the
 // theme's primary colour (the buttons, the word Angularians, the mark) and derives the mark's grid shades from it.
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, effect, inject, PLATFORM_ID, signal } from '@angular/core';

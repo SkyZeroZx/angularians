@@ -24,8 +24,8 @@ import { AuthService } from '../auth/auth.service';
       </a>
       <nav class="ml-auto flex items-center gap-1" aria-label="Site">
         <!-- GitHub and the theme always; then, signed in, the avatar and its menu -->
-        @if (!signedIn() && !(auth.wasSignedIn() && auth.state() === null)) {
-          <!-- Signed out: try a brand colour, in this browser only -->
+        @if (signedIn()) {
+          <!-- Signed in: try a brand colour, in this browser only -->
           <app-brand-picker />
         }
         <a hlmBtn variant="ghost" size="icon" href="https://github.com/erkamyaman/angularians" target="_blank" rel="noopener" aria-label="Angularians on GitHub" title="Angularians on GitHub">
