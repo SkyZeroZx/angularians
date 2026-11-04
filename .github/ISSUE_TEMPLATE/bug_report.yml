@@ -26,7 +26,7 @@ body:
     id: url
     attributes:
       label: The page
-      placeholder: https://angularians.netlify.app/your-username?period=2025
+      placeholder: https://angularians.dev/your-username?period=2025
   - type: input
     id: environment
     attributes:
