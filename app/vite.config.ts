@@ -53,8 +53,9 @@ export default defineConfig(() => ({
           // Pages change with the data, once a night with a new deploy (which clears the CDN): browsers revalidate,
           // the CDN keeps a page an hour and may serve a stale one for a day while it refreshes it.
           // 400s and 404s too: they only change with the data. The API routes set their own, longer browser cache.
-          // Netlify-Vary: a copy per value of the signed-in hint cookie (app/src/app/auth/hint.ts), whose pages start
-          // with the signed-in card's skeleton; every other cookie is ignored by the cache.
+          // Netlify-Vary: a copy per query string, or the CDN can answer with another URL's response (the wrong country);
+          // and per value of the signed-in hint cookie (app/src/app/auth/hint.ts), whose pages start with the signed-in
+          // card's skeleton. Every other cookie is ignored by the cache.
           '/**': { headers: { 'cache-control': 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400', 'netlify-vary': 'query,cookie=angularians-signed-in' } },
           // Sign-in: per person, with cookies. Never in a shared cache.
           '/api/auth/**': { headers: { 'cache-control': 'private, no-store' } },

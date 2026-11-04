@@ -18,3 +18,15 @@
   for = "/fonts/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
+
+# Hashed file names: a changed file gets a new name, so browsers keep these a year.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Flags keep their names but almost never change: browsers keep them 30 days.
+[[headers]]
+  for = "/flags/*"
+  [headers.values]
+    Cache-Control = "public, max-age=2592000"

@@ -22,6 +22,7 @@ Root services use `@Service()` (available since Angular 22.1), which preserves t
 
 Every page is server-rendered on Netlify by one function (Nitro's `netlify` preset, configured in [`netlify.toml`](../netlify.toml));
 static assets go to the CDN. Pages and API responses are cached by the CDN for an hour, and each deploy clears that cache.
+Browsers keep `/assets/*` and `/fonts/*` for a year and `/flags/*` for 30 days (`netlify.toml`).
 
 The data is read once per server instance from a JSON file next to the server (`app/scripts/bundle-data.ts` writes it,
 `app/scripts/copy-data.ts` copies it there): at ~25 MB it is too big to compile into the server.
