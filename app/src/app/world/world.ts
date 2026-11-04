@@ -4,7 +4,7 @@ import { afterNextRender, Component, computed, DestroyRef, ElementRef, inject, i
 import { RouterLink } from '@angular/router';
 import { countryName, type ContributorsMap, type ContributorSummary, type CountryStats } from '@angularians/shared';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideArrowUp, lucideX, lucideSearch } from '@ng-icons/lucide';
+import { remixArrowUpLine, remixCloseLine, remixSearchLine } from '@ng-icons/remixicon';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmInputGroupImports } from '@spartan-ng/helm/input-group';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
@@ -18,7 +18,7 @@ const CARD_TILES = 12;
 @Component({
   selector: 'app-world',
   imports: [Globe, HlmButton, HlmInputGroupImports, HlmSkeleton, HlmTooltip, NgIcon, NgTemplateOutlet, RouterLink],
-  providers: [provideIcons({ lucideArrowUp, lucideX, lucideSearch })],
+  providers: [provideIcons({ remixArrowUpLine, remixCloseLine, remixSearchLine })],
   host: { class: 'grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] lg:gap-12' },
   template: `
     <ng-template #card let-shown>
@@ -27,10 +27,10 @@ const CARD_TILES = 12;
           <img [src]="flag(shown.code)" alt="" width="40" height="40" class="size-10 shrink-0" />
           <div class="min-w-0 flex-1">
             <p class="truncate font-semibold">{{ name(shown.code) }}</p>
-            <p class="text-sm text-muted-foreground">{{ number(shown.count) }} <span class="brand">{{ shown.count === 1 ? 'Angularian' : 'Angularians' }}</span> · #{{ rankOf(shown.code) }} country</p>
+            <p class="text-sm text-muted-foreground">{{ number(shown.count) }} <span class="brand text-primary">{{ shown.count === 1 ? 'Angularian' : 'Angularians' }}</span> · #{{ rankOf(shown.code) }} country</p>
           </div>
           <button hlmBtn variant="ghost" size="icon-sm" type="button" aria-label="Show all countries" (click)="select.emit(null)">
-            <ng-icon name="lucideX" aria-hidden="true" />
+            <ng-icon name="remixCloseLine" aria-hidden="true" />
           </button>
         </div>
         <ul class="mt-4 grid grid-cols-6 gap-2" [attr.aria-busy]="!people().length || null" [attr.aria-label]="'Best ranked from ' + name(shown.code)">
@@ -47,8 +47,8 @@ const CARD_TILES = 12;
           }
         </ul>
         <button hlmBtn variant="link" class="mt-3 px-0 text-muted-foreground hover:text-foreground" type="button" (click)="leaderboard.emit()">
-          <span>See the {{ shown.count === 1 ? '' : number(shown.count) + ' ' }}<span class="brand">{{ shown.count === 1 ? 'Angularian' : 'Angularians' }}</span> from {{ name(shown.code) }}</span>
-          <ng-icon name="lucideArrowUp" aria-hidden="true" />
+          <span>See the {{ shown.count === 1 ? '' : number(shown.count) + ' ' }}<span class="brand text-primary">{{ shown.count === 1 ? 'Angularian' : 'Angularians' }}</span> from {{ name(shown.code) }}</span>
+          <ng-icon name="remixArrowUpLine" aria-hidden="true" />
         </button>
       </div>
     </ng-template>
@@ -72,7 +72,7 @@ const CARD_TILES = 12;
     <div class="flex min-w-0 flex-col gap-4">
       <div hlmInputGroup>
         <input hlmInputGroupInput type="search" autocomplete="off" aria-label="Search a country" placeholder="Search a country" [value]="query()" (input)="search($event)" />
-        <hlm-input-group-addon><ng-icon name="lucideSearch" aria-hidden="true" /></hlm-input-group-addon>
+        <hlm-input-group-addon><ng-icon name="remixSearchLine" aria-hidden="true" /></hlm-input-group-addon>
       </div>
       <ol class="-mx-2 max-h-100 overflow-y-auto pr-1" [class.lg:h-100]="query().trim()" aria-label="Countries, from the most contributors">
         @for (item of shownCountries(); track item.code) {
@@ -97,7 +97,7 @@ const CARD_TILES = 12;
         }
       </ol>
       <p class="text-xs text-muted-foreground">
-        From the location on each GitHub profile, matched to a country: {{ number(map().located) }} of {{ number(map().total) }} <span class="brand">Angularians</span> set one.
+        From the location on each GitHub profile, matched to a country: {{ number(map().located) }} of {{ number(map().total) }} <span class="brand text-primary">Angularians</span> set one.
       </p>
     </div>
 

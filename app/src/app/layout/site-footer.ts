@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideFileText, lucideGlobe } from '@ng-icons/lucide';
+import { remixFileTextLine, remixGlobalLine } from '@ng-icons/remixicon';
 import { simpleGithub, simpleNuxt } from '@ng-icons/simple-icons';
 import { Container } from './container';
 import { LogoMark } from './logo-mark';
@@ -15,7 +15,7 @@ interface FooterLink { label: string; href: string; route?: boolean; icon?: stri
 @Component({
   selector: 'app-site-footer',
   imports: [Container, LogoMark, NgIcon, RouterLink],
-  providers: [provideIcons({ lucideFileText, lucideGlobe, simpleGithub, simpleNuxt })],
+  providers: [provideIcons({ remixFileTextLine, remixGlobalLine, simpleGithub, simpleNuxt })],
   host: { role: 'contentinfo', class: 'block border-t' },
   template: `
     <app-container class="block py-12 text-sm">
@@ -91,8 +91,8 @@ export class SiteFooter {
         { label: 'Built with AnalogJS', href: 'https://analogjs.org', logo: '/credits/analogjs.svg' },
         { label: 'UI by spartan/ui', href: 'https://spartan.ng', logo: '/credits/spartan.svg' },
         { label: 'Icons by ng-icons', href: 'https://ng-icons.github.io/ng-icons', logo: '/credits/ng-icons.svg' },
-        { label: 'Countries by GeoNames', href: 'https://www.geonames.org', icon: 'lucideGlobe' },
-        { label: 'All notices', href: `${REPO}/blob/main/THIRD_PARTY_NOTICES.md`, icon: 'lucideFileText' },
+        { label: 'Countries by GeoNames', href: 'https://www.geonames.org', icon: 'remixGlobalLine' },
+        { label: 'All notices', href: `${REPO}/blob/main/THIRD_PARTY_NOTICES.md`, icon: 'remixFileTextLine' },
       ],
     },
   ];

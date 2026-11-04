@@ -3,25 +3,23 @@
 import { Component, computed, input } from '@angular/core'
 import { scoreBreakdown, type ScoredStats } from '@angularians/shared'
 import { NgIcon, provideIcons } from '@ng-icons/core'
-import {
-  lucideBookOpen, lucideBrushCleaning, lucideCircleDot, lucideFileCode, lucideLightbulb, lucideMessageCircle, lucideMessageCircleHeart,
-  lucideRocket, lucideSmilePlus, lucideWrench,
-} from '@ng-icons/lucide'
+import { remixBookOpenLine, remixBrushLine, remixChatHeartLine, remixFileCodeLine, remixLightbulbLine, remixRocketLine, remixToolsLine } from '@ng-icons/remixicon'
+import { octComment, octIssueOpened, octSmiley } from '@ng-icons/octicons'
 import { HlmProgressImports } from '@spartan-ng/helm/progress'
 import { formatNumber, formatPoints } from '../leaderboard/format'
 
-/** `scoreBreakdown` names Lucide icons in kebab case: their `@ng-icons/lucide` names. */
+/** `scoreBreakdown`'s icon keys, and the icons they show. */
 const ICONS: Record<string, string> = {
-  'rocket': 'lucideRocket',
-  'wrench': 'lucideWrench',
-  'book-open': 'lucideBookOpen',
-  'brush-cleaning': 'lucideBrushCleaning',
-  'lightbulb': 'lucideLightbulb',
-  'message-circle-heart': 'lucideMessageCircleHeart',
-  'circle-dot': 'lucideCircleDot',
-  'file-code': 'lucideFileCode',
-  'message-circle': 'lucideMessageCircle',
-  'smile-plus': 'lucideSmilePlus',
+  'rocket': 'remixRocketLine',
+  'wrench': 'remixToolsLine',
+  'book-open': 'remixBookOpenLine',
+  'brush-cleaning': 'remixBrushLine',
+  'lightbulb': 'remixLightbulbLine',
+  'message-circle-heart': 'remixChatHeartLine',
+  'circle-dot': 'octIssueOpened',
+  'file-code': 'remixFileCodeLine',
+  'message-circle': 'octComment',
+  'smile-plus': 'octSmiley',
 }
 
 /** One row per contribution type: count × points = total, with a bar on one scale so the rows compare. */
@@ -29,8 +27,8 @@ const ICONS: Record<string, string> = {
   selector: 'app-score-breakdown',
   imports: [HlmProgressImports, NgIcon],
   providers: [provideIcons({
-    lucideBookOpen, lucideBrushCleaning, lucideCircleDot, lucideFileCode, lucideLightbulb, lucideMessageCircle, lucideMessageCircleHeart,
-    lucideRocket, lucideSmilePlus, lucideWrench,
+    remixBookOpenLine, remixBrushLine, octIssueOpened, remixFileCodeLine, remixLightbulbLine, octComment, remixChatHeartLine,
+    remixRocketLine, octSmiley, remixToolsLine,
   })],
   template: `
     <ul class="flex flex-col gap-4">
@@ -58,7 +56,7 @@ export class ScoreBreakdown {
 
   protected readonly rows = computed(() => scoreBreakdown(this.stats()))
   protected readonly max = computed(() => Math.max(1, ...this.rows().map(row => row.total)))
-  protected readonly icon = (name: string) => ICONS[name] ?? 'lucideRocket'
+  protected readonly icon = (name: string) => ICONS[name] ?? 'remixRocketLine'
   protected readonly number = formatNumber
   protected readonly points = formatPoints
 }

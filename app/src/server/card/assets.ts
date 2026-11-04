@@ -3,13 +3,13 @@ import type { CardFonts } from './card'
 
 let fonts: Promise<CardFonts> | undefined
 
-/** The fonts of the cards (Inter, and Norse Bold for the word "Angularian" when the build had it), from the server assets (`nitro.serverAssets` in vite.config.ts); loaded once, retried on failure. */
+/** The fonts of the cards (Manrope, and Norse Bold for the word "Angularian" when the build had it), from the server assets (`nitro.serverAssets` in vite.config.ts); loaded once, retried on failure. */
 export function cardFonts(): Promise<CardFonts> {
   return (fonts ??= (async () => {
     const storage = useStorage('assets:card-fonts')
     const [regular, semibold] = await Promise.all([
-      storage.getItemRaw<Buffer>('inter-latin-400-normal.woff'),
-      storage.getItemRaw<Buffer>('inter-latin-600-normal.woff'),
+      storage.getItemRaw<Buffer>('manrope-latin-400-normal.woff'),
+      storage.getItemRaw<Buffer>('manrope-latin-600-normal.woff'),
     ])
     if (!regular || !semibold) throw new Error('The card fonts are missing from the server assets')
     // Optional: only there when the build could download it.

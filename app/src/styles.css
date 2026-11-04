@@ -4,8 +4,8 @@
 @import "tailwindcss/utilities.css";
 
 @import "@spartan-ng/brain/hlm-tailwind-preset.css";
-/* Inter, self-hosted (SIL Open Font License), like nuxt.com */
-@import "@fontsource-variable/inter";
+/* Manrope, self-hosted (SIL Open Font License) */
+@import "@fontsource-variable/manrope";
 
 /*
  * The word "Angularians": Norse Bold by Joël Carrouché, rough-cut capitals like the A of the mark
@@ -33,7 +33,7 @@
   --mark-2: #337343;
   --mark-3: #5eb572;
 
-  --font-sans: "Inter Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-sans: "Manrope Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
@@ -122,7 +122,7 @@
 
 /*
  * The word "Angularian(s)" wherever the site shows it, in the display font: same size as the text around it (Norse's
- * capitals are as tall as Inter's), on the same baseline.
+ * capitals are about as tall as Manrope's), on the same baseline.
  */
 @utility brand {
   font-family: var(--font-display);

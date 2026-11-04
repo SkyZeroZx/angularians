@@ -1,7 +1,7 @@
 import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideHeart } from '@ng-icons/lucide';
+import { remixHeartLine } from '@ng-icons/remixicon';
 import { simpleGithub } from '@ng-icons/simple-icons';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { Container } from './container';
@@ -14,7 +14,7 @@ import { AuthService } from '../auth/auth.service';
 @Component({
   selector: 'app-site-header',
   imports: [BrandPicker, Container, HlmButton, LogoMark, NgIcon, RouterLink, ThemeToggle, UserMenu],
-  providers: [provideIcons({ lucideHeart, simpleGithub })],
+  providers: [provideIcons({ remixHeartLine, simpleGithub })],
   host: { role: 'banner', class: 'sticky top-0 z-40 block border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60' },
   template: `
     <app-container class="flex h-16 items-center gap-4">
@@ -26,7 +26,7 @@ import { AuthService } from '../auth/auth.service';
         <!-- As on ngprimitives.com: sponsor first, a divider, then the icons. On phones the heart alone. -->
         <a class="mr-1 inline-flex h-9 items-center gap-2 rounded-md px-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
           href="https://github.com/sponsors/erkamyaman" target="_blank" rel="noopener" aria-label="Sponsor Angularians" title="Sponsor Angularians">
-          <ng-icon name="lucideHeart" aria-hidden="true" /><span class="max-sm:hidden">Sponsor</span>
+          <ng-icon name="remixHeartLine" aria-hidden="true" /><span class="max-sm:hidden">Sponsor</span>
         </a>
         <span class="mr-1 h-5 w-px bg-border" aria-hidden="true"></span>
         <!-- GitHub and the theme always; then, signed in, the avatar and its menu -->

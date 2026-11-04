@@ -5,7 +5,7 @@ import {
 } from '@angular/core';
 import { COUNTRIES, type CountryStats } from '@angularians/shared';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideMinus, lucidePause, lucidePlay, lucidePlus, lucideRotateCcw } from '@ng-icons/lucide';
+import { remixAddLine, remixPauseLine, remixPlayLine, remixRestartLine, remixSubtractLine } from '@ng-icons/remixicon';
 import { HlmButton } from '@spartan-ng/helm/button';
 import type { Globe as CobeGlobe } from 'cobe';
 import createGlobe from 'cobe';
@@ -35,7 +35,7 @@ interface GlobeMarker extends CountryStats {
 @Component({
   selector: 'app-globe',
   imports: [HlmButton, NgIcon],
-  providers: [provideIcons({ lucideMinus, lucidePause, lucidePlay, lucidePlus, lucideRotateCcw })],
+  providers: [provideIcons({ remixSubtractLine, remixPauseLine, remixPlayLine, remixAddLine, remixRestartLine })],
   host: { class: 'globe relative block size-full isolate overflow-hidden', '[attr.data-ready]': 'ready() || null' },
   template: `
     <!-- Clipped: a hidden marker keeps its last position, out of the frame it would widen the page -->
@@ -89,16 +89,16 @@ interface GlobeMarker extends CountryStats {
     @if (ready() && !failed()) {
       <div class="absolute bottom-1 left-1 flex gap-0.5 rounded-lg bg-background/80 p-1 ring-1 ring-border backdrop-blur" role="group" aria-label="Globe controls">
         <button hlmBtn variant="ghost" size="icon-sm" type="button" [attr.aria-label]="paused() ? 'Resume rotation' : 'Pause rotation'" [attr.aria-pressed]="paused()" (click)="togglePause()">
-          <ng-icon [name]="paused() ? 'lucidePlay' : 'lucidePause'" aria-hidden="true" />
+          <ng-icon [name]="paused() ? 'remixPlayLine' : 'remixPauseLine'" aria-hidden="true" />
         </button>
         <button hlmBtn variant="ghost" size="icon-sm" type="button" aria-label="Zoom in" [disabled]="zoom() >= MAX_ZOOM" (click)="setZoom(zoom() + 0.25)">
-          <ng-icon name="lucidePlus" aria-hidden="true" />
+          <ng-icon name="remixAddLine" aria-hidden="true" />
         </button>
         <button hlmBtn variant="ghost" size="icon-sm" type="button" aria-label="Zoom out" [disabled]="zoom() <= 1" (click)="setZoom(zoom() - 0.25)">
-          <ng-icon name="lucideMinus" aria-hidden="true" />
+          <ng-icon name="remixSubtractLine" aria-hidden="true" />
         </button>
         <button hlmBtn variant="ghost" size="icon-sm" type="button" aria-label="Reset the globe" (click)="reset()">
-          <ng-icon name="lucideRotateCcw" aria-hidden="true" />
+          <ng-icon name="remixRestartLine" aria-hidden="true" />
         </button>
       </div>
     }

@@ -81,6 +81,11 @@ and the A of the Angularians mark is its capital A; the README's wordmark draws 
 is `app/public/fonts/Norse-Bold.otf`, unmodified. Its licence (free font EULA v1.0, March 2014) does not allow selling the
 font or modifying the files; to use it anywhere else, get it from https://www.joelcarrouche.net.
 
+## Icons
+
+The Viking icons in `app/src/app/layout/viking-icons.ts` are from [Game Icons](https://game-icons.net), under CC BY 3.0
+(https://creativecommons.org/licenses/by/3.0/), unmodified: "Viking helmet", "Viking shield", "Thor hammer", "Crossed axes", "Broadsword", "Anvil", "Scroll unfurled", "Broom" and "Drakkar".
+
 ## Credited logos
 
 The footer credits AnalogJS, spartan/ui and ng-icons with their own logos, unchanged

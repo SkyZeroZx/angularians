@@ -4,7 +4,7 @@ import { RouterLink } from '@angular/router'
 import { injectServerFnMutation } from '@analogjs/router'
 import type { ContributorSummary, LeaderboardPage } from '@angularians/shared'
 import { NgIcon, provideIcons } from '@ng-icons/core'
-import { lucidePlus } from '@ng-icons/lucide'
+import { remixAddLine } from '@ng-icons/remixicon'
 import { HlmButton } from '@spartan-ng/helm/button'
 import { HlmTooltip } from '@spartan-ng/helm/tooltip'
 import { getLeaderboard } from '../data/contributors.server'
@@ -32,7 +32,7 @@ export class LeaderboardMemory {
 @Component({
   selector: 'app-leaderboard-grid',
   imports: [HlmButton, HlmTooltip, NgIcon, RouterLink],
-  providers: [provideIcons({ lucidePlus })],
+  providers: [provideIcons({ remixAddLine })],
   template: `
     <ol class="grid grid-cols-5 gap-3 sm:grid-cols-8 sm:gap-4 md:grid-cols-10" [attr.aria-label]="label()">
       @for (item of items(); track item.githubId) {
@@ -54,7 +54,7 @@ export class LeaderboardMemory {
     @if (items().length < page().total) {
       <div class="mt-10 flex justify-center">
         <button hlmBtn variant="outline" type="button" [disabled]="loading()" (click)="showMore()">
-          <ng-icon name="lucidePlus" aria-hidden="true" />
+          <ng-icon name="remixAddLine" aria-hidden="true" />
           {{ loading() ? 'Loading…' : 'Show more' }}
         </button>
       </div>

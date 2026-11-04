@@ -48,8 +48,9 @@ pnpm build        # the site, as Netlify builds it
 - The word "Angularian(s)" is written with the `brand` utility (the Norse font); on the cards, `branded()` does the same.
 - The mark is generated: change `app/scripts/logo/build.py` and regenerate the component, the favicon, the cards and the
   wordmark, never edit its path data by hand.
-- UI: the spartan/ui components in `app/src/ui`, and icons from ng-icons: Lucide, plus Simple Icons for brands
-  (GitHub, Nuxt) and Octicons for GitHub's merge icon. No other component or icon library.
+- UI: the spartan/ui components in `app/src/ui`, and icons from ng-icons: Remix Icon, Octicons for GitHub's own
+  (merges, issues, comments, reactions) and Simple Icons for brands, plus the Viking accents in
+  `app/src/app/layout/viking-icons.ts`. No other component or icon library.
 - Server rendering: code that needs `window`, `document`, storage or observers runs only in the browser
   (`isPlatformBrowser`, `afterNextRender`, `@defer`).
 - Accessibility: every control has a name, icons are `aria-hidden`, and nothing relies on colour alone.

@@ -3,8 +3,8 @@
 import { Component, computed, inject } from '@angular/core'
 import { RouterLink } from '@angular/router'
 import { NgIcon, provideIcons } from '@ng-icons/core'
-import { lucideArrowRight, lucideAward, lucideCircleDot, lucideInfo, lucideMessageCircleHeart, lucideSparkles } from '@ng-icons/lucide'
-import { octGitMerge } from '@ng-icons/octicons'
+import { remixArrowRightLine, remixChatHeartLine, remixInformationLine, remixMedalLine, remixSparklingLine } from '@ng-icons/remixicon'
+import { octGitMerge, octIssueOpened } from '@ng-icons/octicons'
 import { simpleGithub } from '@ng-icons/simple-icons'
 import { HlmButton } from '@spartan-ng/helm/button'
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton'
@@ -32,7 +32,7 @@ const AUTHOR_ID = 88717125
 @Component({
   selector: 'app-me-card',
   imports: [AngularLogo, HlmButton, HlmSkeleton, HlmTooltip, LogoMark, NgIcon, RouterLink, ScoreDialog, Share],
-  providers: [provideIcons({ lucideArrowRight, lucideAward, lucideCircleDot, octGitMerge, lucideInfo, lucideMessageCircleHeart, lucideSparkles, simpleGithub })],
+  providers: [provideIcons({ remixArrowRightLine, remixMedalLine, octIssueOpened, octGitMerge, remixInformationLine, remixChatHeartLine, remixSparklingLine, simpleGithub })],
   host: { class: 'block w-full' },
   template: `
     @if (state() === null && auth.wasSignedIn()) {
@@ -79,7 +79,7 @@ const AUTHOR_ID = 88717125
               }
             </div>
             @if (me.angularian; as person) {
-              <a hlmBtn variant="outline" [routerLink]="['/', person.username]">My profile <ng-icon name="lucideArrowRight" aria-hidden="true" /></a>
+              <a hlmBtn variant="outline" [routerLink]="['/', person.username]">My profile <ng-icon name="remixArrowRightLine" aria-hidden="true" /></a>
             }
           </div>
 
@@ -90,7 +90,7 @@ const AUTHOR_ID = 88717125
                 <ng-icon [name]="item.icon" size="1.25rem" [class]="'shrink-0 ' + (item.value > 0 ? item.color : 'text-muted-foreground/60')" aria-hidden="true" />
                 <span><span class="font-medium tabular-nums">{{ number(item.value) }}</span> {{ item.value === 1 ? item.one : item.label }}</span>
                 @if (item.hint) {
-                  <ng-icon name="lucideInfo" class="text-muted-foreground" [hlmTooltip]="item.hint" [attr.aria-label]="item.hint" tabindex="0" />
+                  <ng-icon name="remixInformationLine" class="text-muted-foreground" [hlmTooltip]="item.hint" [attr.aria-label]="item.hint" tabindex="0" />
                 }
               </li>
             }
@@ -110,11 +110,11 @@ const AUTHOR_ID = 88717125
                 </span>
               } @else {
                 <span class="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-0.5 text-sm font-medium text-primary">
-                  <ng-icon name="lucideAward" aria-hidden="true" />{{ badge }}
+                  <ng-icon name="remixMedalLine" aria-hidden="true" />{{ badge }}
                 </span>
               }
             } @empty {
-              <p class="text-sm text-muted-foreground">One merged PR, helpful issue or helpful comment unlocks the <span class="brand">Angularian</span> badge.</p>
+              <p class="text-sm text-muted-foreground">One merged PR, helpful issue or helpful comment unlocks the <span class="brand text-primary">Angularian</span> badge.</p>
             }
           </div>
 
@@ -129,7 +129,7 @@ const AUTHOR_ID = 88717125
               <p class="text-sm text-muted-foreground">I made these to make your first PR easier. Hope to see you in <span class="brand text-primary whitespace-nowrap">ng-halla</span>.</p>
               <div class="grid gap-2 @min-[460px]:grid-cols-2">
                 <a [class]="guide + ' ring-[#9A6700]/60 hover:ring-[#9A6700] dark:ring-[#D29922]/60 dark:hover:ring-[#D29922]'" href="https://github.com/erkamyaman/angular-contribution-skill" target="_blank" rel="noopener">
-                  <span class="grid size-10 shrink-0 place-items-center rounded-md bg-[#9A6700]/10 text-[#9A6700] dark:bg-muted dark:text-[#D29922]"><ng-icon name="lucideSparkles" size="1.25rem" aria-hidden="true" /></span>
+                  <span class="grid size-10 shrink-0 place-items-center rounded-md bg-[#9A6700]/10 text-[#9A6700] dark:bg-muted dark:text-[#D29922]"><ng-icon name="remixSparklingLine" size="1.25rem" aria-hidden="true" /></span>
                   <span class="min-w-0">
                     <span class="block font-medium">Agent skill</span>
                     <span class="block text-sm text-muted-foreground">Contribute by Angular's rules</span>
@@ -167,9 +167,9 @@ const AUTHOR_ID = 88717125
           <p id="me-card-title" class="text-lg font-medium">Discover your contributions</p>
           <p class="-mt-2 max-w-sm text-muted-foreground">
             @if (state()?.enabled !== false) {
-              Sign in with GitHub to see your score, share your <span class="brand">Angularian</span> profile and unlock your badges.
+              Sign in with GitHub to see your score, share your <span class="brand text-primary">Angularian</span> profile and unlock your badges.
             } @else {
-              Sign-in with GitHub is coming soon: your score, your <span class="brand">Angularian</span> profile to share, and your badges.
+              Sign-in with GitHub is coming soon: your score, your <span class="brand text-primary">Angularian</span> profile to share, and your badges.
             }
           </p>
           @if (state()?.enabled !== false) {
@@ -198,8 +198,8 @@ export class MeCard {
     const person = this.me()?.angularian
     return [
       { label: 'merged pull requests', one: 'merged pull request', value: person?.pullRequests.all ?? 0, hint: null, icon: 'octGitMerge', color: 'text-[#8250DF] dark:text-[#A371F7]' },
-      { label: 'helpful issues', one: 'helpful issue', value: person?.helpfulIssues ?? 0, hint: 'Completed, or 3+ reactions, or 5+ comments', icon: 'lucideCircleDot', color: 'text-[#1A7F37] dark:text-[#3FB950]' },
-      { label: 'helpful comments', one: 'helpful comment', value: person?.helpfulComments ?? 0, hint: '3+ reactions', icon: 'lucideMessageCircleHeart', color: 'text-[#0969DA] dark:text-[#58A6FF]' },
+      { label: 'helpful issues', one: 'helpful issue', value: person?.helpfulIssues ?? 0, hint: 'Completed, or 3+ reactions, or 5+ comments', icon: 'octIssueOpened', color: 'text-[#1A7F37] dark:text-[#3FB950]' },
+      { label: 'helpful comments', one: 'helpful comment', value: person?.helpfulComments ?? 0, hint: '3+ reactions', icon: 'remixChatHeartLine', color: 'text-[#0969DA] dark:text-[#58A6FF]' },
     ]
   })
 

@@ -6,8 +6,9 @@ import { Router } from '@angular/router';
 import { injectServerFn, type RouteMeta } from '@analogjs/router';
 import { countryCode, countryName, DEFAULT_PERIOD, isPeriod, periodPhrase, type Period } from '@angularians/shared';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideBookOpen, lucideCalendar, lucideCircleDot, lucideMessageCircle, lucideMessageCircleHeart, lucideMessagesSquare, lucideUsers } from '@ng-icons/lucide';
-import { octGitMerge } from '@ng-icons/octicons';
+import { remixBookOpenLine, remixCalendarLine, remixChatHeartLine, remixGroupLine, remixQuestionAnswerLine } from '@ng-icons/remixicon';
+import { octComment, octGitMerge, octIssueOpened } from '@ng-icons/octicons';
+import { vikingLongship } from '../layout/viking-icons';
 import { injectQueryParams } from 'ngxtension/inject-query-params';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
@@ -41,7 +42,7 @@ export const routeMeta = {
     AngularLogo, ContributorSearch, CountrySelect, HlmButton, HlmCardImports, HlmSkeleton, LeaderboardGrid, LogoMark, MeCard, NgIcon, ScoreRules,
     PageGrid, PageHero, PageSection, PeriodTabs, World,
   ],
-  providers: [provideIcons({ lucideBookOpen, lucideCalendar, lucideCircleDot, octGitMerge, lucideMessageCircle, lucideMessageCircleHeart, lucideMessagesSquare, lucideUsers })],
+  providers: [provideIcons({ vikingLongship, remixBookOpenLine, remixCalendarLine, octIssueOpened, octGitMerge, octComment, remixChatHeartLine, remixQuestionAnswerLine, remixGroupLine })],
   template: `
     <app-page-hero>
       <span heroTitle class="flex items-center gap-3">
@@ -55,13 +56,13 @@ export const routeMeta = {
       <span heroDescription>
         Every pull request, issue and review that made
         <!-- Angular as it calls itself: its logo (the press kit's), the name highlighted -->
-        <span class="inline-flex items-baseline gap-1.5 font-medium whitespace-nowrap text-foreground"><app-angular-logo class="size-[1.1em] self-center" />Angular</span>
+        <a href="https://angular.dev" target="_blank" rel="noopener" class="inline-flex items-baseline gap-1.5 font-medium whitespace-nowrap text-foreground underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"><app-angular-logo class="size-[1.1em] self-center" />Angular</a>
         is remembered here, in <span class="brand text-primary">ng-halla</span>. Take your seat among the
         <span class="brand text-primary">Angularians</span> who build the framework, its CLI and its components, and see where your name stands.
       </span>
       <ng-container heroActions>
         <app-score-rules />
-        <a hlmBtn variant="outline" href="https://github.com/angular/angular/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener"><ng-icon name="lucideBookOpen" aria-hidden="true" /> How to contribute</a>
+        <a hlmBtn variant="outline" href="https://github.com/angular/angular/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener"><ng-icon name="vikingLongship" size="1.5rem" aria-hidden="true" /> How to contribute</a>
       </ng-container>
       <div heroAside class="@container"><app-me-card /></div>
     </app-page-hero>
@@ -79,10 +80,10 @@ export const routeMeta = {
 
       @if (board(); as page) {
         <ul class="mt-4 mb-6 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-sm text-muted-foreground" [attr.aria-label]="'Contributions ' + phrase(page.period)">
-          <li class="flex items-center gap-1.5"><ng-icon name="lucideUsers" aria-hidden="true" /><span><strong class="font-semibold text-foreground tabular-nums">{{ number(page.total) }}</strong> {{ page.total === 1 ? 'contributor' : 'contributors' }}{{ page.country ? ' from ' + countryLabel(page.country) : '' }}</span></li>
+          <li class="flex items-center gap-1.5"><ng-icon name="remixGroupLine" aria-hidden="true" /><span><strong class="font-semibold text-foreground tabular-nums">{{ number(page.total) }}</strong> {{ page.total === 1 ? 'contributor' : 'contributors' }}{{ page.country ? ' from ' + countryLabel(page.country) : '' }}</span></li>
           <li class="flex items-center gap-1.5"><ng-icon name="octGitMerge" class="text-[#8250DF] dark:text-[#A371F7]" aria-hidden="true" /><span><strong class="font-semibold text-foreground tabular-nums">{{ number(page.landedPullRequests) }}</strong> merged {{ page.landedPullRequests === 1 ? 'PR' : 'PRs' }}</span></li>
-          <li class="flex items-center gap-1.5"><ng-icon name="lucideCircleDot" class="text-[#1A7F37] dark:text-[#3FB950]" aria-hidden="true" /><span><strong class="font-semibold text-foreground tabular-nums">{{ number(page.issues) }}</strong> {{ page.issues === 1 ? 'issue' : 'issues' }}</span></li>
-          <li class="flex items-center gap-1.5"><ng-icon name="lucideMessageCircle" class="text-[#0969DA] dark:text-[#58A6FF]" aria-hidden="true" /><span><strong class="font-semibold text-foreground tabular-nums">{{ number(page.comments + page.reviewComments) }}</strong> {{ page.comments + page.reviewComments === 1 ? 'comment' : 'comments' }}</span></li>
+          <li class="flex items-center gap-1.5"><ng-icon name="octIssueOpened" class="text-[#1A7F37] dark:text-[#3FB950]" aria-hidden="true" /><span><strong class="font-semibold text-foreground tabular-nums">{{ number(page.issues) }}</strong> {{ page.issues === 1 ? 'issue' : 'issues' }}</span></li>
+          <li class="flex items-center gap-1.5"><ng-icon name="octComment" class="text-[#0969DA] dark:text-[#58A6FF]" aria-hidden="true" /><span><strong class="font-semibold text-foreground tabular-nums">{{ number(page.comments + page.reviewComments) }}</strong> {{ page.comments + page.reviewComments === 1 ? 'comment' : 'comments' }}</span></li>
           <li class="text-xs sm:ml-auto">Updated every day</li>
         </ul>
 
@@ -121,8 +122,8 @@ export const routeMeta = {
 
     <app-page-section>
       <header class="mx-auto mb-10 max-w-3xl text-center">
-        <h2 class="text-3xl font-medium tracking-tight sm:text-4xl">How to become an <span class="brand">Angularian</span></h2>
-        <p class="mt-4 text-lg text-pretty text-muted-foreground">One of these contributions, in angular/angular, angular/components, angular/angular-cli or angular/dev-infra, unlocks the <span class="brand">Angularian</span> badge.</p>
+        <h2 class="text-3xl font-medium tracking-tight sm:text-4xl">How to become an <span class="brand text-primary">Angularian</span></h2>
+        <p class="mt-4 text-lg text-pretty text-muted-foreground">One of these contributions, in angular/angular, angular/components, angular/angular-cli or angular/dev-infra, unlocks the <span class="inline-flex h-7 items-center gap-1 rounded-md bg-primary/10 px-2 align-middle text-sm font-medium text-primary"><app-logo-mark class="size-4" /><span class="brand leading-none">Angularian</span></span> badge.</p>
       </header>
       <app-page-grid>
         @for (way of becomeWays; track way.title) {
@@ -143,8 +144,8 @@ export const routeMeta = {
         <h2 id="join-title" class="text-3xl font-medium tracking-tight text-balance sm:text-4xl">Ready to join us?</h2>
         <p class="mx-auto mt-4 max-w-2xl text-lg text-pretty text-muted-foreground">Help shape the future of Angular. Contribute, collaborate and join the community today.</p>
         <div class="mt-8 flex flex-wrap justify-center gap-3">
-          <a hlmBtn href="https://github.com/angular/angular/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener"><ng-icon name="lucideBookOpen" aria-hidden="true" /> Contribution guide</a>
-          <a hlmBtn variant="outline" href="https://discord.gg/angular" target="_blank" rel="noopener"><ng-icon name="lucideMessagesSquare" aria-hidden="true" /> Join Discord</a>
+          <a hlmBtn href="https://github.com/angular/angular/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener"><ng-icon name="remixBookOpenLine" aria-hidden="true" /> Contribution guide</a>
+          <a hlmBtn variant="outline" href="https://discord.gg/angular" target="_blank" rel="noopener"><ng-icon name="remixQuestionAnswerLine" aria-hidden="true" /> Join Discord</a>
         </div>
       </section>
     </app-page-section>
@@ -174,8 +175,8 @@ export default class Home {
   /** The three ways onto the board (Nuxters' "How to become a Nuxter"). */
   protected readonly becomeWays = [
     { title: 'Merge a pull request', description: 'Fix a bug, ship a feature or improve the docs in any Angular repository.', icon: 'octGitMerge', color: 'text-[#8250DF] dark:text-[#A371F7]', url: 'https://github.com/angular/angular/blob/main/CONTRIBUTING.md' },
-    { title: 'Open a helpful issue', description: 'An issue that gets completed, or collects 3+ reactions or 5+ comments.', icon: 'lucideCircleDot', color: 'text-[#1A7F37] dark:text-[#3FB950]', url: 'https://github.com/angular/angular/issues' },
-    { title: 'Write a helpful comment', description: 'Answer a question or review a PR: a comment with 3+ reactions counts.', icon: 'lucideMessageCircleHeart', color: 'text-[#0969DA] dark:text-[#58A6FF]', url: 'https://github.com/angular/angular/pulls' },
+    { title: 'Open a helpful issue', description: 'An issue that gets completed, or collects 3+ reactions or 5+ comments.', icon: 'octIssueOpened', color: 'text-[#1A7F37] dark:text-[#3FB950]', url: 'https://github.com/angular/angular/issues' },
+    { title: 'Write a helpful comment', description: 'Answer a question or review a PR: a comment with 3+ reactions counts.', icon: 'remixChatHeartLine', color: 'text-[#0969DA] dark:text-[#58A6FF]', url: 'https://github.com/angular/angular/pulls' },
   ];
   protected readonly number = formatNumber;
   protected readonly phrase = periodPhrase;

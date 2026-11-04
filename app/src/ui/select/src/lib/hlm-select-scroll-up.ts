@@ -1,6 +1,6 @@
 import { Component } from "@angular/core";
 import { NgIcon, provideIcons } from "@ng-icons/core";
-import { lucideChevronUp } from "@ng-icons/lucide";
+import { remixArrowUpSLine } from "@ng-icons/remixicon";
 import { BrnSelectScrollUp } from "@spartan-ng/brain/select";
 import { classes } from "@spartan-ng/helm/utils";
 
@@ -8,9 +8,9 @@ import { classes } from "@spartan-ng/helm/utils";
   selector: "hlm-select-scroll-up",
   exportAs: "hlmSelectScrollUp",
   imports: [NgIcon],
-  providers: [provideIcons({ lucideChevronUp })],
+  providers: [provideIcons({ remixArrowUpSLine })],
   hostDirectives: [BrnSelectScrollUp],
-  template: ` <ng-icon name="lucideChevronUp" /> `,
+  template: ` <ng-icon name="remixArrowUpSLine" /> `,
 })
 export class HlmSelectScrollUp {
   constructor() {

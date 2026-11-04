@@ -3,7 +3,7 @@
 import { Component, input } from '@angular/core'
 import type { ScoredStats } from '@angularians/shared'
 import { NgIcon, provideIcons } from '@ng-icons/core'
-import { lucideInfo } from '@ng-icons/lucide'
+import { remixInformationLine } from '@ng-icons/remixicon'
 import { HlmButton } from '@spartan-ng/helm/button'
 import { HlmDialogImports } from '@spartan-ng/helm/dialog'
 import { formatNumber } from '../leaderboard/format'
@@ -12,12 +12,12 @@ import { ScoreBreakdown } from './score-breakdown'
 @Component({
   selector: 'app-score-dialog',
   imports: [HlmButton, HlmDialogImports, NgIcon, ScoreBreakdown],
-  providers: [provideIcons({ lucideInfo })],
+  providers: [provideIcons({ remixInformationLine })],
   host: { class: 'inline-flex' },
   template: `
     <hlm-dialog>
       <button hlmDialogTrigger hlmBtn variant="ghost" size="icon-xs" type="button" aria-label="Show score breakdown" class="text-muted-foreground">
-        <ng-icon name="lucideInfo" aria-hidden="true" />
+        <ng-icon name="remixInformationLine" aria-hidden="true" />
       </button>
       <hlm-dialog-content *hlmDialogPortal class="max-h-[90dvh] overflow-y-auto sm:max-w-lg">
         <hlm-dialog-header>

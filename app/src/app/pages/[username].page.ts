@@ -8,12 +8,9 @@ import { injectServerFn, type RouteMeta } from '@analogjs/router';
 import { injectResponse } from '@analogjs/router/tokens';
 import { countryCode, countryName, DEFAULT_PERIOD, GITHUB_USERNAME_RE, isPeriod, periodPhrase, reposQuery, type ContributorProfile, type Period } from '@angularians/shared';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import {
-  lucideArrowLeft, lucideArrowUpRight, lucideAward, lucideCircleDot, lucideInfo,
-  lucideBadgeCheck, lucideChevronDown, lucideChevronUp, lucideCrown, lucideFileCode, lucideLink, lucideLinkedin, lucideMessageCircle,
-  lucideSmilePlus, lucideTrophy,
-} from '@ng-icons/lucide';
-import { octGitMerge } from '@ng-icons/octicons';
+import { remixArrowDownSLine, remixArrowLeftLine, remixArrowRightUpLine, remixArrowUpSLine, remixInformationLine, remixLinkM, remixLinkedinBoxLine, remixMedalLine, remixVerifiedBadgeLine } from '@ng-icons/remixicon';
+import { vikingAxes, vikingHelmet, vikingShield } from '../layout/viking-icons';
+import { octComment, octGitMerge, octIssueOpened, octSmiley } from '@ng-icons/octicons';
 import {
   simpleBluesky, simpleFacebook, simpleGithub, simpleInstagram, simpleMastodon, simpleNpm, simpleReddit, simpleThreads, simpleTwitch, simpleX,
   simpleYoutube,
@@ -42,7 +39,7 @@ export const routeMeta = {
 const SOCIAL_ICONS: Record<string, string> = {
   twitter: 'simpleX',
   bluesky: 'simpleBluesky',
-  linkedin: 'lucideLinkedin',
+  linkedin: 'remixLinkedinBoxLine',
   mastodon: 'simpleMastodon',
   youtube: 'simpleYoutube',
   twitch: 'simpleTwitch',
@@ -70,9 +67,9 @@ export function yearRanges(years: readonly number[]): string {
   selector: 'app-profile',
   imports: [AngularLogo, Container, HlmButton, HlmSkeleton, HlmTooltip, NgIcon, NgTemplateOutlet, PeriodTabs, RouterLink, ScoreDialog, Share],
   providers: [provideIcons({
-    lucideArrowLeft, lucideArrowUpRight, lucideAward, lucideCircleDot, octGitMerge, lucideInfo,
-    lucideBadgeCheck, lucideChevronDown, lucideChevronUp, lucideCrown, lucideFileCode, lucideLink, lucideLinkedin, lucideMessageCircle,
-    lucideSmilePlus, lucideTrophy,
+    vikingAxes, remixArrowLeftLine, remixArrowRightUpLine, remixMedalLine, octIssueOpened, octGitMerge, remixInformationLine,
+    remixVerifiedBadgeLine, remixArrowDownSLine, remixArrowUpSLine, vikingHelmet, remixLinkM, remixLinkedinBoxLine, octComment,
+    octSmiley, vikingShield,
     simpleBluesky, simpleFacebook, simpleGithub, simpleInstagram, simpleMastodon, simpleNpm, simpleReddit, simpleThreads, simpleTwitch, simpleX,
     simpleYoutube, ...PACKAGE_ICONS,
   })],
@@ -80,7 +77,7 @@ export function yearRanges(years: readonly number[]): string {
   template: `
     <app-container class="pt-8">
       <a hlmBtn variant="link" class="px-0" routerLink="/" [queryParams]="backQuery()">
-        <ng-icon name="lucideArrowLeft" aria-hidden="true" />All contributors
+        <ng-icon name="remixArrowLeftLine" aria-hidden="true" />All contributors
       </a>
     </app-container>
 
@@ -125,11 +122,11 @@ export function yearRanges(years: readonly number[]): string {
                   </a>
                 }
                 @if (since(); as date) {
-                  <span class="inline-flex items-center gap-1.5"><ng-icon name="lucideCalendar" aria-hidden="true" />Contributing since {{ date }}</span>
+                  <span class="inline-flex items-center gap-1.5"><ng-icon name="remixCalendarLine" aria-hidden="true" />Contributing since {{ date }}</span>
                 }
                 @if (best(); as year) {
                   <a [routerLink]="[]" [queryParams]="{ period: year.period }" replaceUrl class="inline-flex items-center gap-1.5 tabular-nums hover:text-foreground">
-                    <ng-icon name="lucideAward" aria-hidden="true" />Best year {{ year.period }}, #{{ number(year.rank) }} with {{ points(year.score) }}
+                    <ng-icon name="remixMedalLine" aria-hidden="true" />Best year {{ year.period }}, #{{ number(year.rank) }} with {{ points(year.score) }}
                   </a>
                 }
               </p>
@@ -140,7 +137,7 @@ export function yearRanges(years: readonly number[]): string {
                       @if (badge.icon === 'angular') {
                         <app-angular-logo class="size-4" />
                       } @else {
-                        <ng-icon [name]="badge.icon" aria-hidden="true" />
+                        <ng-icon [name]="badge.icon" [size]="badge.icon.startsWith('viking') ? '1.25rem' : '1em'" aria-hidden="true" />
                       }
                       {{ badge.label }}
                     </li>
@@ -170,7 +167,7 @@ export function yearRanges(years: readonly number[]): string {
                       [attr.aria-label]="stat.label"
                       [class]="'group relative block h-full min-h-44 rounded-xl p-6 ring-1 transition ' + stat.tint"
                     >
-                      <ng-icon name="lucideArrowUpRight" size="20" class="absolute top-6 right-6 text-muted-foreground group-hover:text-foreground" aria-hidden="true" />
+                      <ng-icon name="remixArrowRightUpLine" size="20" class="absolute top-6 right-6 text-muted-foreground group-hover:text-foreground" aria-hidden="true" />
                       <ng-container [ngTemplateOutlet]="statBody" [ngTemplateOutletContext]="{ $implicit: stat }" />
                     </a>
                   } @else {
@@ -215,7 +212,7 @@ export function yearRanges(years: readonly number[]): string {
             @if (packages().length > PACKAGES_SHOWN) {
               <button hlmBtn variant="ghost" type="button" class="mt-4" (click)="allPackages.set(!allPackages())">
                 {{ allPackages() ? 'Show less' : 'Show all ' + packages().length }}
-                <ng-icon [name]="allPackages() ? 'lucideChevronUp' : 'lucideChevronDown'" aria-hidden="true" />
+                <ng-icon [name]="allPackages() ? 'remixArrowUpSLine' : 'remixArrowDownSLine'" aria-hidden="true" />
               </button>
             }
           </section>
@@ -351,19 +348,19 @@ export default class Profile {
         tint: 'bg-[#8250DF]/5 ring-[#8250DF] hover:bg-[#8250DF]/10 dark:ring-[#A371F7]', text: 'text-[#8250DF] dark:text-[#A371F7]',
       },
       {
-        key: 'issues', icon: 'lucideCircleDot', value: n.issues, name: n.issues === 1 ? 'Issue' : 'Issues', detail: `${formatNumber(n.helpfulIssues)} helpful`,
+        key: 'issues', icon: 'octIssueOpened', value: n.issues, name: n.issues === 1 ? 'Issue' : 'Issues', detail: `${formatNumber(n.helpfulIssues)} helpful`,
         url: search(`is:issue author:${person.username}`, 'issues'), label: `${plural(n.issues, 'issue', 'issues')} ${periodPhrase(this.period())}. Opens ${person.username}'s issues on GitHub`,
         tint: 'bg-[#1A7F37]/5 ring-[#1A7F37] hover:bg-[#1A7F37]/10 dark:ring-[#3FB950]', text: 'text-[#1A7F37] dark:text-[#3FB950]',
       },
       {
-        key: 'comments', icon: 'lucideMessageCircle', value: n.comments, name: n.comments === 1 ? 'Comment' : 'Comments',
+        key: 'comments', icon: 'octComment', value: n.comments, name: n.comments === 1 ? 'Comment' : 'Comments',
         // Inline review comments score on their own (1 pt each): their count goes with the comments.
         detail: `${formatNumber(n.helpfulComments)} helpful · ${plural(n.reviewComments, 'review comment', 'review comments')} on code`,
         url: search(`commenter:${person.username}`, 'issues'), label: `${plural(n.comments, 'comment', 'comments')} ${periodPhrase(this.period())}. Opens the issues and pull requests ${person.username} commented on, on GitHub`,
         tint: 'bg-[#0969DA]/5 ring-[#0969DA] hover:bg-[#0969DA]/10 dark:ring-[#58A6FF]', text: 'text-[#0969DA] dark:text-[#58A6FF]',
       },
       {
-        key: 'reactions', icon: 'lucideSmilePlus', value: n.reactions, name: n.reactions === 1 ? 'Reaction' : 'Reactions', detail: 'received',
+        key: 'reactions', icon: 'octSmiley', value: n.reactions, name: n.reactions === 1 ? 'Reaction' : 'Reactions', detail: 'received',
         url: null, label: '',
         tint: 'bg-[#9A6700]/5 ring-[#9A6700] dark:ring-[#D29922]', text: 'text-[#9A6700] dark:text-[#D29922]',
       },
@@ -396,10 +393,10 @@ export default class Profile {
     // Every year at #1 in one badge: "#1 in 2024–2026", "#1 in 2019, 2024".
     const firsts = this.years().filter(row => row.rank === 1).map(row => Number(row.period)).sort((x, y) => x - y);
     if (firsts.length) {
-      badges.push({ label: `#1 in ${yearRanges(firsts)}`, title: `The top Angularian of ${plural(firsts.length, 'year', 'years')}`, icon: 'lucideCrown', style: gold });
+      badges.push({ label: `#1 in ${yearRanges(firsts)}`, title: `The top Angularian of ${plural(firsts.length, 'year', 'years')}`, icon: 'vikingHelmet', style: gold });
     }
-    if (person.rank <= 10) badges.push({ label: 'Top 10 all time', title: `#${formatNumber(person.rank)} of all time`, icon: 'lucideTrophy', style: green });
-    if (person.reviewComments >= 100) badges.push({ label: 'Reviewer', title: `${formatNumber(person.reviewComments)} review comments on code`, icon: 'lucideFileCode', style: blue });
+    if (person.rank <= 10) badges.push({ label: 'Top 10 all time', title: `#${formatNumber(person.rank)} of all time`, icon: 'vikingShield', style: green });
+    if (person.reviewComments >= 100) badges.push({ label: 'Reviewer', title: `${formatNumber(person.reviewComments)} review comments on code`, icon: 'vikingAxes', style: blue });
     return badges;
   });
   /** The contributor's rank in each period they contributed in, for the period tabs. */
@@ -422,8 +419,8 @@ export default class Profile {
     const rel = 'me nofollow noopener noreferrer';
     const all = [
       { url: `https://github.com/${person.username}`, label: `github.com/${person.username}`, icon: 'simpleGithub', rel: 'me noopener' },
-      ...(person.website ? [{ url: person.website, label: 'Website', icon: 'lucideGlobe', rel }] : []),
-      ...person.socialAccounts.map(account => ({ url: account.url, label: account.displayName, icon: SOCIAL_ICONS[account.provider] ?? 'lucideLink', rel })),
+      ...(person.website ? [{ url: person.website, label: 'Website', icon: 'remixGlobalLine', rel }] : []),
+      ...person.socialAccounts.map(account => ({ url: account.url, label: account.displayName, icon: SOCIAL_ICONS[account.provider] ?? 'remixLinkM', rel })),
     ];
     // A website can also be a social account: one icon per URL, the first wins.
     return all.filter((link, index) => all.findIndex(other => other.url === link.url) === index);

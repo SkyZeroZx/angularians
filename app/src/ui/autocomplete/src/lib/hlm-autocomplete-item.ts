@@ -1,6 +1,6 @@
 import { Component, inject } from "@angular/core";
 import { NgIcon, provideIcons } from "@ng-icons/core";
-import { lucideCheck } from "@ng-icons/lucide";
+import { remixCheckLine } from "@ng-icons/remixicon";
 import { BrnAutocompleteItem } from "@spartan-ng/brain/autocomplete";
 import { classes } from "@spartan-ng/helm/utils";
 
@@ -8,7 +8,7 @@ import { classes } from "@spartan-ng/helm/utils";
   selector: "hlm-autocomplete-item",
   exportAs: "hlmAutocompleteItem",
   imports: [NgIcon],
-  providers: [provideIcons({ lucideCheck })],
+  providers: [provideIcons({ remixCheckLine })],
   hostDirectives: [
     { directive: BrnAutocompleteItem, inputs: ["id", "disabled", "value"] },
   ],
@@ -17,7 +17,7 @@ import { classes } from "@spartan-ng/helm/utils";
     <ng-content />
     @if (_active()) {
       <ng-icon
-        name="lucideCheck"
+        name="remixCheckLine"
         class="absolute end-2 flex items-center justify-center text-[length:--spacing(4)]"
         aria-hidden="true"
       />

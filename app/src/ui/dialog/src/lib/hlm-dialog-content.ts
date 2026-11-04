@@ -9,7 +9,7 @@ import {
   input,
 } from "@angular/core";
 import { NgIcon, provideIcons } from "@ng-icons/core";
-import { lucideX } from "@ng-icons/lucide";
+import { remixCloseLine } from "@ng-icons/remixicon";
 import { BrnDialogRef, injectBrnDialogContext } from "@spartan-ng/brain/dialog";
 import { HlmButton } from "@spartan-ng/helm/button";
 
@@ -27,7 +27,7 @@ type HlmDialogContentContext = {
   selector: "hlm-dialog-content",
   exportAs: "hlmDialogContent",
   imports: [NgComponentOutlet, HlmButton, HlmDialogClose, NgIcon],
-  providers: [provideIcons({ lucideX })],
+  providers: [provideIcons({ remixCloseLine })],
   host: {
     "data-slot": "dialog-content",
     "[attr.data-state]": "state()",
@@ -48,7 +48,7 @@ type HlmDialogContentContext = {
         hlmDialogClose
       >
         <span class="sr-only">{{ closeLabel() }}</span>
-        <ng-icon name="lucideX" />
+        <ng-icon name="remixCloseLine" />
       </button>
     }
   `,

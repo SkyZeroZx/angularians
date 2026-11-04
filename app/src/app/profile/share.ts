@@ -2,7 +2,7 @@
 import { Component, computed, input, linkedSignal, signal } from '@angular/core'
 import { periodLabel, periodPhrase, sortPeriods, type Period } from '@angularians/shared'
 import { NgIcon, provideIcons } from '@ng-icons/core'
-import { lucideCheck, lucideCopy, lucideIdCard, lucideImageOff, lucideLink } from '@ng-icons/lucide'
+import { remixCheckLine, remixFileCopyLine, remixImageLine, remixLinkM, remixProfileLine } from '@ng-icons/remixicon'
 import { HlmButton } from '@spartan-ng/helm/button'
 import { HlmDialogImports } from '@spartan-ng/helm/dialog'
 import { HlmSelectImports } from '@spartan-ng/helm/select'
@@ -19,21 +19,21 @@ const query = (period?: Period) => (!period || period === 'all' ? '' : `?period=
 @Component({
   selector: 'app-share',
   imports: [HlmButton, HlmDialogImports, HlmSelectImports, HlmSkeleton, NgIcon],
-  providers: [provideIcons({ lucideCheck, lucideCopy, lucideIdCard, lucideImageOff, lucideLink })],
+  providers: [provideIcons({ remixCheckLine, remixFileCopyLine, remixProfileLine, remixImageLine, remixLinkM })],
   host: { class: 'flex flex-wrap items-center gap-2' },
   template: `
     <button hlmBtn variant="secondary" size="sm" type="button" (click)="copyLink()">
-      <ng-icon [name]="copied() === 'link' ? 'lucideCheck' : 'lucideLink'" aria-hidden="true" />
+      <ng-icon [name]="copied() === 'link' ? 'remixCheckLine' : 'remixLinkM'" aria-hidden="true" />
       {{ copied() === 'link' ? 'Profile link copied' : 'Copy profile link' }}
     </button>
 
     <hlm-dialog (stateChanged)="opened($event)">
       <button hlmDialogTrigger hlmBtn variant="secondary" size="sm" type="button">
-        <ng-icon name="lucideIdCard" aria-hidden="true" /> Add to README
+        <ng-icon name="remixProfileLine" aria-hidden="true" /> Add to README
       </button>
       <hlm-dialog-content *hlmDialogPortal class="max-h-[90dvh] overflow-y-auto sm:max-w-2xl">
         <hlm-dialog-header>
-          <h2 hlmDialogTitle>Add your <span class="brand">Angularian</span> card to GitHub</h2>
+          <h2 hlmDialogTitle>Add your <span class="brand text-primary">Angularian</span> card to GitHub</h2>
           <p hlmDialogDescription>Paste this Markdown in your GitHub profile README. The card updates every day.</p>
         </hlm-dialog-header>
         <div class="flex flex-col gap-4">
@@ -92,7 +92,7 @@ const query = (period?: Period) => (!period || period === 'all' ? '' : `?period=
               </div>
             } @else if (cardState() === 'error') {
               <div class="absolute inset-0 flex items-center justify-center gap-2 bg-neutral-950 text-sm text-neutral-400" role="status">
-                <ng-icon name="lucideImageOff" aria-hidden="true" /> The card could not be loaded
+                <ng-icon name="remixImageLine" aria-hidden="true" /> The card could not be loaded
               </div>
             }
           </div>
@@ -102,7 +102,7 @@ const query = (period?: Period) => (!period || period === 'all' ? '' : `?period=
             <a class="text-sm text-primary underline-offset-4 hover:underline" target="_blank" rel="noopener"
               href="https://docs.github.com/en/account-and-profile/setting-up-and-managing-your-github-profile/customizing-your-profile/managing-your-profile-readme">How to set up a profile README</a>
             <button hlmBtn type="button" (click)="copyMarkdown()">
-              <ng-icon [name]="copied() === 'markdown' ? 'lucideCheck' : 'lucideCopy'" aria-hidden="true" />
+              <ng-icon [name]="copied() === 'markdown' ? 'remixCheckLine' : 'remixFileCopyLine'" aria-hidden="true" />
               {{ copied() === 'markdown' ? 'Markdown copied' : 'Copy Markdown' }}
             </button>
           </div>

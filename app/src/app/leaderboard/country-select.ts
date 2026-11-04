@@ -2,7 +2,7 @@
 import { Component, computed, effect, input, output, untracked, viewChild, viewChildren } from '@angular/core'
 import { countryName, type CountryStats } from '@angularians/shared'
 import { NgIcon, provideIcons } from '@ng-icons/core'
-import { lucideCheck, lucideChevronDown, lucideEarth, lucideSearch } from '@ng-icons/lucide'
+import { remixArrowDownSLine, remixCheckLine, remixEarthLine, remixSearchLine } from '@ng-icons/remixicon'
 import { BrnCombobox, BrnComboboxItem } from '@spartan-ng/brain/combobox'
 import { provideBrnPopoverConfig } from '@spartan-ng/brain/popover'
 import { HlmComboboxImports } from '@spartan-ng/helm/combobox'
@@ -16,7 +16,7 @@ const ALL = 'all'
   selector: 'app-country-select',
   imports: [HlmComboboxImports, HlmInputGroupImports, NgIcon],
   providers: [
-    provideIcons({ lucideCheck, lucideChevronDown, lucideEarth, lucideSearch }),
+    provideIcons({ remixCheckLine, remixArrowDownSLine, remixEarthLine, remixSearchLine }),
     provideBrnPopoverConfig({ align: 'start', sideOffset: 6 }),
   ],
   template: `
@@ -36,29 +36,29 @@ const ALL = 'all'
           @if (value(); as code) {
             <img [src]="flag(code)" alt="" width="20" height="20" class="size-5 shrink-0" />
           } @else {
-            <ng-icon name="lucideEarth" class="shrink-0 text-muted-foreground" aria-hidden="true" />
+            <ng-icon name="remixEarthLine" class="shrink-0 text-muted-foreground" aria-hidden="true" />
           }
           <span class="flex-1 truncate text-start">{{ label(value()) }}</span>
-          <ng-icon name="lucideChevronDown" class="text-muted-foreground text-[length:--spacing(4)]" aria-hidden="true" />
+          <ng-icon name="remixArrowDownSLine" class="text-muted-foreground text-[length:--spacing(4)]" aria-hidden="true" />
         </button>
         <div *brnPopoverContent hlmComboboxContent class="min-w-52">
           <div hlmInputGroup class="m-1 w-auto shrink-0">
             <input brnComboboxInput hlmInputGroupInput aria-label="Search a country" placeholder="Search a country" />
-            <hlm-input-group-addon><ng-icon name="lucideSearch" aria-hidden="true" /></hlm-input-group-addon>
+            <hlm-input-group-addon><ng-icon name="remixSearchLine" aria-hidden="true" /></hlm-input-group-addon>
           </div>
           <p hlmComboboxEmpty>No country found</p>
           <div hlmComboboxList aria-label="Countries">
             <div hlmComboboxItem [value]="ALL">
-              <ng-icon name="lucideEarth" class="text-muted-foreground" aria-hidden="true" />
+              <ng-icon name="remixEarthLine" class="text-muted-foreground" aria-hidden="true" />
               <span class="flex-1">All countries</span>
-              @if (!value()) { <ng-icon name="lucideCheck" class="absolute end-2 text-[length:--spacing(4)]" aria-hidden="true" /> }
+              @if (!value()) { <ng-icon name="remixCheckLine" class="absolute end-2 text-[length:--spacing(4)]" aria-hidden="true" /> }
             </div>
             @for (entry of items(); track entry.code) {
               <div hlmComboboxItem [value]="entry.code">
                 <img [src]="flag(entry.code)" alt="" width="20" height="20" loading="lazy" class="size-5 shrink-0" />
                 <span class="flex-1 truncate">{{ entry.name }}</span>
                 <span class="text-xs text-muted-foreground tabular-nums">{{ entry.count }}</span>
-                @if (value() === entry.code) { <ng-icon name="lucideCheck" class="absolute end-2 text-[length:--spacing(4)]" aria-hidden="true" /> }
+                @if (value() === entry.code) { <ng-icon name="remixCheckLine" class="absolute end-2 text-[length:--spacing(4)]" aria-hidden="true" /> }
               </div>
             }
           </div>

@@ -3,7 +3,7 @@
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { Component, computed, effect, inject, PLATFORM_ID, signal } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideCheck, lucideCopy, lucidePalette, lucideRotateCcw } from '@ng-icons/lucide';
+import { remixCheckLine, remixFileCopyLine, remixPaletteLine, remixRestartLine } from '@ng-icons/remixicon';
 import { HlmPopoverImports } from '@spartan-ng/helm/popover';
 
 const STORAGE_KEY = 'angularians-brand';
@@ -38,13 +38,13 @@ const VALID = /^#[0-9a-f]{6}$/i;
 @Component({
   selector: 'app-brand-picker',
   imports: [HlmPopoverImports, NgIcon],
-  providers: [provideIcons({ lucideCheck, lucideCopy, lucidePalette, lucideRotateCcw })],
+  providers: [provideIcons({ remixCheckLine, remixFileCopyLine, remixPaletteLine, remixRestartLine })],
   host: { class: 'flex' },
   template: `
     <hlm-popover align="end" sideOffset="8">
       <button hlmPopoverTrigger type="button" aria-label="Try a brand colour" title="Try a brand colour"
         class="grid size-9 place-items-center rounded-md hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
-        <ng-icon name="lucidePalette" aria-hidden="true" />
+        <ng-icon name="remixPaletteLine" aria-hidden="true" />
       </button>
       <div hlmPopoverContent *hlmPopoverPortal="let ctx" class="w-72 gap-3 p-3">
         <p class="text-sm font-medium">Try a brand colour</p>
@@ -57,7 +57,7 @@ const VALID = /^#[0-9a-f]{6}$/i;
               [value]="shown().slice(1)" (change)="typed($any($event.target).value)" />
           </label>
           <button type="button" class="grid size-8 place-items-center rounded-md hover:bg-muted" [attr.aria-label]="copied() ? 'Copied' : 'Copy the hex code'" (click)="copy()">
-            <ng-icon [name]="copied() ? 'lucideCheck' : 'lucideCopy'" aria-hidden="true" />
+            <ng-icon [name]="copied() ? 'remixCheckLine' : 'remixFileCopyLine'" aria-hidden="true" />
           </button>
         </div>
         <dl class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 font-mono text-xs">
@@ -74,7 +74,7 @@ const VALID = /^#[0-9a-f]{6}$/i;
           }
         </div>
         <button type="button" class="flex items-center gap-2 self-start rounded-md px-2 py-1 text-sm text-muted-foreground hover:bg-muted hover:text-foreground" (click)="reset()">
-          <ng-icon name="lucideRotateCcw" aria-hidden="true" /> Back to the brand colour
+          <ng-icon name="remixRestartLine" aria-hidden="true" /> Back to the brand colour
         </button>
         <p class="text-xs text-muted-foreground">Only in your browser: nobody else sees it.</p>
       </div>
