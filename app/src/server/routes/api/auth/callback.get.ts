@@ -1,5 +1,7 @@
 import { createError, defineEventHandler, getQuery, sendRedirect } from 'h3'
+import { afterSignIn } from '../../../auth/return-to'
 import { authSession, callbackUrl, requireAuthConfig, setSignedInHint } from '../../../auth/session'
+import { contributorsData } from '../../../data/store'
 
 /** `GET /api/auth/callback?code&state`: GitHub sends you back here; we ask GitHub who you are, then forget its token. */
 export default defineEventHandler(async (event) => {
@@ -31,5 +33,5 @@ export default defineEventHandler(async (event) => {
   const returnTo = session.data.returnTo
   await session.update({ githubId: user.id, login: user.login, state: undefined, returnTo: undefined })
   setSignedInHint(event, true)
-  return sendRedirect(event, !returnTo || returnTo === '/' ? `/${encodeURIComponent(user.login)}` : returnTo, 302)
+  return sendRedirect(event, afterSignIn(returnTo, contributorsData().profileById(user.id)?.username ?? null), 302)
 })

@@ -1,4 +1,4 @@
-import { safeReturnTo } from './return-to'
+import { afterSignIn, safeReturnTo } from './return-to'
 
 describe('safeReturnTo', () => {
   it.each([
@@ -11,4 +11,15 @@ describe('safeReturnTo', () => {
     [undefined, '/'],
     [['/a'], '/'],
   ])('%s → %s', (value, expected) => expect(safeReturnTo(value)).toBe(expected))
+})
+
+describe('afterSignIn', () => {
+  it.each([
+    [undefined, 'JeanMeche', '/JeanMeche'],
+    ['/', 'JeanMeche', '/JeanMeche'],
+    ['/?period=2025', 'JeanMeche', '/?period=2025'],
+    [undefined, null, '/'],
+    ['/', null, '/'],
+    ['/?period=2025', null, '/?period=2025'],
+  ])('%s, %s → %s', (returnTo, username, expected) => expect(afterSignIn(returnTo, username)).toBe(expected))
 })
