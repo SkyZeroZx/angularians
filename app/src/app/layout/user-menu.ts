@@ -3,17 +3,18 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core'
 import { RouterLink } from '@angular/router'
 import { NgIcon, provideIcons } from '@ng-icons/core'
-import { lucideAward, lucideLogOut } from '@ng-icons/lucide'
+import { lucideLogOut } from '@ng-icons/lucide'
 import { HlmPopoverImports } from '@spartan-ng/helm/popover'
 import { AuthService } from '../auth/auth.service'
+import { LogoMark } from './logo-mark'
 import { avatarUrl } from '../leaderboard/format'
 
 const ITEM = 'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm outline-none hover:bg-muted focus-visible:bg-muted'
 
 @Component({
   selector: 'app-user-menu',
-  imports: [HlmPopoverImports, NgIcon, RouterLink],
-  providers: [provideIcons({ lucideAward, lucideLogOut })],
+  imports: [HlmPopoverImports, LogoMark, NgIcon, RouterLink],
+  providers: [provideIcons({ lucideLogOut })],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'flex' },
   template: `
@@ -31,7 +32,9 @@ const ITEM = 'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left te
           <div class="my-1 h-px bg-border" role="separator"></div>
           @if (me.angularian; as person) {
             <a [class]="item" [routerLink]="['/', person.username]" (click)="ctx.close()">
-              <ng-icon name="lucideAward" aria-hidden="true" /> My <span class="brand">Angularian</span> profile
+              <app-logo-mark class="size-4 shrink-0" />
+              <!-- One text run, so the word sits on the line with the rest, not centred as a separate box -->
+              <span>My <span class="brand">Angularian</span> profile</span>
             </a>
           } @else {
             <p class="px-2 py-1.5 text-sm text-muted-foreground">No contributions on record yet.</p>

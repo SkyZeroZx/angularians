@@ -81,6 +81,12 @@ and the A of the Angularians mark is its capital A; the README's wordmark draws 
 is `app/public/fonts/Norse-Bold.otf`, unmodified. Its licence (free font EULA v1.0, March 2014) does not allow selling the
 font or modifying the files; to use it anywhere else, get it from https://www.joelcarrouche.net.
 
+## Credited logos
+
+The footer credits AnalogJS, spartan/ui and ng-icons with their own logos, unchanged
+(`app/public/credits/`): AnalogJS (https://github.com/analogjs/analog, MIT), spartan/ui (https://spartan.ng, MIT) and
+ng-icons (https://github.com/ng-icons/ng-icons, MIT). They are their projects' marks, used only to credit them.
+
 ## Data
 
 - Country names and coordinates: [GeoNames](https://www.geonames.org), CC BY 4.0.

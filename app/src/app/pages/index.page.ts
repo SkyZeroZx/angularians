@@ -49,11 +49,11 @@ export const routeMeta = {
       <span heroTitle class="group inline-flex items-center gap-x-4"><app-logo-mark class="size-[1.1em] shrink-0 max-sm:hidden" /><span>Meet the <span class="brand whitespace-nowrap text-brand-from">Angularians</span></span></span>
       <!-- @container: the card's height follows its own width -->
       <span heroDescription>
-        The people behind
+        Every pull request, issue and review that made
         <!-- Angular as it calls itself: its logo (the press kit's), the name highlighted -->
-        <span class="inline-flex items-baseline gap-1.5 font-medium whitespace-nowrap text-foreground"><app-angular-logo class="size-[1.1em] self-center" />Angular</span>,
-        its CLI and its components, ranked by their contributions. Thanks to every one of them, Angular is a first-class framework and a true
-        community project.
+        <span class="inline-flex items-baseline gap-1.5 font-medium whitespace-nowrap text-foreground"><app-angular-logo class="size-[1.1em] self-center" />Angular</span>
+        is remembered here, in <span class="brand text-foreground">ng-halla</span>. Take your seat among the
+        <span class="brand text-foreground">Angularians</span> who build the framework, its CLI and its components, and see where your name stands.
       </span>
       <ng-container heroActions>
         <app-score-rules />

@@ -47,7 +47,7 @@ const CARD_TILES = 12;
           }
         </ul>
         <button hlmBtn variant="link" class="mt-3 px-0 text-muted-foreground hover:text-foreground" type="button" (click)="leaderboard.emit()">
-          See the {{ shown.count === 1 ? '' : number(shown.count) + ' ' }}<span class="brand">{{ shown.count === 1 ? 'Angularian' : 'Angularians' }}</span> from {{ name(shown.code) }}
+          <span>See the {{ shown.count === 1 ? '' : number(shown.count) + ' ' }}<span class="brand">{{ shown.count === 1 ? 'Angularian' : 'Angularians' }}</span> from {{ name(shown.code) }}</span>
           <ng-icon name="lucideArrowUp" aria-hidden="true" />
         </button>
       </div>
