@@ -26,8 +26,9 @@ const h = (type: string, style: Record<string, unknown>, children?: unknown, pro
 
 /** Satori sets Norse a little high on the baseline: moved down by this much of the font size, measured. */
 const NUDGE = 0.09
+/** The mark, lifted 3.5% as on the site (logo-mark.ts): the word beside it centres on its bright A half. */
 const markSvg = (size: number): Node =>
-  h('svg', { width: size, height: size }, MARK.map(([fill, d]) => h('path', {}, undefined, { d, fill })), { viewBox: '0 0 24 24', width: size, height: size })
+  h('svg', { width: size, height: size, position: 'relative', top: -size * .035 }, MARK.map(([fill, d]) => h('path', {}, undefined, { d, fill })), { viewBox: '0 0 24 24', width: size, height: size })
 
 const format = new Intl.NumberFormat('en-US').format
 const label = (value: number, one: string, many: string) => (value === 1 ? one : many)
