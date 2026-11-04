@@ -98,6 +98,7 @@ Thanks to everyone who has helped. This project follows the [all-contributors](h
   <tbody>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/erkamyaman"><img src="https://avatars.githubusercontent.com/u/88717125?v=4?s=100" width="100px;" alt="Erkam Yaman"/><br /><sub><b>Erkam Yaman</b></sub></a><br /><a href="https://github.com/erkamyaman/angularians/commits?author=erkamyaman" title="Code">💻</a> <a href="#design-erkamyaman" title="Design">🎨</a> <a href="https://github.com/erkamyaman/angularians/commits?author=erkamyaman" title="Documentation">📖</a> <a href="#infra-erkamyaman" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="#maintenance-erkamyaman" title="Maintenance">🚧</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://skyzerozx.com/"><img src="https://avatars.githubusercontent.com/u/73321943?v=4?s=100" width="100px;" alt="Jaime Burgos"/><br /><sub><b>Jaime Burgos</b></sub></a><br /><a href="https://github.com/erkamyaman/angularians/commits?author=SkyZeroZx" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
