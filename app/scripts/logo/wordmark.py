@@ -6,12 +6,12 @@ download the font to app/public/fonts), from the repository root:
   pip install fonttools
   python3 app/scripts/logo/wordmark.py
 """
-import re
+import json, subprocess
 from fontTools.ttLib import TTFont
 from fontTools.pens.svgPathPen import SVGPathPen
 from fontTools.pens.transformPen import TransformPen
 
-FONT, LOGO_SVG, OUT = 'app/public/fonts/Norse-Bold.otf', 'app/public/logo.svg', 'docs/assets/wordmark.svg'
+FONT, OUT = 'app/public/fonts/Norse-Bold.otf', 'docs/assets/wordmark.svg'
 f = TTFont(FONT)
 glyphs, cmap, hmtx = f.getGlyphSet(), f.getBestCmap(), f['hmtx']
 CAP = 735                             # Norse's cap height, in font units
@@ -27,9 +27,13 @@ for ch in 'ANGULARIANS':
     paths.append(pen.getCommands())
     x += hmtx[name][0] + TRACK
 width = x - TRACK
-mark = ''.join(re.findall(r' d="([^"]+)"', open(LOGO_SVG).read()))
+parts = json.loads(subprocess.check_output(['python3', 'app/scripts/logo/build.py']))
+cls = {'solid': 's', 'empty': 'e', 'l1': 'a', 'l2': 'b', 'l3': 'c'}
 open(OUT, 'w').write(
     f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width:.0f} {LOGO:.0f}" role="img" aria-label="Angularians">'
-    f'<path fill="#e5194b" transform="scale({LOGO / 24:.4f})" d="{mark}"/>'
-    f'<path fill="#e5194b" d="{" ".join(paths)}"/></svg>\n')
+    # Gold on GitHub's dark theme; a deeper gold and a lighter grey when the viewer's system is light.
+    '<style>.s,.w{fill:#f9ad26}.e{fill:#4a525c}.a{fill:#653e00}.b{fill:#965e00}.c{fill:#f9ad26}'
+    '@media (prefers-color-scheme:light){.s,.w{fill:#a55e00}.e{fill:#d0d7de}}</style>'
+    f'<g transform="scale({LOGO / 24:.4f})">' + ''.join(f'<path class="{cls[k]}" d="{d}"/>' for k, d in parts.items()) + '</g>'
+    f'<path class="w" d="{" ".join(paths)}"/></svg>\n')
 print(f'{OUT}: {width:.0f} x {LOGO:.0f}')

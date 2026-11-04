@@ -365,7 +365,7 @@ export default class Profile {
       {
         key: 'reactions', icon: 'lucideSmilePlus', value: n.reactions, name: n.reactions === 1 ? 'Reaction' : 'Reactions', detail: 'received',
         url: null, label: '',
-        tint: 'bg-amber-500/5 ring-amber-500', text: 'text-amber-700 dark:text-amber-400',
+        tint: 'bg-pink-500/5 ring-pink-500', text: 'text-pink-700 dark:text-pink-400',
       },
     ];
   });

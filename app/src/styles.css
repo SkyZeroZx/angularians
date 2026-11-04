@@ -19,12 +19,18 @@
 }
 
 /*
- * Spartan's zinc theme, with an Angular-inspired accent (red to magenta) as the primary color.
+ * Spartan's zinc theme, with amber gold as the primary colour: the brand, a medal's gold for the people we thank.
  * Dark mode, the default, is the `dark` class on <html>: in index.html, removed for a saved light theme by its
  * inline script before the first paint, then kept by ThemeService.
  */
 :root {
   color-scheme: light;
+
+  /* The mark's contribution graph: the grey of empty days, then three golds, darkest to brightest. */
+  --mark-empty: #d0d7de;
+  --mark-1: #653e00;
+  --mark-2: #965e00;
+  --mark-3: #f9ad26;
 
   --font-sans: "Inter Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
@@ -40,7 +46,8 @@
   --card-foreground: oklch(0.141 0.005 285.823);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.141 0.005 285.823);
-  --primary: oklch(0.55 0.23 15);
+  /* A deeper gold on white: 5:1 as text, and under white text. */
+  --primary: oklch(0.55 0.15 72);
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.967 0.001 286.375);
   --secondary-foreground: oklch(0.21 0.006 285.885);
@@ -52,7 +59,7 @@
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.92 0.004 286.32);
   --input: oklch(0.92 0.004 286.32);
-  --ring: oklch(0.55 0.23 15 / 60%);
+  --ring: oklch(0.55 0.15 72 / 60%);
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.141 0.005 285.823);
   --sidebar-primary: oklch(0.21 0.006 285.885);
@@ -66,6 +73,11 @@
 :root.dark {
   color-scheme: dark;
 
+  --mark-empty: #4a525c;
+  --mark-1: #653e00;
+  --mark-2: #965e00;
+  --mark-3: #f9ad26;
+
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
@@ -77,7 +89,7 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.21 0.006 285.885);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.68 0.2 10);
+  --primary: oklch(0.8 0.16 75);
   --primary-foreground: oklch(0.141 0.005 285.823);
   --secondary: oklch(0.274 0.006 286.033);
   --secondary-foreground: oklch(0.985 0 0);
@@ -88,7 +100,7 @@
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.68 0.2 10 / 60%);
+  --ring: oklch(0.8 0.16 75 / 60%);
   --sidebar: oklch(0.21 0.006 285.885);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.985 0 0);
@@ -101,9 +113,8 @@
 
 
 @theme inline {
-  /* The brand colour (flat: no gradients), for the logo mark and the hero heading; brand-to is unused. */
-  --color-brand-from: oklch(0.6 0.24 15);
-  --color-brand-to: oklch(0.55 0.25 320);
+  /* The brand colour (flat: no gradients), per theme: the mark, the word Angularians. */
+  --color-brand-from: var(--primary);
   /* In @theme, so Tailwind makes the font-display utility: the hero's "Angularians". */
   --font-display: "Norse", Georgia, serif;
 }
