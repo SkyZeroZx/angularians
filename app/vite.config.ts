@@ -1,10 +1,25 @@
 /// <reference types="vitest" />
 
-import { defineConfig } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
 import analog from '@analogjs/platform';
 import tailwindcss from '@tailwindcss/vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import { fileURLToPath } from 'node:url';
+
+const DEV_IMAGES = '/api/__dev-images';
+
+function forwardImagesInDev(): Plugin {
+  return {
+    name: 'forward-images-in-dev',
+    apply: 'serve',
+    configureServer(server) {
+      server.middlewares.use((req, _res, next) => {
+        if (req.url && /^\/(?:[^/?]+\/card|og)\.png(?:\?|$)/.test(req.url)) req.url = DEV_IMAGES + req.url;
+        next();
+      });
+    },
+  };
+}
 
 // https://vitejs.dev/config/
 export default defineConfig(() => ({
@@ -15,11 +30,16 @@ export default defineConfig(() => ({
     mainFields: ['module'],
   },
   plugins: [
+    forwardImagesInDev(),
     analog({
       // No static pages: `/` reads `?period=` and `?country=`, so a build-time `index.html` would show the
       // default board for every shared link until the browser corrected it. Every page is server-rendered.
       prerender: { routes: [] },
       nitro: {
+        handlers: [
+          { route: `${DEV_IMAGES}/:username/card.png`, env: 'dev', handler: fileURLToPath(new URL('./src/server/routes/[username]/card.png.get.ts', import.meta.url)) },
+          { route: `${DEV_IMAGES}/og.png`, env: 'dev', handler: fileURLToPath(new URL('./src/server/routes/og.png.get.ts', import.meta.url)) },
+        ],
         // The two fonts of the Angularian card (src/server/card), inlined in the server: about 60 KB.
         // And the brand font, Norse Bold, for the word "Angularian" (public/fonts), about 30 KB.
         serverAssets: [

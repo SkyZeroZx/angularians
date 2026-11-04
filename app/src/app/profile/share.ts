@@ -11,6 +11,7 @@ import { SITE_URL } from '../site'
 
 /** The skeleton shows at least this long, so a fast card does not flicker it. */
 const MIN_LOADING_MS = 500
+const STAT_TILES = [{ left: 42.33, top: 12.54 }, { left: 69.83, top: 12.54 }, { left: 42.33, top: 52.54 }, { left: 69.83, top: 52.54 }]
 
 const query = (period?: Period) => (!period || period === 'all' ? '' : `?period=${period}`)
 
@@ -70,7 +71,6 @@ const query = (period?: Period) => (!period || period === 'all' ? '' : `?period=
                 @if (shownUrl()) {
                   <!-- A card is shown: only the rank and the points change on the left (measured on the 1200 × 630 card) -->
                   <div hlmSkeleton class="absolute top-[54%] left-[9%] h-[15%] w-[24%] rounded-md bg-neutral-950/80" aria-hidden="true"></div>
-                  <div class="w-[31.7%]" aria-hidden="true"></div>
                 } @else {
                   <div class="flex w-[31.7%] flex-col items-center gap-[6%]" aria-hidden="true">
                     <div hlmSkeleton class="aspect-square w-[46%] rounded-full bg-white/10"></div>
@@ -79,11 +79,16 @@ const query = (period?: Period) => (!period || period === 'all' ? '' : `?period=
                     <div hlmSkeleton class="h-[6%] w-[40%] bg-white/10"></div>
                   </div>
                 }
-                <div class="grid flex-1 grid-cols-2 content-center gap-[5%]" aria-hidden="true">
-                  @for (box of [1, 2, 3, 4]; track box) {
-                    <div hlmSkeleton class="aspect-[1.35] rounded-xl" [class]="shownUrl() ? 'bg-neutral-950/70' : 'bg-white/10'"></div>
+                @for (tile of statTiles; track $index) {
+                  @if (!shownUrl()) {
+                    <div class="absolute h-[34.92%] w-[24.83%] rounded-xl ring-1 ring-white/10" [style.left.%]="tile.left" [style.top.%]="tile.top" aria-hidden="true"></div>
+                    <div hlmSkeleton class="absolute aspect-square w-[3%] rounded-full bg-white/10" [style.left.%]="tile.left + 2.83" [style.top.%]="tile.top + 5.08" aria-hidden="true"></div>
+                    <div hlmSkeleton class="absolute h-[5.5%] w-[12%] bg-white/10" [style.left.%]="tile.left + 2.83" [style.top.%]="tile.top + 23.8" aria-hidden="true"></div>
                   }
-                </div>
+                  <div class="absolute h-[11%] w-[17.5%] overflow-hidden rounded-md bg-neutral-900" [style.left.%]="tile.left + 2.83" [style.top.%]="tile.top + 11.75" aria-hidden="true">
+                    <div hlmSkeleton class="size-full rounded-none bg-white/10"></div>
+                  </div>
+                }
               </div>
             } @else if (cardState() === 'error') {
               <div class="absolute inset-0 flex items-center justify-center gap-2 bg-neutral-950 text-sm text-neutral-400" role="status">
@@ -115,6 +120,7 @@ export class Share {
 
   protected readonly copied = signal<'link' | 'markdown' | null>(null)
   /** The card renders on demand: its background and a loader meanwhile. */
+  protected readonly statTiles = STAT_TILES
   protected readonly cardState = signal<'loading' | 'loaded' | 'error'>('loading')
   /** The last card that loaded: it stays under the next one while that renders. */
   protected readonly shownUrl = signal<string | null>(null)
