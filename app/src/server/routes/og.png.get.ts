@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
   const requested = getQuery(event)['period']
   const period = typeof requested === 'string' && isPeriod(requested) && data.hasPeriod(requested) ? requested : null
   const board = data.leaderboard({ period: period ?? 'all', pageSize: 8 })
-  const title = period ? `Top Angularians ${periodPhrase(period)}` : 'Meet the Angularians'
+  const title = period ? `Top Angularians ${periodPhrase(period)}` : 'Welcome to NGhalla'
   const description = period
     ? `${format(board.total)} people contributed to Angular ${periodPhrase(period)}: ${format(board.landedPullRequests)} merged pull requests, ${format(board.issues)} issues and ${format(board.comments + board.reviewComments)} comments.`
     : `The ${format(board.total)} people behind Angular, its CLI and its components, ranked by their contributions since 2014.`

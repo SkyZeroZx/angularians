@@ -39,8 +39,8 @@ const label = (value: number, one: string, many: string) => (value === 1 ? one :
  */
 function branded(text: string, style: Record<string, unknown>, brandColor?: string): Node {
   const size = Number(style.fontSize ?? 16)
-  const pieces = text.split(/(Angularians?)/).filter(Boolean)
-  return h('div', { flexWrap: 'wrap', alignItems: 'baseline', columnGap: size * .25, ...style }, pieces.map(piece => /^Angularians?$/.test(piece)
+  const pieces = text.split(/(NGhalla|Angularians?)/).filter(Boolean)
+  return h('div', { flexWrap: 'wrap', alignItems: 'baseline', columnGap: size * .25, ...style }, pieces.map(piece => /^(NGhalla|Angularians?)$/.test(piece)
     ? h('span', { fontFamily: 'Norse', fontWeight: 700, fontSize: size, letterSpacing: size * .02, position: 'relative', top: size * NUDGE, ...(brandColor ? { color: brandColor } : {}) }, piece)
     : h('span', {}, piece.trim())))
 }
