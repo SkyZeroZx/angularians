@@ -120,6 +120,11 @@ describe('pullRequestScopes', () => {
     ['build: update to bazel 7', []],
     ['Revert "fix(router): x"', []],
     ['fix(): empty', []],
+    // Docs PRs without a scope: the Angular agent skills, or angular.dev.
+    ['docs: mention `getError()` in signal forms skill', ['skills']],
+    ['docs: update compiler-cli and core reference skills', ['skills']],
+    ['docs: fix a typo in the signals guide', ['docs']],
+    ['docs(forms): a skill for signal forms', ['forms']],
   ] as const)('%s → %j', (title, scopes) => {
     expect(pullRequestScopes(title)).toEqual(scopes)
   })
@@ -136,6 +141,7 @@ describe('pullRequestScopes in other repositories', () => {
     ['angular/angular-cli', 'build: update dependency', []],
     ['angular/angular-cli', 'fix(build): no package', []],
     ['angular/dev-infra', 'fix(ng-dev): release notes', []],
+    ['angular/angular-cli', 'docs: update the readme', []],
     // angular/angular is unchanged: no npm-style names.
     ['angular/angular', 'fix(@angular/core): x', []],
   ])('%s: %s', (repo, title, scopes) => {

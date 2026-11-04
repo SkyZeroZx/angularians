@@ -1,6 +1,6 @@
 import { canonicalPackage, packageRepo } from '@angularians/shared';
 import {
-  lucideAppWindow, lucideAtom, lucideBlocks, lucideBookOpen, lucideBoxes, lucideBug, lucideCalendar, lucideCircleArrowUp, lucideCode, lucideCog, lucideComponent, lucideCpu, lucideFlaskConical, lucideGauge, lucideGlobe, lucideHammer, lucideLanguages, lucideLayers, lucideMap, lucideMessageSquareCode, lucidePackage, lucidePalette, lucidePlay, lucideRadioTower, lucideRoute, lucideServer, lucideSparkles, lucideSprout, lucideSquareTerminal, lucideTextCursorInput, lucideTimer, lucideWandSparkles, lucideWorkflow,
+  lucideAppWindow, lucideAtom, lucideBlocks, lucideBookOpen, lucideBoxes, lucideBrain, lucideBug, lucideCalendar, lucideCircleArrowUp, lucideCode, lucideCog, lucideComponent, lucideCpu, lucideFlaskConical, lucideGauge, lucideGlobe, lucideHammer, lucideLanguages, lucideLayers, lucideMap, lucideMessageSquareCode, lucidePackage, lucidePalette, lucidePlay, lucideRadioTower, lucideRoute, lucideServer, lucideSparkles, lucideSprout, lucideSquareTerminal, lucideTextCursorInput, lucideTimer, lucideWandSparkles, lucideWorkflow,
 } from '@ng-icons/lucide';
 
 
@@ -32,6 +32,7 @@ const PACKAGES: Record<string, string> = {
   'devtools': 'Angular DevTools',
   'docs': 'angular.dev',
   'docs-infra': 'angular.dev',
+  'skills': 'Angular agent skills',
   'migrations': '@angular/core schematics',
 }
 
@@ -68,6 +69,7 @@ const ICONS: Record<string, string> = {
   'docs': 'lucideBookOpen',
   'docs-infra': 'lucideBookOpen',
   'shared-docs': 'lucideBookOpen',
+  'skills': 'lucideBrain',
   'migrations': 'lucideWandSparkles',
   'schematics': 'lucideWandSparkles',
   'benchpress': 'lucideGauge',
@@ -109,7 +111,7 @@ export function packageIcon(name: string): string {
 }
 
 /** Every icon `packageIcon` can name, for `provideIcons`. */
-export const PACKAGE_ICONS = { lucideAppWindow, lucideAtom, lucideBlocks, lucideBookOpen, lucideBoxes, lucideBug, lucideCalendar, lucideCircleArrowUp, lucideCode, lucideCog, lucideComponent, lucideCpu, lucideFlaskConical, lucideGauge, lucideGlobe, lucideHammer, lucideLanguages, lucideLayers, lucideMap, lucideMessageSquareCode, lucidePackage, lucidePalette, lucidePlay, lucideRadioTower, lucideRoute, lucideServer, lucideSparkles, lucideSprout, lucideSquareTerminal, lucideTextCursorInput, lucideTimer, lucideWandSparkles, lucideWorkflow }
+export const PACKAGE_ICONS = { lucideAppWindow, lucideAtom, lucideBlocks, lucideBookOpen, lucideBoxes, lucideBrain, lucideBug, lucideCalendar, lucideCircleArrowUp, lucideCode, lucideCog, lucideComponent, lucideCpu, lucideFlaskConical, lucideGauge, lucideGlobe, lucideHammer, lucideLanguages, lucideLayers, lucideMap, lucideMessageSquareCode, lucidePackage, lucidePalette, lucidePlay, lucideRadioTower, lucideRoute, lucideServer, lucideSparkles, lucideSprout, lucideSquareTerminal, lucideTextCursorInput, lucideTimer, lucideWandSparkles, lucideWorkflow }
 
 /** A contributor's packages with misspelled scopes folded into the package they mean, most PRs first. */
 export function foldPackages(packages: ReadonlyArray<{ name: string, pullRequests: number }>): Array<{ name: string, pullRequests: number }> {

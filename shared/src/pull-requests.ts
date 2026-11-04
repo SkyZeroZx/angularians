@@ -98,10 +98,20 @@ export function packageRepo(name: string): string {
   return name.startsWith('@angular/') && COMPONENTS_PACKAGES.has(name.slice('@angular/'.length)) ? 'angular/components' : 'angular/angular-cli'
 }
 
-/** The packages a PR title names, lowercased: `fix(router): …` → `['router']`. Empty without a scope. */
+/** An angular/angular docs PR without a scope (`docs: …`): its Angular agent skills (`skills/`) when it says so. */
+const UNSCOPED_DOCS_RE = /^\s*docs!?:/i
+const SKILL_RE = /\bskills?\b/i
+
+/**
+ * The packages a PR title names, lowercased: `fix(router): …` → `['router']`. Empty without a scope, except for
+ * angular/angular's docs PRs without one: `skills` when the title is about a skill, else `docs` (angular.dev).
+ */
 export function pullRequestScopes(title: string, repo = 'angular/angular'): string[] {
   const match = SCOPE_RE.exec(title)
-  if (!match) return []
+  if (!match) {
+    if (repo === 'angular/angular' && UNSCOPED_DOCS_RE.test(title)) return [SKILL_RE.test(title) ? 'skills' : 'docs']
+    return []
+  }
   const scopes = match[1]!.split(/[,\s]+/).map(scope => scope.trim().toLowerCase()).filter(Boolean)
   return [...new Set(scopes.map(scope => repoPackage(repo, scope)).filter(name => name !== null))]
 }
