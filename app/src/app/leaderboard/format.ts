@@ -24,8 +24,9 @@ export function avatarSrcset(githubId: number, size: number): string {
 }
 
 /** The profile opens on the period of the board it was picked from (all time is its default). */
-export function profileQuery(period: Period): Record<string, string> {
-  return period === 'all' ? {} : { period }
+export function profileQuery(period: Period, country: string | null = null): Record<string, string> {
+  // The country only takes the profile's back link to the board it came from.
+  return { ...(period === 'all' ? {} : { period }), ...(country ? { country } : {}) }
 }
 
 /** A round flag (circle-flags, copied to public/flags by scripts/copy-flags.ts). */

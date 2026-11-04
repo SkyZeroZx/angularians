@@ -6,7 +6,7 @@ import { Meta, Title } from '@angular/platform-browser';
 import { Router, RouterLink } from '@angular/router';
 import { injectServerFn, type RouteMeta } from '@analogjs/router';
 import { injectResponse } from '@analogjs/router/tokens';
-import { countryName, DEFAULT_PERIOD, GITHUB_USERNAME_RE, isPeriod, periodPhrase, reposQuery, type ContributorProfile, type Period } from '@angularians/shared';
+import { countryCode, countryName, DEFAULT_PERIOD, GITHUB_USERNAME_RE, isPeriod, periodPhrase, reposQuery, type ContributorProfile, type Period } from '@angularians/shared';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucideArrowLeft, lucideArrowUpRight, lucideAward, lucideCircleDot, lucideGitPullRequest, lucideInfo,
@@ -428,7 +428,12 @@ export default class Profile {
     return all.filter((link, index) => all.findIndex(other => other.url === link.url) === index);
   });
   /** Back to the board of the period on screen; the board's default period keeps its URL clean. */
-  protected readonly backQuery = computed(() => (this.period() === DEFAULT_PERIOD ? {} : { period: this.period() }));
+  /** The board the profile was opened from: its period and, from the grid, its country (`?country=`). */
+  private readonly fromCountry = injectQueryParams(params => countryCode(params['country']));
+  protected readonly backQuery = computed(() => ({
+    ...(this.period() === DEFAULT_PERIOD ? {} : { period: this.period() }),
+    ...(this.fromCountry() ? { country: this.fromCountry() } : {}),
+  }));
 
   protected readonly avatar = (person: ContributorProfile) => avatarUrl(person.githubId, 112);
   protected readonly number = formatNumber;
