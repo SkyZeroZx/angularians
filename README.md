@@ -1,12 +1,15 @@
-<p align="center"><img src="app/public/logo-animated.svg" width="88" height="88" alt="The Angularians mark"></p>
+<h1 align="center"><img src="docs/assets/wordmark.svg" height="72" alt="Angularians"></h1>
 
-# Angularians
+<p align="center">
+  <a href="https://angularians.dev"><img src="https://img.shields.io/badge/live-angularians.dev-E5194B.svg" alt="Live: angularians.dev"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-E5194B.svg" alt="License: MIT"></a>
+  <a href="https://github.com/sponsors/erkamyaman"><img src="https://img.shields.io/badge/sponsor-erkamyaman-db61a2?logo=githubsponsors&logoColor=white" alt="Sponsor"></a>
+</p>
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-E5194B.svg)](LICENSE)
-[![Sponsor](https://img.shields.io/badge/sponsor-erkamyaman-db61a2?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/erkamyaman)
-
-Everyone who has contributed to Angular since 2014, ranked. Inspired by [Nuxters](https://nuxt.com/nuxters), built for Angular.
-Live at **[angularians.dev](https://angularians.dev)**, updated every night.
+<p align="center">
+  Everyone who has contributed to Angular since 2014, ranked.<br>
+  Live at <b><a href="https://angularians.dev">angularians.dev</a></b>, updated every night. Inspired by <a href="https://nuxt.com/nuxters">Nuxters</a>, built for Angular.
+</p>
 
 <p align="center">
   <img alt="The Angularians home page: the hero, sign in with GitHub, and the leaderboard" src="docs/assets/screenshot.png" width="800">
@@ -20,7 +23,7 @@ You need Node 24 (`.nvmrc`) and pnpm 10.
 git clone https://github.com/erkamyaman/angularians.git
 cd angularians
 pnpm install
-pnpm dev     # http://localhost:5173, with the data in data/
+pnpm dev     # http://localhost:5173, with the data in data/ (the first run downloads the brand font)
 pnpm test
 ```
 
@@ -34,8 +37,14 @@ The data is already in `data/`: you do not need a GitHub token to work on the si
   requests, issues, comments and code reviews. [How the score works](docs/SCORING.md).
 - The last 30 days, the last 12 months, all time and every year, by country, with a globe.
 - A profile for everyone: stats, badges, the packages they contributed to, year by year.
-- Sign in with GitHub to see your rank, share your profile and add your Angularian card to your GitHub README.
+- Sign in with GitHub to see your rank and badges, share your profile and add your Angularian card to your GitHub README.
 - A public JSON API. How it all fits: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+## The brand
+
+The mark is the Angular shield as a Viking one, with the A of [Norse](https://www.joelcarrouche.net) cut through it, in one
+flat colour, `#E5194B`. Its construction is in [`app/scripts/logo`](app/scripts/logo). The Norse font may be used on web
+pages but not shared, so it is downloaded at build time, not kept here: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ## Contributing
 

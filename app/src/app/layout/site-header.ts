@@ -18,8 +18,8 @@ import { AuthService } from '../auth/auth.service';
   template: `
     <app-container class="flex h-16 items-center gap-4">
       <a routerLink="/" class="flex items-center gap-1 font-semibold tracking-tight">
-        <app-logo-mark class="size-8" animated />
-        <span class="brand text-[1.35em] text-brand-from">Angularians</span>
+        <app-logo-mark class="size-8" />
+        <span class="brand text-[1.55em] text-brand-from">Angularians</span>
       </a>
       <nav class="ml-auto flex items-center gap-1" aria-label="Site">
         <!-- GitHub and the theme always; then, signed in, the avatar and its menu -->
