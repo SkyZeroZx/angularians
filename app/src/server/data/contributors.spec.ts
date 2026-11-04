@@ -23,6 +23,8 @@ const bundle: DataBundle = {
     { githubId: 2, username: 'Cristina', name: null, website: 'https://example.com/', socialAccounts: [], country: 'TR' },
     { githubId: 4, username: 'bob', name: 'Robert Builder', website: null, socialAccounts: [], country: 'TR' },
   ],
+  packages: [{ githubId: 1, packages: [{ name: 'core', pullRequests: 40 }, { name: 'router', pullRequests: 10 }] }],
+  team: [{ githubId: 1, username: 'crisbeto' }],
 }
 const data = new ContributorsData(bundle)
 
@@ -53,9 +55,11 @@ describe('ContributorsData', () => {
       rank: 1,
       name: 'Kristiyan',
       country: 'BG',
+      team: true,
+      packages: [{ name: 'core', pullRequests: 40 }, { name: 'router', pullRequests: 10 }],
       periods: [{ period: '12m', rank: 2, score: 35, issues: 1, reviewComments: 2 }, { period: 'all', rank: 1, score: 350, comments: 7 }],
     })
-    expect(data.profile('atscott')).toMatchObject({ name: null, country: null, socialAccounts: [] })
+    expect(data.profile('atscott')).toMatchObject({ name: null, country: null, socialAccounts: [], packages: [], team: false })
     expect(data.profile('nobody')).toBeNull()
   })
 

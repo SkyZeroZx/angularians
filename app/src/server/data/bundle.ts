@@ -1,4 +1,4 @@
-import type { Contributor, Period, ProfileRecord } from '@angularians/shared'
+import type { Contributor, PackagesRecord, Period, ProfileRecord, TeamRecord } from '@angularians/shared'
 
 /** What `scripts/bundle-data.ts` writes to `bundle.generated.json`: the validated `data/` files, in one module. */
 export interface DataBundle {
@@ -6,4 +6,7 @@ export interface DataBundle {
   /** Ranked contributors of each period that has a file. */
   periods: Record<Period, Contributor[]>
   profiles: ProfileRecord[]
+  /** Empty before the collector wrote packages.json and team.json. */
+  packages: PackagesRecord[]
+  team: TeamRecord[]
 }

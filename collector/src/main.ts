@@ -5,8 +5,10 @@ import {
   ContributorsAccumulator,
   landedPullRequests,
   periodFile,
+  PACKAGES_FILE,
   PROFILES_FILE,
   prCloseNumbers,
+  TEAM_FILE,
   toJsonLines,
   type LandedPullRequest,
   type TeamRecord,
@@ -21,8 +23,6 @@ import { restPulls, searchPulls } from './pulls.ts'
 /** Below this, a full run is most likely broken (token, API): keep the previous files. */
 const MIN_FULL_RUN_CONTRIBUTORS = 1000
 export const META_FILE = 'meta.json'
-const PACKAGES_FILE = 'packages.json'
-const TEAM_FILE = 'team.json'
 
 const config = parseConfig(process.argv.slice(2), process.env)
 const now = new Date()

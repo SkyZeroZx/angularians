@@ -2,7 +2,7 @@
 // and nuxt/nuxters `saveContributors` (MIT, Copyright (c) 2022-2023 NuxtLabs, Copyright (c) 2023 Nuxt).
 import { countryCode } from './countries.ts'
 import { compareRecords, emptyCounts, score } from './scoring.ts'
-import type { ActivityCounts, Contributor, ProfileRecord, PullRequestCounts, SocialAccount } from './types.ts'
+import type { ActivityCounts, Contributor, PackagesRecord, ProfileRecord, PullRequestCounts, SocialAccount, TeamRecord } from './types.ts'
 
 /** The all-time profiles of the contributors: not a period. */
 export const PROFILES_FILE = 'profiles.json'
@@ -130,4 +130,35 @@ export function parseProfilesFile(data: unknown): ProfileRecord[] {
     profiles.push({ githubId: id, username, name, website, socialAccounts, country })
   }
   return profiles
+}
+
+/** The packages of every contributor, from `packages.json`. Invalid entries are skipped. */
+export const PACKAGES_FILE = 'packages.json'
+export function parsePackagesFile(data: unknown): PackagesRecord[] {
+  if (!Array.isArray(data)) throw new TypeError(`${PACKAGES_FILE} must be an array`)
+  const records: PackagesRecord[] = []
+  for (const entry of data) {
+    if (!entry || typeof entry !== 'object') continue
+    const record = entry as Record<string, unknown>
+    const id = githubId(record['githubId'])
+    if (id === null || !Array.isArray(record['packages'])) continue
+    const packages = record['packages'].flatMap((item: unknown) => {
+      const { name, pullRequests } = (item && typeof item === 'object' ? item : {}) as Record<string, unknown>
+      return typeof name === 'string' && /^[a-z0-9][a-z0-9.-]{0,40}$/.test(name) && count(pullRequests) ? [{ name, pullRequests: count(pullRequests) }] : []
+    })
+    if (packages.length) records.push({ githubId: id, packages })
+  }
+  return records
+}
+
+/** The public members of the organization, from `team.json`. */
+export const TEAM_FILE = 'team.json'
+export function parseTeamFile(data: unknown): TeamRecord[] {
+  if (!Array.isArray(data)) throw new TypeError(`${TEAM_FILE} must be an array`)
+  return data.flatMap((entry: unknown) => {
+    const record = (entry && typeof entry === 'object' ? entry : {}) as Record<string, unknown>
+    const id = githubId(record['githubId'])
+    const username = text(record['username'], MAX_LOGIN_LENGTH)
+    return id !== null && username ? [{ githubId: id, username }] : []
+  })
 }

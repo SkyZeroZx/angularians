@@ -36,6 +36,8 @@ export class ContributorsData {
   /** Period → lowercased username → contributor */
   private readonly byUsername = new Map<Period, Map<string, Contributor>>()
   private readonly profiles: Map<number, ProfileRecord>
+  private readonly packages: Map<number, Array<{ name: string, pullRequests: number }>>
+  private readonly team: Set<number>
 
   constructor(bundle: DataBundle) {
     this.byPeriod = new Map(Object.entries(bundle.periods))
@@ -43,6 +45,8 @@ export class ContributorsData {
     this.periods = sortPeriods([...this.byPeriod].filter(([, rows]) => rows.length).map(([period]) => period))
     this.collectedAt = bundle.meta?.collectedAt ?? null
     this.profiles = new Map(bundle.profiles.map(profile => [profile.githubId, profile]))
+    this.packages = new Map((bundle.packages ?? []).map(record => [record.githubId, record.packages]))
+    this.team = new Set((bundle.team ?? []).map(member => member.githubId))
     for (const [period, rows] of this.byPeriod) {
       this.byUsername.set(period, new Map(rows.map(row => [row.username.toLowerCase(), row])))
     }
@@ -94,6 +98,8 @@ export class ContributorsData {
       website: links?.website ?? null,
       socialAccounts: links?.socialAccounts ?? [],
       country: links?.country ?? null,
+      packages: this.packages.get(allTime.githubId) ?? [],
+      team: this.team.has(allTime.githubId),
     }
   }
 

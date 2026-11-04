@@ -101,13 +101,17 @@ export interface ProfileRecord {
   country: string | null
 }
 
-/** `/[username]`: all-time stats, plus every period the contributor has landed PRs in. */
+/** `/[username]`: all-time stats, plus every period the contributor contributed in. */
 export interface ContributorProfile extends Contributor {
   periods: ContributorPeriodStats[]
   name: string | null
   website: string | null
   socialAccounts: SocialAccount[]
   country: string | null
+  /** The packages the contributor's merged PRs named, all time, most first. */
+  packages: Array<{ name: string, pullRequests: number }>
+  /** A public member of the organization of the repository (the Angular team badge). */
+  team: boolean
 }
 
 /** A leaderboard row. */
