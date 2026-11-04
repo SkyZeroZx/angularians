@@ -1,7 +1,6 @@
 """Builds docs/assets/wordmark.svg, the README's header: the mark and "ANGULARIANS" in Norse Bold, as outlines.
 
-GitHub cannot load our font, so the word is drawn from its glyphs. Run after `pnpm dev` or `pnpm build` (which
-download the font to app/public/fonts), from the repository root:
+GitHub cannot load our font, so the word is drawn from its glyphs (app/public/fonts). From the repository root:
 
   pip install fonttools
   python3 app/scripts/logo/wordmark.py
