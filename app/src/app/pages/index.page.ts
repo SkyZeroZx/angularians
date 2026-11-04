@@ -3,9 +3,9 @@ import { afterRenderEffect, ChangeDetectionStrategy, Component, computed, effect
 import { Meta, Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { injectServerFn, type RouteMeta } from '@analogjs/router';
-import { ACTIVITY_POINTS, countryCode, countryName, DEFAULT_PERIOD, isPeriod, periodPhrase, PULL_REQUEST_POINTS, type Period } from '@angularians/shared';
+import { countryCode, countryName, DEFAULT_PERIOD, isPeriod, periodPhrase, type Period } from '@angularians/shared';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideBookOpen, lucideBrushCleaning, lucideCalendar, lucideCircleDot, lucideGitPullRequest, lucideMessageCircle, lucideMessageCircleHeart, lucideRocket, lucideUsers, lucideWrench } from '@ng-icons/lucide';
+import { lucideBookOpen, lucideCalendar, lucideCircleDot, lucideGitPullRequest, lucideMessageCircle, lucideMessageCircleHeart, lucideMessagesSquare, lucideUsers } from '@ng-icons/lucide';
 import { injectQueryParams } from 'ngxtension/inject-query-params';
 import { HlmBadge } from '@spartan-ng/helm/badge';
 import { HlmButton } from '@spartan-ng/helm/button';
@@ -19,6 +19,7 @@ import { PageSection } from '../layout/page-section';
 import { ContributorSearch } from '../leaderboard/contributor-search';
 import { CountrySelect } from '../leaderboard/country-select';
 import { MeCard } from '../leaderboard/me-card';
+import { ScoreRules } from '../leaderboard/score-rules';
 import { formatDate, formatNumber, plural } from '../leaderboard/format';
 import { LeaderboardGrid } from '../leaderboard/leaderboard-grid';
 import { PeriodTabs } from '../leaderboard/period-tabs';
@@ -34,20 +35,20 @@ export const routeMeta = {
 @Component({
   selector: 'app-home',
   imports: [
-    ContributorSearch, CountrySelect, HlmBadge, HlmButton, HlmCardImports, HlmSkeleton, LeaderboardGrid, LogoMark, MeCard, NgIcon,
+    ContributorSearch, CountrySelect, HlmBadge, HlmButton, HlmCardImports, HlmSkeleton, LeaderboardGrid, LogoMark, MeCard, NgIcon, ScoreRules,
     PageGrid, PageHero, PageSection, PeriodTabs, World,
   ],
-  providers: [provideIcons({ lucideBookOpen, lucideBrushCleaning, lucideCalendar, lucideCircleDot, lucideGitPullRequest, lucideMessageCircle, lucideMessageCircleHeart, lucideRocket, lucideUsers, lucideWrench })],
+  providers: [provideIcons({ lucideBookOpen, lucideCalendar, lucideCircleDot, lucideGitPullRequest, lucideMessageCircle, lucideMessageCircleHeart, lucideMessagesSquare, lucideUsers })],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-page-hero [description]="description">
       <span heroHeadline hlmBadge variant="secondary" class="mb-4">Updated every day</span>
       <span heroTitle class="group inline-flex flex-wrap items-center gap-x-4"><app-logo-mark class="size-[1.1em] shrink-0" animated /><span>Meet the <span class="text-brand-from">Angularians</span></span></span>
+      <!-- @container: the card's height follows its own width -->
       <ng-container heroActions>
-        <a hlmBtn href="#how-it-works">How the score works</a>
+        <app-score-rules />
         <a hlmBtn variant="outline" href="https://github.com/angular/angular/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">How to contribute</a>
       </ng-container>
-      <!-- @container: the card's height follows its own width -->
       <div heroAside class="@container"><app-me-card /></div>
     </app-page-hero>
 
@@ -101,46 +102,10 @@ export const routeMeta = {
       }
     }
 
-    <app-page-section sectionId="how-it-works" title="How the score works" description="Every contribution to angular/angular, angular/components, angular/angular-cli and angular/dev-infra counts, for its author, on the day it was made. Pull requests count once they are merged, by type, from the title (feat, fix, docs…): the convention the repositories already enforce.">
-      <app-page-grid class="lg:grid-cols-4">
-        @for (way of ways; track way.title) {
-          <section hlmCard>
-            <div hlmCardHeader>
-              <ng-icon [name]="way.icon" class="text-primary" size="22" aria-hidden="true" />
-              <h3 hlmCardTitle>{{ way.title }}</h3>
-              <p hlmCardDescription>{{ way.description }}</p>
-            </div>
-            <div hlmCardContent>
-              <p class="text-3xl font-semibold tabular-nums">{{ way.points }} <span class="text-base font-normal text-muted-foreground">pts</span></p>
-            </div>
-          </section>
-        }
-      </app-page-grid>
-      <h3 class="mt-10 mb-4 font-semibold">Everything else counts too</h3>
-      <div class="overflow-x-auto rounded-xl border">
-        <table class="w-full text-sm">
-          <tbody class="divide-y">
-            @for (rule of rules; track rule.what) {
-              <tr>
-                <th scope="row" class="px-4 py-2.5 text-left font-medium">{{ rule.what }}</th>
-                <td class="px-4 py-2.5 text-muted-foreground">{{ rule.when }}</td>
-                <td class="px-4 py-2.5 text-right font-semibold whitespace-nowrap tabular-nums">{{ rule.points }}</td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-      <p class="mt-6 max-w-3xl text-sm text-muted-foreground">
-        Most PRs from 2017 to 2025 show as closed on GitHub, not merged: Angular's merge tooling pushes the commits itself and adds
-        <code class="rounded bg-muted px-1 py-0.5 text-xs">PR Close #N</code> to them. Those count as merged too. Reactions count on the day of the
-        issue or comment they are on. Bots are left out. The weights are the ones of Nuxters, plus review comments.
-      </p>
-    </app-page-section>
-
     <app-page-section>
       <header class="mx-auto mb-10 max-w-3xl text-center">
         <h2 class="text-3xl font-medium tracking-tight sm:text-4xl">How to become an Angularian</h2>
-        <p class="mt-4 text-lg text-pretty text-muted-foreground">One of these contributions to Angular puts you on the board, the next night.</p>
+        <p class="mt-4 text-lg text-pretty text-muted-foreground">One of these contributions, in angular/angular, angular/components, angular/angular-cli or angular/dev-infra, unlocks the Angularian badge.</p>
       </header>
       <app-page-grid>
         @for (way of becomeWays; track way.title) {
@@ -153,6 +118,17 @@ export const routeMeta = {
           </a>
         }
       </app-page-grid>
+    </app-page-section>
+
+    <app-page-section>
+      <section class="rounded-xl bg-muted/40 px-6 py-12 text-center ring-1 ring-border sm:px-12 sm:py-16" aria-labelledby="join-title">
+        <h2 id="join-title" class="text-3xl font-medium tracking-tight text-balance sm:text-4xl">Ready to join us?</h2>
+        <p class="mx-auto mt-4 max-w-2xl text-lg text-pretty text-muted-foreground">Help shape the future of Angular. Contribute, collaborate and join the community today.</p>
+        <div class="mt-8 flex flex-wrap justify-center gap-3">
+          <a hlmBtn href="https://github.com/angular/angular/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener"><ng-icon name="lucideBookOpen" aria-hidden="true" /> Contribution guide</a>
+          <a hlmBtn variant="outline" href="https://discord.gg/angular" target="_blank" rel="noopener"><ng-icon name="lucideMessagesSquare" aria-hidden="true" /> Join Discord</a>
+        </div>
+      </section>
     </app-page-section>
   `,
 })
@@ -175,28 +151,13 @@ export default class Home {
     computation: (value, previous) => value ?? previous?.value,
   });
 
-  protected readonly description = 'The people behind Angular, its CLI and its components, ranked by their contributions since 2014: merged pull requests, issues, comments and code reviews. Thanks to every one of them.';
+  protected readonly description = 'The people behind Angular, its CLI and its components, ranked by their contributions. Thanks to every one of them, Angular is a first-class framework and a true community project.';
   protected readonly placeholders = Array.from({ length: 30 }, (_, index) => index);
-  protected readonly ways = [
-    { title: 'Features', description: 'feat and perf PRs: new APIs, capabilities and speed.', icon: 'lucideRocket', points: PULL_REQUEST_POINTS.feat },
-    { title: 'Fixes', description: 'fix PRs: bugs found and fixed.', icon: 'lucideWrench', points: PULL_REQUEST_POINTS.fix },
-    { title: 'Docs', description: 'docs PRs: guides, API docs and examples on angular.dev.', icon: 'lucideBookOpen', points: PULL_REQUEST_POINTS.docs },
-    { title: 'Chores', description: 'refactor, test, build, ci, release and reverts.', icon: 'lucideBrushCleaning', points: PULL_REQUEST_POINTS.chore },
-  ];
   /** The three ways onto the board (Nuxters' "How to become a Nuxter"). */
   protected readonly becomeWays = [
-    { title: 'Merge a pull request', description: 'Fix a bug, ship a feature or improve the docs of Angular, its CLI or its components.', icon: 'lucideGitPullRequest', url: 'https://github.com/angular/angular/blob/main/CONTRIBUTING.md' },
+    { title: 'Merge a pull request', description: 'Fix a bug, ship a feature or improve the docs in any Angular repository.', icon: 'lucideGitPullRequest', url: 'https://github.com/angular/angular/blob/main/CONTRIBUTING.md' },
     { title: 'Open a helpful issue', description: 'An issue that gets completed, or collects 3+ reactions or 5+ comments.', icon: 'lucideCircleDot', url: 'https://github.com/angular/angular/issues' },
-    { title: 'Write a helpful comment', description: 'Answer a question or review a PR: a comment with 3+ reactions counts, every review comment too.', icon: 'lucideMessageCircleHeart', url: 'https://github.com/angular/angular/pulls' },
-  ];
-  /** Everything besides merged PRs, as `ACTIVITY_POINTS` weighs it. */
-  protected readonly rules = [
-    { what: 'Issue', when: 'every issue opened', points: `${ACTIVITY_POINTS.issues} pt` },
-    { what: 'Helpful issue', when: 'on top: closed as completed, or 3+ reactions, or 5+ comments', points: `+${ACTIVITY_POINTS.helpfulIssues} pts` },
-    { what: 'Review comment', when: 'every comment on the code of a pull request', points: `${ACTIVITY_POINTS.reviewComments} pt` },
-    { what: 'Comment', when: 'every comment on an issue or a pull request', points: `${ACTIVITY_POINTS.comments} pt` },
-    { what: 'Helpful comment', when: 'on top: 3+ reactions', points: `+${ACTIVITY_POINTS.helpfulComments} pts` },
-    { what: 'Reaction', when: 'received on your issues, pull requests and comments', points: `${ACTIVITY_POINTS.reactions} pt` },
+    { title: 'Write a helpful comment', description: 'Answer a question or review a PR: a comment with 3+ reactions counts.', icon: 'lucideMessageCircleHeart', url: 'https://github.com/angular/angular/pulls' },
   ];
   protected readonly number = formatNumber;
   protected readonly phrase = periodPhrase;
