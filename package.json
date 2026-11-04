@@ -18,7 +18,7 @@
       "msgpackr-extract"
     ]
   },
-  "description": "Everyone whose pull requests landed in angular/angular, ranked. A community project.",
+  "description": "Everyone who has contributed to Angular, ranked. A community project.",
   "license": "MIT",
   "engines": {
     "node": ">=22.18"
