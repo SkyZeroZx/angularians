@@ -14,8 +14,8 @@
     "test": "vitest run",
     "preview": "node dist/analog/server/index.mjs",
     "bundle-data": "node scripts/bundle-data.ts",
-    "predev": "node scripts/bundle-data.ts && node scripts/copy-flags.ts",
-    "prebuild": "node scripts/bundle-data.ts && node scripts/copy-flags.ts",
+    "predev": "node scripts/bundle-data.ts && node scripts/copy-flags.ts && node scripts/fetch-fonts.ts",
+    "prebuild": "node scripts/bundle-data.ts && node scripts/copy-flags.ts && node scripts/fetch-fonts.ts",
     "pretest": "node scripts/bundle-data.ts && node scripts/copy-flags.ts",
     "postbuild": "node scripts/copy-data.ts && node scripts/netlify-function.ts"
   },

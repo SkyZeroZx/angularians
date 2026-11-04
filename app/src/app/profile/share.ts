@@ -2,9 +2,11 @@
 import { ChangeDetectionStrategy, Component, computed, input, linkedSignal, signal } from '@angular/core'
 import { periodLabel, periodPhrase, sortPeriods, type Period } from '@angularians/shared'
 import { NgIcon, provideIcons } from '@ng-icons/core'
-import { lucideCheck, lucideCopy, lucideIdCard, lucideImageOff, lucideLink, lucideLoaderCircle } from '@ng-icons/lucide'
+import { lucideCheck, lucideCopy, lucideIdCard, lucideImageOff, lucideLink } from '@ng-icons/lucide'
 import { HlmButton } from '@spartan-ng/helm/button'
 import { HlmDialogImports } from '@spartan-ng/helm/dialog'
+import { HlmSelectImports } from '@spartan-ng/helm/select'
+import { HlmSkeleton } from '@spartan-ng/helm/skeleton'
 import { SITE_URL } from '../site'
 
 const query = (period?: Period) => (!period || period === 'all' ? '' : `?period=${period}`)
@@ -12,8 +14,8 @@ const query = (period?: Period) => (!period || period === 'all' ? '' : `?period=
 /** Copy the profile link, or the Markdown of the Angularian card for a GitHub profile README. */
 @Component({
   selector: 'app-share',
-  imports: [HlmButton, HlmDialogImports, NgIcon],
-  providers: [provideIcons({ lucideCheck, lucideCopy, lucideIdCard, lucideImageOff, lucideLink, lucideLoaderCircle })],
+  imports: [HlmButton, HlmDialogImports, HlmSelectImports, HlmSkeleton, NgIcon],
+  providers: [provideIcons({ lucideCheck, lucideCopy, lucideIdCard, lucideImageOff, lucideLink })],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'flex flex-wrap items-center gap-2' },
   template: `
@@ -28,20 +30,25 @@ const query = (period?: Period) => (!period || period === 'all' ? '' : `?period=
       </button>
       <hlm-dialog-content *hlmDialogPortal class="max-h-[90dvh] overflow-y-auto sm:max-w-2xl">
         <hlm-dialog-header>
-          <h2 hlmDialogTitle>Add your Angularian card to GitHub</h2>
+          <h2 hlmDialogTitle>Add your <span class="brand">Angularian</span> card to GitHub</h2>
           <p hlmDialogDescription>Paste this Markdown in your GitHub profile README. The card updates every day.</p>
         </hlm-dialog-header>
         <div class="flex flex-col gap-4">
           @if (periodItems().length > 1) {
-            <label class="flex items-center justify-between gap-4 text-sm font-medium">
-              Period
-              <select class="h-9 w-44 rounded-md border border-input bg-background px-3 text-sm shadow-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                [value]="cardPeriod()" (change)="pick($event)">
-                @for (item of periodItems(); track item.value) {
-                  <option [value]="item.value" [selected]="item.value === cardPeriod()">{{ item.label }}</option>
-                }
-              </select>
-            </label>
+            <div class="flex items-center justify-between gap-4">
+              <span id="share-period-label" class="text-sm font-medium">Period</span>
+              <!-- The site's select (as the board's Year), not the browser's -->
+              <hlm-select [value]="cardPeriod()" (valueChange)="pick($event)" [itemToString]="periodName">
+                <hlm-select-trigger class="w-44" size="sm" buttonAriaLabel="Period of the card">
+                  <hlm-select-value />
+                </hlm-select-trigger>
+                <hlm-select-content *hlmSelectPortal>
+                  @for (item of periodItems(); track item.value) {
+                    <hlm-select-item [value]="item.value">{{ item.label }}</hlm-select-item>
+                  }
+                </hlm-select-content>
+              </hlm-select>
+            </div>
           }
           <!-- The card's own background while it loads -->
           <div class="relative aspect-[1200/630] w-full overflow-hidden rounded-md bg-neutral-950 ring-1 ring-border">
@@ -50,13 +57,23 @@ const query = (period?: Period) => (!period || period === 'all' ? '' : `?period=
                 class="size-full transition-opacity duration-300" [class.opacity-0]="cardState() !== 'loaded'"
                 (load)="cardState.set('loaded')" (error)="cardState.set('error')" />
             }
-            @if (cardState() !== 'loaded') {
+            @if (cardState() === 'loading') {
+              <!-- The card's own shape while it renders: the avatar and its lines, the four stat boxes -->
+              <div class="absolute inset-0 flex gap-[5.3%] p-[5.3%]" role="status">
+                <span class="sr-only">Loading the card</span>
+                <div class="flex w-[31.7%] flex-col items-center gap-[6%]" aria-hidden="true">
+                  <div hlmSkeleton class="aspect-square w-[46%] rounded-full bg-white/10"></div>
+                  <div hlmSkeleton class="h-[7%] w-[70%] bg-white/10"></div>
+                  <div hlmSkeleton class="h-[5%] w-[55%] bg-white/10"></div>
+                  <div hlmSkeleton class="h-[6%] w-[40%] bg-white/10"></div>
+                </div>
+                <div class="grid flex-1 grid-cols-2 content-center gap-[5%]" aria-hidden="true">
+                  @for (box of [1, 2, 3, 4]; track box) { <div hlmSkeleton class="aspect-[1.35] rounded-xl bg-white/10"></div> }
+                </div>
+              </div>
+            } @else if (cardState() === 'error') {
               <div class="absolute inset-0 flex items-center justify-center gap-2 text-sm text-neutral-400" role="status">
-                @if (cardState() === 'loading') {
-                  <ng-icon name="lucideLoaderCircle" size="1.5rem" class="animate-spin" aria-hidden="true" /><span class="sr-only">Loading the card</span>
-                } @else {
-                  <ng-icon name="lucideImageOff" aria-hidden="true" /> The card could not be loaded
-                }
+                <ng-icon name="lucideImageOff" aria-hidden="true" /> The card could not be loaded
               </div>
             }
           </div>
@@ -105,10 +122,13 @@ export class Share {
     this.cardState.set('loading')
   }
 
-  protected pick(event: Event): void {
-    this.cardPeriod.set((event.target as HTMLSelectElement).value as Period)
+  protected pick(value: Period | null | undefined): void {
+    if (!value || value === this.cardPeriod()) return
+    this.cardPeriod.set(value)
     this.cardState.set('loading')
   }
+
+  protected readonly periodName = (value: Period | null) => (value ? periodLabel(value) : '')
 
   protected select(event: Event): void {
     (event.target as HTMLTextAreaElement).select()

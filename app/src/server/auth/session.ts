@@ -1,5 +1,6 @@
 import type { ContributorProfile } from '@angularians/shared'
-import { createError, getRequestURL, useSession, type H3Event } from 'h3'
+import { createError, deleteCookie, getCookie, getRequestURL, setCookie, useSession, type H3Event } from 'h3'
+import { SIGNED_IN_HINT } from '../../app/auth/hint'
 
 /**
  * Sign in with GitHub, through the `angularians-collector` GitHub App's user authorization (OAuth web flow).
@@ -54,6 +55,16 @@ export function authSession(event: H3Event, password: string) {
     maxAge: MAX_AGE,
     cookie: { httpOnly: true, sameSite: 'lax', path: '/', secure: getRequestURL(event).protocol === 'https:' },
   })
+}
+
+/** The hint cookie (`app/auth/hint.ts`): set while signed in, cleared otherwise. Readable by the page, it holds no data. */
+export function setSignedInHint(event: H3Event, signedIn: boolean): void {
+  if (signedIn) {
+    setCookie(event, SIGNED_IN_HINT, '1', { path: '/', sameSite: 'lax', secure: getRequestURL(event).protocol === 'https:', maxAge: MAX_AGE })
+  }
+  else if (getCookie(event, SIGNED_IN_HINT)) {
+    deleteCookie(event, SIGNED_IN_HINT, { path: '/' })
+  }
 }
 
 export function callbackUrl(event: H3Event): string {

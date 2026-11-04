@@ -8,6 +8,17 @@
 @import "@fontsource-variable/inter";
 
 /*
+ * The hero's "Angularians": Norse Bold by Joël Carrouché, rough-cut capitals like the A of the mark. Free for use
+ * on web pages, but not to be shared: scripts/fetch-fonts.ts downloads it at build time, it is not in the repository.
+ */
+@font-face {
+  font-family: "Norse";
+  src: url("/fonts/Norse-Bold.otf") format("opentype");
+  font-weight: 700;
+  font-display: swap;
+}
+
+/*
  * Spartan's zinc theme, with an Angular-inspired accent (red to magenta) as the primary color.
  * Dark mode, the default, is the `dark` class on <html>: in index.html, removed for a saved light theme by its
  * inline script before the first paint, then kept by ThemeService.
@@ -93,6 +104,18 @@
   /* The brand colour (flat: no gradients), for the logo mark and the hero heading; brand-to is unused. */
   --color-brand-from: oklch(0.6 0.24 15);
   --color-brand-to: oklch(0.55 0.25 320);
+  /* In @theme, so Tailwind makes the font-display utility: the hero's "Angularians". */
+  --font-display: "Norse", Georgia, serif;
+}
+
+/*
+ * The word "Angularian(s)" wherever the site shows it, in the display font: same size as the text around it (Norse's
+ * capitals are as tall as Inter's), on the same baseline.
+ */
+@utility brand {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 @layer base {

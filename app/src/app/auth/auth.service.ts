@@ -1,9 +1,8 @@
-import { isPlatformBrowser } from '@angular/common'
+import { DOCUMENT, isPlatformBrowser } from '@angular/common'
+import { injectRequest } from '@analogjs/router/tokens'
 import { inject, Injectable, PLATFORM_ID, signal } from '@angular/core'
 import type { SignedIn } from '../../server/auth/session'
-
-/** Remembered in the browser: whether this visitor was signed in last time, to size the card before we know. */
-const SIGNED_IN_HINT = 'angularians-signed-in'
+import { hasSignedInHint } from './hint'
 
 /**
  * Who is signed in, asked in the browser only: pages are cached for everyone, so they never carry it.
@@ -12,31 +11,20 @@ const SIGNED_IN_HINT = 'angularians-signed-in'
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   readonly state = signal<SignedIn | null>(null)
-  /** Signed in on the last visit: the card keeps the signed-in height while it loads. */
+  /**
+   * Signed in last time (the hint cookie, `hint.ts`): the server and the browser both read it, so the first paint is
+   * already the signed-in card's skeleton and the avatar's place, not the signed-out card.
+   */
   readonly wasSignedIn = signal(false)
 
   constructor() {
-    if (!isPlatformBrowser(inject(PLATFORM_ID))) return
-    try {
-      this.wasSignedIn.set(localStorage.getItem(SIGNED_IN_HINT) === '1')
-    }
-    catch {
-      // Storage can be blocked: the signed-out size, the most likely one.
-    }
+    const browser = isPlatformBrowser(inject(PLATFORM_ID))
+    const request = injectRequest()
+    this.wasSignedIn.set(hasSignedInHint(browser ? inject(DOCUMENT).cookie : request?.headers.cookie))
+    if (!browser) return
     fetch('/api/auth/me', { credentials: 'same-origin', headers: { accept: 'application/json' } })
       .then(response => (response.ok ? response.json() as Promise<SignedIn> : { enabled: false, user: null }))
-      .then(state => this.remember(state), () => this.remember({ enabled: false, user: null }))
-  }
-
-  private remember(state: SignedIn): void {
-    this.state.set(state)
-    try {
-      if (state.user) localStorage.setItem(SIGNED_IN_HINT, '1')
-      else localStorage.removeItem(SIGNED_IN_HINT)
-    }
-    catch {
-      // Not remembered: the next visit guesses signed out.
-    }
+      .then(state => this.state.set(state), () => this.state.set({ enabled: false, user: null }))
   }
 
   /** Sign in, then come back to this path. */

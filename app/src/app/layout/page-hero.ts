@@ -20,6 +20,8 @@ import { Container } from './container';
         @if (description()) {
           <p class="mt-5 max-w-2xl text-lg text-pretty text-muted-foreground">{{ description() }}</p>
         }
+        <!-- Or a description with markup (a logo, a highlighted word) -->
+        <p class="mt-5 max-w-2xl text-lg text-pretty text-muted-foreground empty:hidden"><ng-content select="[heroDescription]" /></p>
         <div class="mt-8 flex flex-wrap gap-3 empty:hidden"><ng-content select="[heroActions]" /></div>
         <ng-content />
       </div>

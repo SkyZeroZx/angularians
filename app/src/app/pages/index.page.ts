@@ -14,6 +14,7 @@ import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import { getContributorsMap, getLeaderboard } from '../data/contributors.server';
 import { PageGrid } from '../layout/page-grid';
+import { AngularLogo } from '../layout/angular-logo';
 import { LogoMark } from '../layout/logo-mark';
 import { PageHero } from '../layout/page-hero';
 import { PageSection } from '../layout/page-section';
@@ -37,16 +38,23 @@ export const routeMeta = {
 @Component({
   selector: 'app-home',
   imports: [
-    ContributorSearch, CountrySelect, HlmBadge, HlmButton, HlmCardImports, HlmSkeleton, LeaderboardGrid, LogoMark, MeCard, NgIcon, ScoreRules,
+    AngularLogo, ContributorSearch, CountrySelect, HlmBadge, HlmButton, HlmCardImports, HlmSkeleton, LeaderboardGrid, LogoMark, MeCard, NgIcon, ScoreRules,
     PageGrid, PageHero, PageSection, PeriodTabs, World,
   ],
   providers: [provideIcons({ lucideBookOpen, lucideCalendar, lucideCircleDot, lucideGitPullRequest, lucideMessageCircle, lucideMessageCircleHeart, lucideMessagesSquare, lucideUsers })],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <app-page-hero [description]="description">
+    <app-page-hero>
       <span heroHeadline hlmBadge variant="secondary" class="mb-4">Updated every day</span>
-      <span heroTitle class="group inline-flex flex-wrap items-center gap-x-4"><app-logo-mark class="size-[1.1em] shrink-0 max-sm:hidden" animated /><span>Meet the <span class="text-brand-from">Angularians</span></span></span>
+      <span heroTitle class="group inline-flex items-center gap-x-4"><app-logo-mark class="size-[1.1em] shrink-0 max-sm:hidden" animated /><span>Meet the <span class="brand whitespace-nowrap text-brand-from">Angularians</span></span></span>
       <!-- @container: the card's height follows its own width -->
+      <span heroDescription>
+        The people behind
+        <!-- Angular as it calls itself: its logo (the press kit's), the name highlighted -->
+        <span class="inline-flex items-baseline gap-1.5 font-medium whitespace-nowrap text-foreground"><app-angular-logo class="size-[1.1em] self-center" />Angular</span>,
+        its CLI and its components, ranked by their contributions. Thanks to every one of them, Angular is a first-class framework and a true
+        community project.
+      </span>
       <ng-container heroActions>
         <app-score-rules />
         <a hlmBtn variant="outline" href="https://github.com/angular/angular/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">How to contribute</a>
@@ -107,14 +115,15 @@ export const routeMeta = {
 
     <app-page-section>
       <header class="mx-auto mb-10 max-w-3xl text-center">
-        <h2 class="text-3xl font-medium tracking-tight sm:text-4xl">How to become an Angularian</h2>
-        <p class="mt-4 text-lg text-pretty text-muted-foreground">One of these contributions, in angular/angular, angular/components, angular/angular-cli or angular/dev-infra, unlocks the Angularian badge.</p>
+        <h2 class="text-3xl font-medium tracking-tight sm:text-4xl">How to become an <span class="brand">Angularian</span></h2>
+        <p class="mt-4 text-lg text-pretty text-muted-foreground">One of these contributions, in angular/angular, angular/components, angular/angular-cli or angular/dev-infra, unlocks the <span class="brand">Angularian</span> badge.</p>
       </header>
       <app-page-grid>
         @for (way of becomeWays; track way.title) {
           <a [href]="way.url" target="_blank" rel="noopener" hlmCard class="transition hover:bg-muted/40">
             <div hlmCardHeader>
-              <ng-icon [name]="way.icon" class="text-primary" size="22" aria-hidden="true" />
+              <!-- The profile's stat colours: pink PRs, sky issues, violet comments -->
+              <ng-icon [name]="way.icon" [class]="way.color" size="22" aria-hidden="true" />
               <h3 hlmCardTitle class="mt-2">{{ way.title }}</h3>
               <p hlmCardDescription>{{ way.description }}</p>
             </div>
@@ -155,13 +164,12 @@ export default class Home {
     computation: (value, previous) => value ?? previous?.value,
   });
 
-  protected readonly description = 'The people behind Angular, its CLI and its components, ranked by their contributions. Thanks to every one of them, Angular is a first-class framework and a true community project.';
   protected readonly placeholders = Array.from({ length: 30 }, (_, index) => index);
   /** The three ways onto the board (Nuxters' "How to become a Nuxter"). */
   protected readonly becomeWays = [
-    { title: 'Merge a pull request', description: 'Fix a bug, ship a feature or improve the docs in any Angular repository.', icon: 'lucideGitPullRequest', url: 'https://github.com/angular/angular/blob/main/CONTRIBUTING.md' },
-    { title: 'Open a helpful issue', description: 'An issue that gets completed, or collects 3+ reactions or 5+ comments.', icon: 'lucideCircleDot', url: 'https://github.com/angular/angular/issues' },
-    { title: 'Write a helpful comment', description: 'Answer a question or review a PR: a comment with 3+ reactions counts.', icon: 'lucideMessageCircleHeart', url: 'https://github.com/angular/angular/pulls' },
+    { title: 'Merge a pull request', description: 'Fix a bug, ship a feature or improve the docs in any Angular repository.', icon: 'lucideGitPullRequest', color: 'text-primary', url: 'https://github.com/angular/angular/blob/main/CONTRIBUTING.md' },
+    { title: 'Open a helpful issue', description: 'An issue that gets completed, or collects 3+ reactions or 5+ comments.', icon: 'lucideCircleDot', color: 'text-sky-600 dark:text-sky-400', url: 'https://github.com/angular/angular/issues' },
+    { title: 'Write a helpful comment', description: 'Answer a question or review a PR: a comment with 3+ reactions counts.', icon: 'lucideMessageCircleHeart', color: 'text-violet-600 dark:text-violet-400', url: 'https://github.com/angular/angular/pulls' },
   ];
   protected readonly number = formatNumber;
   protected readonly phrase = periodPhrase;

@@ -24,6 +24,10 @@ The data is read once per server instance from a JSON file next to the server (`
 
 To try the site with another data folder: `CONTRIBUTORS_DATA_DIR=/path/to/data pnpm build`.
 
+The brand font, Norse Bold (the word "Angularian" on the site and the cards), may not be shared, so it is not in the
+repository: `app/scripts/fetch-fonts.ts` downloads it to `app/public/fonts/` before `dev` and `build`. Without it the
+word falls back to a serif on the site and to Inter on the cards. The mark is built by `app/scripts/logo/build.py`.
+
 ## Sign in with GitHub
 
 Through the user authorization of the `angularians-collector` GitHub App. Only the GitHub id and login are kept, in a sealed,
