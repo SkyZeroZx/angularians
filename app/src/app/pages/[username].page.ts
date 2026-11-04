@@ -204,8 +204,9 @@ export function yearRanges(years: readonly number[]): string {
                     <ng-icon [name]="icon(item.name)" aria-hidden="true" />
                   </span>
                   <span class="min-w-0 flex-1">
-                    <span class="block truncate text-sm font-medium">{{ item.name }}</span>
-                    <span class="block truncate text-xs text-muted-foreground">{{ packageLabel(item.name) }}</span>
+                    <!-- title: the whole name when it is cut (@angular/material-moment-adapter) -->
+                    <span class="block truncate text-sm font-medium" [title]="item.name">{{ item.name }}</span>
+                    <span class="block truncate text-xs text-muted-foreground" [title]="packageLabel(item.name)">{{ packageLabel(item.name) }}</span>
                   </span>
                   <span class="text-sm tabular-nums text-muted-foreground">{{ plural(item.pullRequests, 'PR', 'PRs') }}</span>
                 </li>
