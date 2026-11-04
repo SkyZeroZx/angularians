@@ -61,5 +61,3 @@ src/server/data/bundle.generated.json
 # Copied from circle-flags by scripts/copy-flags.ts
 /public/flags
 
-# Downloaded by scripts/fetch-fonts.ts (its licence does not allow sharing the file)
-/public/fonts

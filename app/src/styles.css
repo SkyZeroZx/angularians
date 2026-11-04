@@ -8,8 +8,8 @@
 @import "@fontsource-variable/inter";
 
 /*
- * The hero's "Angularians": Norse Bold by Joël Carrouché, rough-cut capitals like the A of the mark. Free for use
- * on web pages, but not to be shared: scripts/fetch-fonts.ts downloads it at build time, it is not in the repository.
+ * The word "Angularians": Norse Bold by Joël Carrouché, rough-cut capitals like the A of the mark
+ * (THIRD_PARTY_NOTICES.md).
  */
 @font-face {
   font-family: "Norse";

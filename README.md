@@ -23,7 +23,7 @@ You need Node 24 (`.nvmrc`) and pnpm 10.
 git clone https://github.com/erkamyaman/angularians.git
 cd angularians
 pnpm install
-pnpm dev     # http://localhost:5173, with the data in data/ (the first run downloads the brand font)
+pnpm dev     # http://localhost:5173, with the data in data/
 pnpm test
 ```
 
@@ -43,8 +43,7 @@ The data is already in `data/`: you do not need a GitHub token to work on the si
 ## The brand
 
 The mark is the Angular shield as a Viking one, with the A of [Norse](https://www.joelcarrouche.net) cut through it, in one
-flat colour, `#E5194B`. Its construction is in [`app/scripts/logo`](app/scripts/logo). The Norse font may be used on web
-pages but not shared, so it is downloaded at build time, not kept here: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+flat colour, `#E5194B`. Its construction is in [`app/scripts/logo`](app/scripts/logo). About the Norse font: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ## Contributing
 
