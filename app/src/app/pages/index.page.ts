@@ -51,8 +51,8 @@ export const routeMeta = {
         Every pull request, issue and review that made
         <!-- Angular as it calls itself: its logo (the press kit's), the name highlighted -->
         <span class="inline-flex items-baseline gap-1.5 font-medium whitespace-nowrap text-foreground"><app-angular-logo class="size-[1.1em] self-center" />Angular</span>
-        is remembered here, in <span class="brand text-foreground">ng-halla</span>. Take your seat among the
-        <span class="brand text-foreground">Angularians</span> who build the framework, its CLI and its components, and see where your name stands.
+        is remembered here, in <span class="brand text-primary">ng-halla</span>. Take your seat among the
+        <span class="brand text-primary">Angularians</span> who build the framework, its CLI and its components, and see where your name stands.
       </span>
       <ng-container heroActions>
         <app-score-rules />
@@ -68,7 +68,7 @@ export const routeMeta = {
         <app-period-tabs [period]="period()" [periods]="board()?.periods ?? []" (periodChange)="setPeriod($event)" />
         <div class="flex flex-col gap-3 sm:flex-row">
           <app-country-select [countries]="map.value()?.countries ?? []" [value]="country()" (valueChange)="setCountry($event)" />
-          <app-contributor-search [period]="period()" />
+          <app-contributor-search [period]="period()" [country]="country()" />
         </div>
       </div>
 
@@ -101,6 +101,7 @@ export const routeMeta = {
     @if (map.value(); as world) {
       @if (world.countries.length) {
         <app-page-section sectionId="world" title="Angularians around the world" [description]="worldDescription(world.countries.length)">
+          <span sectionTitleNote>or <span class="brand text-primary">ng-halla</span></span>
           <app-world
             [map]="world"
             [selected]="country()"

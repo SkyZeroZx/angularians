@@ -24,7 +24,7 @@ You need Node 24 (`.nvmrc`) and pnpm 10.
 git clone https://github.com/erkamyaman/angularians.git
 cd angularians
 pnpm install
-pnpm dev     # http://localhost:5173, with the data in data/
+pnpm dev     # http://localhost:4202, with the data in data/
 pnpm test
 ```
 

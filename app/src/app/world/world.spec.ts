@@ -41,10 +41,54 @@ describe('World', () => {
     return fixture;
   }
 
+  it('filters the list by country name and keeps the ranks', () => {
+    const fixture = render(null);
+    const element: HTMLElement = fixture.nativeElement;
+    const input = element.querySelector('input[aria-label="Search a country"]') as HTMLInputElement;
+    const type = (value: string) => {
+      input.value = value;
+      input.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+    };
+    type('tÜr');
+    const rows = [...element.querySelectorAll('ol li button')].map(button => button.textContent!.replace(/\s+/g, ' ').trim());
+    expect(rows).toEqual(['Rank 2Turkey2']);
+    type('nowhere');
+    expect(element.querySelector('ol')!.textContent).toContain('No country found');
+  });
+
+  it('gives countries with the same count the same rank', () => {
+    TestBed.configureTestingModule({ providers: [provideRouter([])] });
+    const fixture = TestBed.createComponent(World);
+    fixture.componentRef.setInput('map', {
+      period: '12m',
+      total: 10,
+      located: 7,
+      countries: [{ code: 'US', count: 4, top: [] }, { code: 'TR', count: 1, top: [] }, { code: 'BG', count: 1, top: [] }, { code: 'FR', count: 1, top: [] }],
+    });
+    fixture.detectChanges();
+    const ranks = [...fixture.nativeElement.querySelectorAll('ol li button')].map((button: HTMLElement) => button.querySelector('.tabular-nums')!.textContent!.replace('Rank', '').trim());
+    expect(ranks).toEqual(['1', '2', '2', '2']);
+  });
+
+  it('skips the taken ranks after a tie', () => {
+    TestBed.configureTestingModule({ providers: [provideRouter([])] });
+    const fixture = TestBed.createComponent(World);
+    fixture.componentRef.setInput('map', {
+      period: '12m',
+      total: 10,
+      located: 6,
+      countries: [{ code: 'US', count: 3, top: [] }, { code: 'TR', count: 1, top: [] }, { code: 'BG', count: 1, top: [] }, { code: 'FR', count: 1, top: [] }, { code: 'DE', count: 0, top: [] }],
+    });
+    fixture.detectChanges();
+    const ranks = [...fixture.nativeElement.querySelectorAll('ol li button')].map((button: HTMLElement) => button.querySelector('.tabular-nums')!.textContent!.replace('Rank', '').trim());
+    expect(ranks).toEqual(['1', '2', '2', '2', '5']);
+  });
+
   it('lists countries from the most contributors, with how many set a location', () => {
     const element: HTMLElement = render(null).nativeElement;
     const rows = [...element.querySelectorAll('ol li button')].map(button => button.textContent!.replace(/\s+/g, ' ').trim());
-    expect(rows).toEqual(['United States4', 'Turkey2']);
+    expect(rows).toEqual(['Rank 1United States4', 'Rank 2Turkey2']);
     expect(element.textContent).toContain('6 of 10 Angularians set one');
   });
 

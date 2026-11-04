@@ -42,15 +42,19 @@ http-only cookie; GitHub's access token is used once, to ask who signed in. The 
 | `GITHUB_CLIENT_SECRET` | One of its client secrets |
 | `SESSION_SECRET` | 32 characters or more, to seal the cookie |
 
-The App's callback URL is `https://angularians.dev/api/auth/callback`.
+The App's callback URL is `https://angularians.dev/api/auth/callback`. To sign in locally, add `http://localhost:4202/api/auth/callback` as well.
+
+The App must be public: GitHub answers 404 to everyone but its owner when it is private.
+
+Signing in from the home page ends on your profile, or back on the home page if you have no contributions. From any other page, it ends on that page.
 
 ## Public API
 
 | Route | |
 | --- | --- |
-| `GET /api/contributors?period=12m&country=TR&page=1` | One page (100) of the leaderboard |
+| `GET /api/contributors?period=12m&country=TR&page=1` | One page (100) of the leaderboard, with each profile's name when it has one |
 | `GET /api/contributors/:username` | A profile: all-time stats, rank in each period, links |
-| `GET /api/search/contributors?q=cris` | Up to 8 contributors |
+| `GET /api/search/contributors?q=cris&country=TR` | Up to 8 contributors, of that country if given |
 | `GET /api/map/contributors?period=all` | Contributors by country |
 | `GET /:username/card.png?period=2025` | The Angularian card, 1200×630: the README card and the profile's link preview |
 | `GET /og.png?period=2025` | The home page's link preview, 1200×630: all time, or the top of a period |

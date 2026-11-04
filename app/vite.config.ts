@@ -23,6 +23,9 @@ function forwardImagesInDev(): Plugin {
 
 // https://vitejs.dev/config/
 export default defineConfig(() => ({
+  server: {
+    port: 4202,
+  },
   build: {
     target: ['es2020'],
   },
@@ -52,7 +55,7 @@ export default defineConfig(() => ({
           // 400s and 404s too: they only change with the data. The API routes set their own, longer browser cache.
           // Netlify-Vary: a copy per value of the signed-in hint cookie (app/src/app/auth/hint.ts), whose pages start
           // with the signed-in card's skeleton; every other cookie is ignored by the cache.
-          '/**': { headers: { 'cache-control': 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400', 'netlify-vary': 'cookie=angularians-signed-in' } },
+          '/**': { headers: { 'cache-control': 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400', 'netlify-vary': 'query,cookie=angularians-signed-in' } },
           // Sign-in: per person, with cookies. Never in a shared cache.
           '/api/auth/**': { headers: { 'cache-control': 'private, no-store' } },
           // Hashed file names: never change.

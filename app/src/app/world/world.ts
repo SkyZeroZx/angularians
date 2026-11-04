@@ -4,11 +4,12 @@ import { afterNextRender, Component, computed, DestroyRef, ElementRef, inject, i
 import { RouterLink } from '@angular/router';
 import { countryName, type ContributorsMap, type ContributorSummary, type CountryStats } from '@angularians/shared';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideArrowUp, lucideX } from '@ng-icons/lucide';
+import { lucideArrowUp, lucideX, lucideSearch } from '@ng-icons/lucide';
 import { HlmButton } from '@spartan-ng/helm/button';
+import { HlmInputGroupImports } from '@spartan-ng/helm/input-group';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import { HlmTooltip } from '@spartan-ng/helm/tooltip';
-import { avatarUrl, flagUrl, formatNumber } from '../leaderboard/format';
+import { avatarUrl, flagUrl, formatNumber, matchesName } from '../leaderboard/format';
 import { Globe } from './globe';
 
 /** People shown on the card of a country. */
@@ -16,8 +17,8 @@ const CARD_TILES = 12;
 
 @Component({
   selector: 'app-world',
-  imports: [Globe, HlmButton, HlmSkeleton, HlmTooltip, NgIcon, NgTemplateOutlet, RouterLink],
-  providers: [provideIcons({ lucideArrowUp, lucideX })],
+  imports: [Globe, HlmButton, HlmInputGroupImports, HlmSkeleton, HlmTooltip, NgIcon, NgTemplateOutlet, RouterLink],
+  providers: [provideIcons({ lucideArrowUp, lucideX, lucideSearch })],
   host: { class: 'grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] lg:gap-12' },
   template: `
     <ng-template #card let-shown>
@@ -69,8 +70,12 @@ const CARD_TILES = 12;
     </div>
 
     <div class="flex min-w-0 flex-col gap-4">
-      <ol class="-mx-2 max-h-96 overflow-y-auto pr-1" aria-label="Countries, from the most contributors">
-        @for (item of map().countries; track item.code) {
+      <div hlmInputGroup>
+        <input hlmInputGroupInput type="search" autocomplete="off" aria-label="Search a country" placeholder="Search a country" [value]="query()" (input)="search($event)" />
+        <hlm-input-group-addon><ng-icon name="lucideSearch" aria-hidden="true" /></hlm-input-group-addon>
+      </div>
+      <ol class="-mx-2 max-h-100 overflow-y-auto pr-1" [class.h-100]="query().trim()" aria-label="Countries, from the most contributors">
+        @for (item of shownCountries(); track item.code) {
           <li>
             <button
               type="button"
@@ -78,6 +83,7 @@ const CARD_TILES = 12;
               [attr.aria-pressed]="item.code === selected()"
               (click)="select.emit(item.code === selected() ? null : item.code)"
             >
+              <span class="w-6 shrink-0 text-right text-xs text-muted-foreground tabular-nums"><span class="sr-only">Rank </span>{{ number(rankOf(item.code)) }}</span>
               <img [src]="flag(item.code)" alt="" width="20" height="20" loading="lazy" class="size-5 shrink-0" />
               <span class="min-w-0 flex-1">
                 <span class="block truncate">{{ name(item.code) }}</span>
@@ -86,6 +92,8 @@ const CARD_TILES = 12;
               <span class="text-muted-foreground tabular-nums">{{ number(item.count) }}</span>
             </button>
           </li>
+        } @empty {
+          <li class="py-2 text-center text-sm text-muted-foreground" role="status">No country found</li>
         }
       </ol>
       <p class="text-xs text-muted-foreground">
@@ -136,11 +144,28 @@ export class World {
   /** One tile per person shown, known from the count: the card keeps its size while they load. */
   protected readonly tiles = computed(() => Array.from({ length: Math.min(CARD_TILES, this.current()?.count ?? 0) }, (_, index) => this.people()[index] ?? null));
   private readonly largest = computed(() => this.map().countries[0]?.count ?? 1);
+  /** Countries with the same count share a rank: 1, 2, 2, 4. */
+  private readonly ranks = computed(() => {
+    const firstAt = new Map<number, number>();
+    return new Map(this.map().countries.map((item, index) => {
+      if (!firstAt.has(item.count)) firstAt.set(item.count, index + 1);
+      return [item.code, firstAt.get(item.count)!];
+    }));
+  });
+
+  protected readonly query = signal('');
+  protected readonly shownCountries = computed(() => {
+    return this.map().countries.filter(item => matchesName(countryName(item.code), this.query()));
+  });
 
   protected readonly name = countryName;
   protected readonly number = formatNumber;
   protected readonly flag = flagUrl;
   protected readonly avatar = (person: ContributorSummary) => avatarUrl(person.githubId, 56);
-  protected readonly rankOf = (code: string) => this.map().countries.findIndex(item => item.code === code) + 1;
+  protected readonly rankOf = (code: string) => this.ranks().get(code) ?? 0;
   protected readonly barWidth = (item: CountryStats) => Math.max(2, item.count / this.largest() * 100);
+
+  protected search(event: Event): void {
+    this.query.set((event.target as HTMLInputElement).value);
+  }
 }

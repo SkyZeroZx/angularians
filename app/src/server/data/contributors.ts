@@ -88,7 +88,7 @@ export class ContributorsData {
       issues: rows.reduce((sum, row) => sum + row.issues, 0),
       comments: rows.reduce((sum, row) => sum + row.comments, 0),
       reviewComments: rows.reduce((sum, row) => sum + row.reviewComments, 0),
-      items: rows.slice(start, start + size).map(toSummary),
+      items: rows.slice(start, start + size).map(row => this.namedSummary(row)),
       collectedAt: this.collectedAt,
     }
   }
@@ -117,18 +117,24 @@ export class ContributorsData {
   }
 
   /** All-time contributors by username: prefix matches first, then anywhere in the username or name, by rank. */
-  search(query: string, limit = SEARCH_LIMIT): ContributorSummary[] {
+  search(query: string, { country = null, limit = SEARCH_LIMIT }: { country?: string | null, limit?: number } = {}): ContributorSummary[] {
     const q = query.trim().toLowerCase()
     if (!q) return []
     const prefix: Contributor[] = []
     const other: Contributor[] = []
     for (const row of this.byPeriod.get('all') ?? []) {
+      if (country && this.countryOf(row.githubId) !== country) continue
       const username = row.username.toLowerCase()
       if (username.startsWith(q)) prefix.push(row)
       else if (username.includes(q) || this.profiles.get(row.githubId)?.name?.toLowerCase().includes(q)) other.push(row)
       if (prefix.length >= limit) break
     }
     return [...prefix, ...other].slice(0, limit).map(toSummary)
+  }
+
+  private namedSummary(row: Contributor): ContributorSummary {
+    const name = this.profiles.get(row.githubId)?.name?.trim()
+    return { ...toSummary(row), ...(name ? { name } : {}) }
   }
 
   /** Contributors of a period by country, from the most to the fewest, each with its best ranked usernames. */

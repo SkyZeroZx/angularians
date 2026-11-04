@@ -1,3 +1,4 @@
+import { onTestFinished } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { avatarUrl, formatDate, formatPoints, plural, profileQuery } from './format';
 import { CountrySelect } from './country-select';
@@ -87,5 +88,31 @@ describe('CountrySelect', () => {
     fixture.componentRef.setInput('value', 'BG');
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('Bulgaria');
+  });
+
+  it('filters the countries by name and emits the pick', async () => {
+    const scrollIntoView = Element.prototype.scrollIntoView;
+    Element.prototype.scrollIntoView = () => undefined;
+    onTestFinished(() => {
+      Element.prototype.scrollIntoView = scrollIntoView;
+    });
+    const fixture = TestBed.createComponent(CountrySelect);
+    fixture.componentRef.setInput('countries', [{ code: 'TR', count: 3, top: [] }, { code: 'BG', count: 1, top: [] }]);
+    fixture.detectChanges();
+    const picked: Array<string | null> = [];
+    fixture.componentInstance.valueChange.subscribe(value => picked.push(value));
+
+    fixture.nativeElement.querySelector('[role="combobox"]').click();
+    await fixture.whenStable();
+    const input = document.querySelector('input[aria-label="Search a country"]') as HTMLInputElement;
+    input.value = 'bulg';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const visible = () => [...document.querySelectorAll<HTMLElement>('[role="option"]:not([data-hidden])')];
+    expect(visible().map(option => option.getAttribute('data-value'))).toEqual(['BG']);
+    visible()[0]!.click();
+    expect(picked).toEqual(['BG']);
   });
 });
