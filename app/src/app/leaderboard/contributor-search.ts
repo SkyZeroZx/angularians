@@ -64,6 +64,12 @@ export class ContributorSearch {
   private request = 0
 
   constructor() {
+    // Results of another country are never left to pick while the new ones load.
+    effect(() => {
+      this.country()
+      this.results.set([])
+    })
+
     // One request per pause in typing; a slower, older answer never replaces a newer one.
     effect((onCleanup) => {
       const query = this.term().trim()
