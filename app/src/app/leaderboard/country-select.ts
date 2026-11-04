@@ -15,7 +15,7 @@ import {
 } from '@spartan-ng/brain/combobox'
 import { BrnPopover, BrnPopoverContent, provideBrnPopoverConfig } from '@spartan-ng/brain/popover'
 import { HlmInputGroupImports } from '@spartan-ng/helm/input-group'
-import { flagUrl, formatNumber } from './format'
+import { flagUrl, formatNumber, matchesName } from './format'
 
 const ALL = 'all'
 const TRIGGER = 'border-input dark:bg-input/30 dark:hover:bg-input/50 focus-visible:border-ring focus-visible:ring-ring/50 flex h-9 w-full items-center justify-between gap-1.5 rounded-md border bg-transparent py-2 ps-2.5 pe-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-3 sm:w-52 [&_ng-icon]:pointer-events-none [&_ng-icon]:shrink-0'
@@ -45,7 +45,7 @@ const ITEM = 'data-highlighted:bg-accent data-highlighted:text-accent-foreground
   ],
   template: `
     @if (items().length) {
-      <div brnCombobox brnPopover #combobox="brnCombobox" class="block w-full sm:w-52" [value]="value() ?? ALL" (valueChange)="pick($event)" [itemToString]="label" autoHighlight>
+      <div brnCombobox brnPopover #combobox="brnCombobox" class="block w-full sm:w-52" [value]="value() ?? ALL" (valueChange)="pick($event)" [itemToString]="label" [filter]="matches" autoHighlight>
         <button
           type="button"
           brnComboboxAnchor
@@ -54,6 +54,8 @@ const ITEM = 'data-highlighted:bg-accent data-highlighted:text-accent-foreground
           aria-label="Filter by country"
           aria-haspopup="dialog"
           [attr.aria-expanded]="combobox.isExpanded()"
+          (keydown.arrowdown)="$event.preventDefault(); combobox.open()"
+          (keydown.arrowup)="$event.preventDefault(); combobox.open()"
           [class]="trigger"
         >
           @if (value(); as code) {
@@ -109,6 +111,8 @@ export class CountrySelect {
     return countries.map(item => ({ code: item.code, name: countryName(item.code), count: formatNumber(item.count) }))
   })
   protected readonly label = (code: string | null) => (code && code !== ALL ? countryName(code) : 'All countries')
+
+  protected readonly matches = (code: string, search: string) => matchesName(this.label(code), search)
 
   protected pick(value: unknown): void {
     const code = typeof value === 'string' && value !== ALL ? value : null

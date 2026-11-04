@@ -1,3 +1,4 @@
+import { onTestFinished } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { avatarUrl, formatDate, formatPoints, plural, profileQuery } from './format';
 import { CountrySelect } from './country-select';
@@ -90,7 +91,11 @@ describe('CountrySelect', () => {
   });
 
   it('filters the countries by name and emits the pick', async () => {
+    const scrollIntoView = Element.prototype.scrollIntoView;
     Element.prototype.scrollIntoView = () => undefined;
+    onTestFinished(() => {
+      Element.prototype.scrollIntoView = scrollIntoView;
+    });
     const fixture = TestBed.createComponent(CountrySelect);
     fixture.componentRef.setInput('countries', [{ code: 'TR', count: 3, top: [] }, { code: 'BG', count: 1, top: [] }]);
     fixture.detectChanges();

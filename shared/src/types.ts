@@ -118,7 +118,7 @@ export interface ContributorProfile extends Contributor {
 export interface ContributorSummary {
   githubId: number
   username: string
-  /** The full name on the GitHub profile, when there is one. */
+  /** The full name on the GitHub profile, on leaderboard rows when there is one. */
   name?: string
   rank: number
   score: number

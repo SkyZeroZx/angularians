@@ -72,10 +72,11 @@ describe('ContributorsData', () => {
     expect(data.search('c', { limit: 1 }).map(item => item.username)).toEqual(['crisbeto'])
   })
 
-  it('adds the profile name to a summary when there is one', () => {
+  it('adds the profile name to a leaderboard row when there is one', () => {
     const items = data.leaderboard({ period: 'all', pageSize: 3 }).items
     expect(items[0]).toMatchObject({ username: 'crisbeto', name: 'Kristiyan' })
     expect(items[1]).not.toHaveProperty('name')
+    expect(data.search('crisbeto')[0]).not.toHaveProperty('name')
   })
 
   it('searches only the selected country', () => {

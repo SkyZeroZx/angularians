@@ -9,13 +9,11 @@ import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmInputGroupImports } from '@spartan-ng/helm/input-group';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import { HlmTooltip } from '@spartan-ng/helm/tooltip';
-import { avatarUrl, flagUrl, formatNumber } from '../leaderboard/format';
+import { avatarUrl, flagUrl, formatNumber, matchesName } from '../leaderboard/format';
 import { Globe } from './globe';
 
 /** People shown on the card of a country. */
 const CARD_TILES = 12;
-
-const searchable = (text: string) => text.normalize('NFD').replace(/\p{M}/gu, '').trim().toLowerCase();
 
 @Component({
   selector: 'app-world',
@@ -157,8 +155,7 @@ export class World {
 
   protected readonly query = signal('');
   protected readonly shownCountries = computed(() => {
-    const query = searchable(this.query());
-    return this.map().countries.filter(item => searchable(countryName(item.code)).includes(query));
+    return this.map().countries.filter(item => matchesName(countryName(item.code), this.query()));
   });
 
   protected readonly name = countryName;

@@ -33,3 +33,9 @@ export function profileQuery(period: Period, country: string | null = null): Rec
 export function flagUrl(code: string): string {
   return `/flags/${code.toLowerCase()}.svg`
 }
+
+/** Whether a search matches a name, ignoring case and accents. */
+export function matchesName(name: string, search: string): boolean {
+  const plain = (text: string) => text.normalize('NFD').replace(/\p{M}/gu, '').trim().toLowerCase()
+  return plain(name).includes(plain(search))
+}

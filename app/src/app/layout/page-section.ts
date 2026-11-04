@@ -1,6 +1,8 @@
 import { Component, computed, input } from '@angular/core';
 import { Container } from './container';
 
+const brandParts = (text: string) => text.split(/(Angularians?)/)
+
 /** A titled block of a page (Nuxt UI `UPageSection`). `sectionId` makes it a link target. */
 @Component({
   selector: 'app-page-section',
@@ -17,7 +19,11 @@ import { Container } from './container';
             <ng-content select="[sectionTitleNote]" />
           </h2>
           @if (description()) {
-            <p class="mt-2 max-w-2xl text-pretty text-muted-foreground">{{ description() }}</p>
+            <p class="mt-2 max-w-2xl text-pretty text-muted-foreground">
+              @for (part of descriptionParts(); track $index) {
+                @if ($odd) { <span class="brand text-primary">{{ part }}</span> } @else { {{ part }} }
+              }
+            </p>
           }
         </header>
       }
@@ -28,8 +34,9 @@ import { Container } from './container';
 export class PageSection {
   readonly title = input('')
   /** Every other part is the word "Angularian(s)", in the brand font. */
-  protected readonly titleParts = computed(() => this.title().split(/(Angularians?)/))
+  protected readonly titleParts = computed(() => brandParts(this.title()))
   readonly description = input<string | null>(null)
+  protected readonly descriptionParts = computed(() => brandParts(this.description() ?? ''))
   readonly sectionId = input<string | null>(null)
   /** No top padding: the section continues the one above (the leaderboard under the hero, as on Nuxters). */
   readonly flush = input(false)
