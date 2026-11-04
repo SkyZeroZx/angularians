@@ -9,7 +9,7 @@ import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmInputGroupImports } from '@spartan-ng/helm/input-group';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import { HlmTooltip } from '@spartan-ng/helm/tooltip';
-import { avatarUrl, flagUrl, formatNumber, matchesName } from '../leaderboard/format';
+import { avatarUrl, flagUrl, formatNumber, matchesCountry } from '../leaderboard/format';
 import { Globe } from './globe';
 
 /** People shown on the card of a country. */
@@ -74,7 +74,7 @@ const CARD_TILES = 12;
         <input hlmInputGroupInput type="search" autocomplete="off" aria-label="Search a country" placeholder="Search a country" [value]="query()" (input)="search($event)" />
         <hlm-input-group-addon><ng-icon name="lucideSearch" aria-hidden="true" /></hlm-input-group-addon>
       </div>
-      <ol class="-mx-2 max-h-100 overflow-y-auto pr-1" [class.h-100]="query().trim()" aria-label="Countries, from the most contributors">
+      <ol class="-mx-2 max-h-100 overflow-y-auto pr-1" [class.lg:h-100]="query().trim()" aria-label="Countries, from the most contributors">
         @for (item of shownCountries(); track item.code) {
           <li>
             <button
@@ -155,7 +155,7 @@ export class World {
 
   protected readonly query = signal('');
   protected readonly shownCountries = computed(() => {
-    return this.map().countries.filter(item => matchesName(countryName(item.code), this.query()));
+    return this.map().countries.filter(item => matchesCountry(item.code, this.query()));
   });
 
   protected readonly name = countryName;

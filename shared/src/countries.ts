@@ -260,6 +260,37 @@ export const COUNTRIES: Record<string, { name: string, location: readonly [numbe
   ZW: { name: 'Zimbabwe', location: [-18.68, 30.27] }
 }
 
+/** Other names people search a country by: abbreviations and local names. */
+const COUNTRY_ALIASES: Record<string, readonly string[]> = {
+  AE: ['UAE', 'Emirates'],
+  AT: ['Österreich'],
+  BR: ['Brasil'],
+  CH: ['Schweiz', 'Suisse', 'Svizzera'],
+  CN: ['中国'],
+  CZ: ['Czech Republic', 'Česko'],
+  DE: ['Deutschland'],
+  ES: ['España'],
+  GB: ['UK', 'Britain', 'Great Britain', 'England', 'Scotland', 'Wales'],
+  GR: ['Hellas'],
+  HU: ['Magyarország'],
+  IT: ['Italia'],
+  JP: ['Nippon', 'Nihon', '日本'],
+  KR: ['Korea'],
+  NL: ['Holland', 'Nederland'],
+  NO: ['Norge'],
+  PL: ['Polska'],
+  RU: ['Россия'],
+  SE: ['Sverige'],
+  TR: ['Türkiye'],
+  UA: ['Україна'],
+  US: ['USA', 'US', 'America', 'United States of America'],
+}
+
+/** Every name a country can be searched by: its English name first. */
+export function countrySearchNames(code: string): string[] {
+  return [countryName(code), ...(COUNTRY_ALIASES[code] ?? [])]
+}
+
 /** `FR` → `France`, the code itself when unknown. */
 export function countryName(code: string): string {
   return COUNTRIES[code]?.name ?? code

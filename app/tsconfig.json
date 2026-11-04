@@ -33,6 +33,7 @@
       "@spartan-ng/helm/tabs": ["./src/ui/tabs/src/index.ts"],
       "@spartan-ng/helm/select": ["./src/ui/select/src/index.ts"],
       "@spartan-ng/helm/autocomplete": ["./src/ui/autocomplete/src/index.ts"],
+      "@spartan-ng/helm/combobox": ["./src/ui/combobox/src/index.ts"],
       "@spartan-ng/helm/popover": ["./src/ui/popover/src/index.ts"],
       "@spartan-ng/helm/input-group": ["./src/ui/input-group/src/index.ts"],
       "@spartan-ng/helm/input": ["./src/ui/input/src/index.ts"],
