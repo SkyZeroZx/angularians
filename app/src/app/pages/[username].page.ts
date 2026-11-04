@@ -6,7 +6,7 @@ import { Meta, Title } from '@angular/platform-browser';
 import { Router, RouterLink } from '@angular/router';
 import { injectServerFn, type RouteMeta } from '@analogjs/router';
 import { injectResponse } from '@analogjs/router/tokens';
-import { countryName, DEFAULT_PERIOD, isPeriod, periodPhrase, type ContributorProfile, type Period } from '@angularians/shared';
+import { countryName, DEFAULT_PERIOD, isPeriod, periodPhrase, reposQuery, type ContributorProfile, type Period } from '@angularians/shared';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucideArrowLeft, lucideArrowUpRight, lucideAward, lucideCalendar, lucideCircleDot, lucideGitPullRequest, lucideGlobe, lucideInfo,
@@ -50,7 +50,6 @@ const SOCIAL_ICONS: Record<string, string> = {
   npm: 'simpleNpm',
 };
 const SINCE = new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' });
-const REPO = 'angular/angular';
 
 @Component({
   selector: 'app-profile',
@@ -196,7 +195,7 @@ const REPO = 'angular/angular';
         <app-container class="pb-12">
           <section aria-labelledby="packages-title">
             <h2 id="packages-title" class="mb-1 text-2xl font-medium tracking-tight">Contributed to</h2>
-            <p class="mb-6 text-muted-foreground">Merged PRs in {{ plural(person.packages.length, 'package', 'packages') }} of angular/angular, by PRs.</p>
+            <p class="mb-6 text-muted-foreground">Merged PRs in {{ plural(person.packages.length, 'package', 'packages') }} of Angular, by PRs.</p>
             <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               @for (item of shownPackages(); track item.name) {
                 <li class="flex items-center gap-3 rounded-lg px-3 py-2 ring-1 ring-border">
@@ -261,7 +260,7 @@ const REPO = 'angular/angular';
       <app-container class="py-14">
         <h1 class="text-3xl font-bold tracking-tight">No contributions from {{ username() }}</h1>
         <p class="mt-2 max-w-xl text-muted-foreground">
-          {{ profile.error() ? 'The profile could not be loaded. Try again in a moment.' : 'Nobody with this GitHub username has a merged pull request, an issue or a comment in angular/angular yet, or the data has not caught up: it updates every night.' }}
+          {{ profile.error() ? 'The profile could not be loaded. Try again in a moment.' : 'Nobody with this GitHub username has a merged pull request, an issue or a comment in Angular's repositories yet, or the data has not caught up: it updates every night.' }}
         </p>
         <a hlmBtn class="mt-6" href="https://github.com/angular/angular/contribute" target="_blank" rel="noopener">Find a first issue</a>
       </app-container>
@@ -295,7 +294,7 @@ export default class Profile {
     const person = this.profile.value()!;
     const n = this.current();
     const prs = n.pullRequests;
-    const search = (q: string, type: 'pullrequests' | 'issues') => `https://github.com/search?${new URLSearchParams({ q: `repo:${REPO} ${q}`, type })}`;
+    const search = (q: string, type: 'pullrequests' | 'issues') => `https://github.com/search?${new URLSearchParams({ q: `${reposQuery()} ${q}`, type })}`;
     return [
       {
         key: 'pullRequests', icon: 'lucideGitPullRequest', value: prs.all, name: prs.all === 1 ? 'Merged PR' : 'Merged PRs',
@@ -399,7 +398,7 @@ export default class Profile {
   }
 
   protected githubSearch(person: ContributorProfile): string {
-    return `https://github.com/${REPO}/pulls?${new URLSearchParams({ q: `is:pr author:${person.username}` })}`;
+    return `https://github.com/search?${new URLSearchParams({ q: `${reposQuery()} is:pr author:${person.username}`, type: 'pullrequests' })}`;
   }
 
   protected githubLabel(person: ContributorProfile): string {
@@ -418,7 +417,7 @@ export default class Profile {
     const title = this.period() === 'all'
       ? `${person.username}, Angularian #${formatNumber(current.rank)}`
       : `${person.username}: #${formatNumber(current.rank)} ${periodPhrase(this.period())}`;
-    const description = `${person.username} merged ${plural(current.pullRequests.all, 'pull request', 'pull requests')}, opened ${plural(current.issues, 'issue', 'issues')} and wrote ${plural(current.comments + current.reviewComments, 'comment', 'comments')} in angular/angular ${periodPhrase(this.period())}: #${formatNumber(current.rank)} with ${formatPoints(current.score)}.`;
+    const description = `${person.username} merged ${plural(current.pullRequests.all, 'pull request', 'pull requests')}, opened ${plural(current.issues, 'issue', 'issues')} and wrote ${plural(current.comments + current.reviewComments, 'comment', 'comments')} in Angular ${periodPhrase(this.period())}: #${formatNumber(current.rank)} with ${formatPoints(current.score)}.`;
     this.title.setTitle(`${title} · Angularians`);
     this.meta.removeTag('name="robots"');
     this.meta.updateTag({ name: 'description', content: description });

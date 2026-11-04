@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { inferPullRequestType, landedPullRequests, prCloseNumbers, pullRequestScopes, type PullRequestInput } from '../src/pull-requests.ts'
+import { inferPullRequestType, landedPullRequests, packageRepo, prCloseNumbers, pullRequestScopes, type PullRequestInput } from '../src/pull-requests.ts'
 import { isBotAccount } from '../src/bots.ts'
 
 describe('inferPullRequestType', () => {
@@ -123,4 +123,32 @@ describe('pullRequestScopes', () => {
   ] as const)('%s → %j', (title, scopes) => {
     expect(pullRequestScopes(title)).toEqual(scopes)
   })
+})
+
+describe('pullRequestScopes in other repositories', () => {
+  it.each([
+    ['angular/components', 'fix(material/button, cdk/overlay): focus', ['@angular/material', '@angular/cdk']],
+    ['angular/components', 'fix(material/select): a\nfix(material/core): b', ['@angular/material']],
+    ['angular/components', 'docs(multiple): typos', []],
+    ['angular/components', 'feat(google-maps): add a marker clusterer', ['@angular/google-maps']],
+    ['angular/angular-cli', 'fix(@angular/build): keep the base href', ['@angular/build']],
+    ['angular/angular-cli', 'feat(@schematics/angular, @angular/cli): ai config', ['@schematics/angular', '@angular/cli']],
+    ['angular/angular-cli', 'build: update dependency', []],
+    ['angular/angular-cli', 'fix(build): no package', []],
+    ['angular/dev-infra', 'fix(ng-dev): release notes', []],
+    // angular/angular is unchanged: no npm-style names.
+    ['angular/angular', 'fix(@angular/core): x', []],
+  ])('%s: %s', (repo, title, scopes) => {
+    expect(pullRequestScopes(title, repo)).toEqual(scopes)
+  })
+})
+
+describe('packageRepo', () => {
+  it.each([
+    ['router', 'angular/angular'],
+    ['@angular/material', 'angular/components'],
+    ['@angular/cdk', 'angular/components'],
+    ['@angular/build', 'angular/angular-cli'],
+    ['@schematics/angular', 'angular/angular-cli'],
+  ])('%s → %s', (name, repo) => expect(packageRepo(name)).toBe(repo))
 })

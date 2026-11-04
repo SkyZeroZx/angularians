@@ -1,7 +1,11 @@
+<p align="center"><img src="app/public/logo-animated.svg" width="96" height="96" alt="The Angularians mark"></p>
+
 # Angularians
 
-Everyone who has contributed to [angular/angular](https://github.com/angular/angular) since 2014, ranked: landed pull
-requests, issues, comments and code reviews. Updated every night.
+Everyone who has contributed to Angular since 2014, ranked: landed pull requests, issues, comments and code reviews in
+[angular/angular](https://github.com/angular/angular), [angular/components](https://github.com/angular/components),
+[angular/angular-cli](https://github.com/angular/angular-cli) and [angular/dev-infra](https://github.com/angular/dev-infra).
+Updated every night at [angularians.netlify.app](https://angularians.netlify.app).
 
 A community project, not affiliated with Google or the Angular team. Angular is a trademark of Google LLC.
 It is a port of the [Nuxters](https://nuxt.com/nuxters) leaderboard of nuxt.com to Angular: see

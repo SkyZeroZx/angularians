@@ -44,9 +44,10 @@ describe('retryDelay', () => {
 describe('parseConfig', () => {
   const now = new Date('2026-11-03T00:00:00Z')
 
-  it('defaults to a full run of angular/angular from the REST API', () => {
+  it('defaults to a full run of the Angular repositories from the REST API', () => {
     const config = parseConfig([], {}, now)
-    expect(config).toMatchObject({ repos: [{ owner: 'angular', name: 'angular' }], since: null, pulls: 'rest', activity: true, profiles: true })
+    expect(config).toMatchObject({ since: null, pulls: 'rest', activity: true, profiles: true, part: false })
+    expect(config.repos.map(repo => `${repo.owner}/${repo.name}`)).toEqual(['angular/angular', 'angular/components', 'angular/angular-cli', 'angular/dev-infra'])
     expect(config.outputDir).toMatch(/data$/)
   })
 

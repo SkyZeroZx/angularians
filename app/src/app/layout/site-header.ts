@@ -20,7 +20,7 @@ import { ThemeToggle } from './theme-toggle';
         <span>Angularians</span>
       </a>
       <nav class="ml-auto flex items-center gap-1" aria-label="Site">
-        <a hlmBtn variant="ghost" size="icon" href="https://github.com/angular/angular" target="_blank" rel="noopener" aria-label="angular/angular on GitHub" title="angular/angular on GitHub">
+        <a hlmBtn variant="ghost" size="icon" href="https://github.com/angular" target="_blank" rel="noopener" aria-label="Angular on GitHub" title="Angular on GitHub">
           <ng-icon name="lucideGithub" aria-hidden="true" />
         </a>
         <app-theme-toggle />

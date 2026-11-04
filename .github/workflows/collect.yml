@@ -19,13 +19,20 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  collect:
+  # One job per repository, in parallel: one after the other they take longer than a job may run (angular/angular
+  # alone takes about 3 hours). They share the token's 5,000 requests an hour, and wait when it runs out.
+  repo:
+    name: ${{ matrix.repo }}
     runs-on: ubuntu-latest
-    # A full run (landed PRs, issues, ~500,000 comments, review comments) takes about 2 hours at 5,000 requests an hour.
-    timeout-minutes: 300
+    timeout-minutes: 330
+    strategy:
+      # One repository failing fails the run: the site's data is never published with a repository missing.
+      fail-fast: true
+      matrix:
+        repo: [angular/angular, angular/components, angular/angular-cli, angular/dev-infra]
     steps:
       - uses: actions/checkout@v5
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v5
         with:
           # 24: runs the TypeScript sources directly (type stripping).
@@ -41,9 +48,46 @@ jobs:
             exit 1
           fi
       - name: Collect
-        run: pnpm --filter @angularians/collector collect ${{ inputs.since && format('--since={0} --out={1}/test-data', inputs.since, runner.temp) || '' }}
+        run: pnpm --filter @angularians/collector collect --part --repos=${{ matrix.repo }} --out=${{ runner.temp }}/part ${{ inputs.since && format('--since={0}', inputs.since) || '' }}
         env:
           # A personal access token: 5,000 requests an hour (the built-in token has 1,000, too few for the comments).
+          GITHUB_TOKEN: ${{ secrets.COLLECT_TOKEN }}
+      - id: name
+        run: echo "artifact=part-${REPO//\//__}" >> "$GITHUB_OUTPUT"
+        env:
+          REPO: ${{ matrix.repo }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.name.outputs.artifact }}
+          path: ${{ runner.temp }}/part
+          retention-days: 3
+
+  # The parts as the site's data, the team and the profiles; committed, or uploaded for a test run.
+  merge:
+    needs: repo
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: part-*
+          path: ${{ runner.temp }}/parts
+      - name: Merge
+        # The repositories in the matrix order: meta.json lists them so.
+        run: |
+          parts=""
+          for repo in angular/angular angular/components angular/angular-cli angular/dev-infra; do
+            parts="$parts $RUNNER_TEMP/parts/part-${repo//\//__}"
+          done
+          pnpm --filter @angularians/collector merge ${{ inputs.since && format('--out={0}/test-data', runner.temp) || '' }} $parts
+        env:
           GITHUB_TOKEN: ${{ secrets.COLLECT_TOKEN }}
       - name: Upload the test run
         if: inputs.since

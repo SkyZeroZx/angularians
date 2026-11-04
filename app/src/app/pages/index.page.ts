@@ -22,7 +22,7 @@ import { LeaderboardGrid } from '../leaderboard/leaderboard-grid';
 import { PeriodTabs } from '../leaderboard/period-tabs';
 import { World } from '../world/world';
 
-const SITE_DESCRIPTION = 'Everyone who has contributed to angular/angular since 2014, ranked: merged pull requests, issues, comments and code reviews.';
+const SITE_DESCRIPTION = 'Everyone who has contributed to Angular since 2014, ranked: merged pull requests, issues, comments and code reviews in angular/angular, Components, the CLI and dev-infra.';
 
 export const routeMeta = {
   title: 'Angularians',
@@ -97,7 +97,7 @@ export const routeMeta = {
       }
     }
 
-    <app-page-section sectionId="how-it-works" title="How the score works" description="Every contribution to angular/angular counts, for its author, on the day it was made. Pull requests count once they are merged, by type, from the title (feat, fix, docs…): the convention the repository already enforces.">
+    <app-page-section sectionId="how-it-works" title="How the score works" description="Every contribution to angular/angular, angular/components, angular/angular-cli and angular/dev-infra counts, for its author, on the day it was made. Pull requests count once they are merged, by type, from the title (feat, fix, docs…): the convention the repositories already enforce.">
       <app-page-grid class="lg:grid-cols-4">
         @for (way of ways; track way.title) {
           <section hlmCard>
@@ -136,7 +136,7 @@ export const routeMeta = {
     <app-page-section>
       <header class="mx-auto mb-10 max-w-3xl text-center">
         <h2 class="text-3xl font-medium tracking-tight sm:text-4xl">How to become an Angularian</h2>
-        <p class="mt-4 text-lg text-pretty text-muted-foreground">One of these contributions to angular/angular puts you on the board, the next night.</p>
+        <p class="mt-4 text-lg text-pretty text-muted-foreground">One of these contributions to Angular puts you on the board, the next night.</p>
       </header>
       <app-page-grid>
         @for (way of becomeWays; track way.title) {
@@ -181,7 +181,7 @@ export default class Home {
   ];
   /** The three ways onto the board (Nuxters' "How to become a Nuxter"). */
   protected readonly becomeWays = [
-    { title: 'Merge a pull request', description: 'Fix a bug, ship a feature or improve the docs of angular/angular.', icon: 'lucideGitPullRequest', url: 'https://github.com/angular/angular/blob/main/CONTRIBUTING.md' },
+    { title: 'Merge a pull request', description: 'Fix a bug, ship a feature or improve the docs of Angular, its CLI or its components.', icon: 'lucideGitPullRequest', url: 'https://github.com/angular/angular/blob/main/CONTRIBUTING.md' },
     { title: 'Open a helpful issue', description: 'An issue that gets completed, or collects 3+ reactions or 5+ comments.', icon: 'lucideCircleDot', url: 'https://github.com/angular/angular/issues' },
     { title: 'Write a helpful comment', description: 'Answer a question or review a PR: a comment with 3+ reactions counts, every review comment too.', icon: 'lucideMessageCircleHeart', url: 'https://github.com/angular/angular/pulls' },
   ];
@@ -223,7 +223,7 @@ export default class Home {
       const shared = this.requestedPeriod() && page?.total ? page : null;
       const title = shared ? `Top Angularians ${periodPhrase(shared.period)}` : 'Angularians';
       const description = shared
-        ? `${plural(shared.total, 'person', 'people')} contributed to angular/angular ${periodPhrase(shared.period)}: ${plural(shared.landedPullRequests, 'merged pull request', 'merged pull requests')}, ${plural(shared.issues, 'issue', 'issues')} and ${plural(shared.comments + shared.reviewComments, 'comment', 'comments')}.`
+        ? `${plural(shared.total, 'person', 'people')} contributed to Angular ${periodPhrase(shared.period)}: ${plural(shared.landedPullRequests, 'merged pull request', 'merged pull requests')}, ${plural(shared.issues, 'issue', 'issues')} and ${plural(shared.comments + shared.reviewComments, 'comment', 'comments')}.`
         : SITE_DESCRIPTION;
       this.title.setTitle(title);
       this.meta.updateTag({ name: 'description', content: description });

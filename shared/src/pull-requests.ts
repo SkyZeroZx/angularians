@@ -51,11 +51,41 @@ export function inferPullRequestType(title: string, labels: ReadonlyArray<{ name
 /** `feat(core, compiler)!: …` → `core, compiler`. */
 const SCOPE_RE = /^\s*[a-z]+\(([^)]+)\)!?:/i
 
+/** The published packages of angular/components, by the first part of a scope (`fix(material/button): …`). */
+const COMPONENTS_PACKAGES = new Set([
+  'material', 'cdk', 'material-experimental', 'cdk-experimental', 'google-maps', 'youtube-player',
+  'material-luxon-adapter', 'material-moment-adapter', 'material-date-fns-adapter',
+])
+
+/**
+ * The package a scope names in a repository, `null` when it is not one. Names are distinct across repositories:
+ * - angular/angular: the scope itself (`router`), as before there were other repositories.
+ * - angular/components: its npm package (`material/button` → `@angular/material`).
+ * - angular/angular-cli: scopes are npm packages already (`@angular/build`, `@schematics/angular`).
+ * - Other repositories (angular/dev-infra): no packages.
+ */
+function repoPackage(repo: string, scope: string): string | null {
+  if (repo === 'angular/angular') return /^[a-z0-9][a-z0-9.-]*$/.test(scope) ? scope : null
+  if (repo === 'angular/components') {
+    const name = scope.split('/')[0]!
+    return COMPONENTS_PACKAGES.has(name) ? `@angular/${name}` : null
+  }
+  if (repo === 'angular/angular-cli') return /^@[a-z0-9-]+\/[a-z0-9-]+$/.test(scope) ? scope : null
+  return null
+}
+
+/** The repository of a package of `packages.json`: npm names come from the other repositories, scopes from angular/angular. */
+export function packageRepo(name: string): string {
+  if (!name.startsWith('@')) return 'angular/angular'
+  return name.startsWith('@angular/') && COMPONENTS_PACKAGES.has(name.slice('@angular/'.length)) ? 'angular/components' : 'angular/angular-cli'
+}
+
 /** The packages a PR title names, lowercased: `fix(router): …` → `['router']`. Empty without a scope. */
-export function pullRequestScopes(title: string): string[] {
+export function pullRequestScopes(title: string, repo = 'angular/angular'): string[] {
   const match = SCOPE_RE.exec(title)
   if (!match) return []
-  return [...new Set(match[1]!.split(/[,\s]+/).map(scope => scope.trim().toLowerCase()).filter(scope => /^[a-z0-9][a-z0-9.-]*$/.test(scope)))]
+  const scopes = match[1]!.split(/[,\s]+/).map(scope => scope.trim().toLowerCase()).filter(Boolean)
+  return [...new Set(scopes.map(scope => repoPackage(repo, scope)).filter(name => name !== null))]
 }
 
 const PR_CLOSE_RE = /^PR Close #(\d+)\s*$/gm
@@ -93,7 +123,7 @@ export interface CommitInput {
  *   A PR of several commits has the line in each, and still counts once.
  * PRs by bots, or by deleted accounts, are left out.
  */
-export function landedPullRequests(pulls: Iterable<PullRequestInput>, commits: Iterable<CommitInput>): LandedPullRequest[] {
+export function landedPullRequests(pulls: Iterable<PullRequestInput>, commits: Iterable<CommitInput>, repo = 'angular/angular'): LandedPullRequest[] {
   const closedOn = new Map<number, number>()
   for (const commit of commits) {
     const time = Date.parse(commit.date)
@@ -116,7 +146,7 @@ export function landedPullRequests(pulls: Iterable<PullRequestInput>, commits: I
       number: pull.number,
       author,
       type: inferPullRequestType(pull.title, pull.labels),
-      scopes: pullRequestScopes(pull.title),
+      scopes: pullRequestScopes(pull.title, repo),
       landedAt,
     })
   }

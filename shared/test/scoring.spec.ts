@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { buildContributorRecords, ContributorsAccumulator, emptyActivity, emptyCounts, score, scoreBreakdown, type CommentInput, type IssueInput } from '../src/scoring.ts'
-import type { LandedPullRequest, PullRequestType } from '../src/types.ts'
+import { buildContributorRecords, ContributorsAccumulator, emptyActivity, emptyCounts, mergePackages, mergeRecords, score, scoreBreakdown, type CommentInput, type IssueInput } from '../src/scoring.ts'
+import type { ContributorRecord, LandedPullRequest, PullRequestType } from '../src/types.ts'
 
 const stats = (prs: Partial<Record<PullRequestType, number>>, activity: Partial<ReturnType<typeof emptyActivity>> = {}) => {
   const pullRequests = { ...emptyCounts(), ...prs }
@@ -144,6 +144,45 @@ describe('ContributorsAccumulator.packages', () => {
     expect(acc.packages()).toEqual([
       { githubId: 1, packages: [{ name: 'forms', pullRequests: 1 }] },
       { githubId: 2, packages: [{ name: 'router', pullRequests: 2 }, { name: 'core', pullRequests: 1 }] },
+    ])
+  })
+})
+
+describe('mergeRecords', () => {
+  const record = (githubId: number, username: string, fix: number, comments: number, first: string | null): ContributorRecord => {
+    const counts = { ...emptyActivity(), comments }
+    const pullRequests = { ...emptyCounts(), fix, all: fix }
+    return { githubId, username, score: score({ ...counts, pullRequests }), pullRequests, ...counts, firstContributionAt: first }
+  }
+
+  it('adds up the counts per contributor, recomputes the score, keeps the earliest first contribution and sorts', () => {
+    const merged = mergeRecords([
+      [record(1, 'ann', 2, 1, '2020-05-01T00:00:00.000Z'), record(2, 'bob', 1, 0, null)],
+      [record(1, 'ann', 1, 2, '2019-01-01T00:00:00.000Z'), record(3, 'cy', 4, 0, '2021-01-01T00:00:00.000Z')],
+    ])
+    expect(merged.map(r => [r.username, r.score, r.pullRequests.all, r.pullRequests.fix, r.comments, r.firstContributionAt])).toEqual([
+      ['cy', 20, 4, 4, 0, '2021-01-01T00:00:00.000Z'],
+      // 3 fixes (15) + 3 comments (1.5): rounded once, 17, not 11 + 6.
+      ['ann', 17, 3, 3, 3, '2019-01-01T00:00:00.000Z'],
+      ['bob', 5, 1, 1, 0, null],
+    ])
+  })
+
+  it('does not change its inputs', () => {
+    const input = record(1, 'ann', 1, 0, null)
+    mergeRecords([[input], [record(1, 'ann', 1, 0, null)]])
+    expect(input.pullRequests.all).toBe(1)
+  })
+})
+
+describe('mergePackages', () => {
+  it('adds up the PRs per package and sorts them', () => {
+    expect(mergePackages([
+      [{ githubId: 2, packages: [{ name: 'core', pullRequests: 1 }] }],
+      [{ githubId: 2, packages: [{ name: '@angular/cdk', pullRequests: 3 }, { name: 'core', pullRequests: 1 }] }, { githubId: 1, packages: [{ name: 'router', pullRequests: 1 }] }],
+    ])).toEqual([
+      { githubId: 1, packages: [{ name: 'router', pullRequests: 1 }] },
+      { githubId: 2, packages: [{ name: '@angular/cdk', pullRequests: 3 }, { name: 'core', pullRequests: 2 }] },
     ])
   })
 })

@@ -1,6 +1,10 @@
+import { packageRepo } from '@angularians/shared';
+
 /**
- * The npm package of a PR scope of angular/angular (`fix(router): …` → `@angular/router`).
- * Scopes that are not a published package (docs-infra, bazel, migrations…) keep their name only.
+ * What a package of `packages.json` is, under its name:
+ * - a PR scope of angular/angular (`router`): its npm package (`@angular/router`), or the repository for scopes
+ *   that are not a published package (bazel…);
+ * - a package of the other repositories, an npm name already (`@angular/material`, `@angular/build`): its repository.
  */
 const PACKAGES: Record<string, string> = {
   'animations': '@angular/animations',
@@ -27,6 +31,6 @@ const PACKAGES: Record<string, string> = {
   'migrations': '@angular/core schematics',
 }
 
-export function packageLabel(scope: string): string {
-  return PACKAGES[scope] ?? 'angular/angular'
+export function packageLabel(name: string): string {
+  return packageRepo(name) === 'angular/angular' ? PACKAGES[name] ?? 'angular/angular' : packageRepo(name)
 }
