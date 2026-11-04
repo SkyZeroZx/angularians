@@ -5,7 +5,7 @@ import { Container } from './container';
   selector: 'app-site-footer',
   imports: [Container],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'block border-t' },
+  host: { role: 'contentinfo', class: 'block border-t' },
   template: `
     <app-container class="flex flex-col gap-2 py-8 text-sm text-muted-foreground">
       <p>

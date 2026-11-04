@@ -54,7 +54,8 @@ export const routeMeta = {
 
     <app-page-section sectionId="leaderboard" [flush]="true">
       <h2 class="sr-only">Leaderboard</h2>
-      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <!-- One row from lg: tabs, the country select and search do not fit side by side on a tablet -->
+      <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <app-period-tabs [period]="period()" [periods]="board()?.periods ?? []" (periodChange)="setPeriod($event)" />
         <div class="flex flex-col gap-3 sm:flex-row">
           <app-country-select [countries]="map.value()?.countries ?? []" [value]="country()" (valueChange)="setCountry($event)" />
