@@ -9,9 +9,9 @@ import { injectResponse } from '@analogjs/router/tokens';
 import { countryName, DEFAULT_PERIOD, isPeriod, periodPhrase, reposQuery, type ContributorProfile, type Period } from '@angularians/shared';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
-  lucideArrowLeft, lucideArrowUpRight, lucideAward, lucideCalendar, lucideCircleDot, lucideGitPullRequest, lucideGlobe, lucideInfo,
+  lucideArrowLeft, lucideArrowUpRight, lucideAward, lucideCircleDot, lucideGitPullRequest, lucideInfo,
   lucideBadgeCheck, lucideChevronDown, lucideChevronUp, lucideCrown, lucideFileCode, lucideLink, lucideLinkedin, lucideMessageCircle,
-  lucidePackage, lucideSmilePlus, lucideTrophy,
+  lucideSmilePlus, lucideTrophy,
 } from '@ng-icons/lucide';
 import {
   simpleBluesky, simpleFacebook, simpleGithub, simpleInstagram, simpleMastodon, simpleNpm, simpleReddit, simpleThreads, simpleTwitch, simpleX,
@@ -27,7 +27,7 @@ import { AngularLogo } from '../layout/angular-logo';
 import { Container } from '../layout/container';
 import { avatarUrl, flagUrl, formatNumber, formatPoints, plural, profileQuery } from '../leaderboard/format';
 import { PeriodTabs } from '../leaderboard/period-tabs';
-import { packageLabel } from '../profile/packages';
+import { foldPackages, PACKAGE_ICONS, packageIcon, packageLabel } from '../profile/packages';
 import { ScoreDialog } from '../profile/score-dialog';
 import { Share } from '../profile/share';
 import { AuthService } from '../auth/auth.service';
@@ -53,15 +53,27 @@ const SOCIAL_ICONS: Record<string, string> = {
 };
 const SINCE = new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' });
 
+/** Years as ranges: [2019, 2024, 2025, 2026] → "2019, 2024–2026". */
+export function yearRanges(years: readonly number[]): string {
+  const parts: string[] = [];
+  for (let i = 0; i < years.length; i++) {
+    let j = i;
+    while (j + 1 < years.length && years[j + 1] === years[j]! + 1) j++;
+    parts.push(j > i ? `${years[i]}–${years[j]}` : `${years[i]}`);
+    i = j;
+  }
+  return parts.join(', ');
+}
+
 @Component({
   selector: 'app-profile',
   imports: [AngularLogo, Container, HlmButton, HlmSkeleton, HlmTooltip, NgIcon, NgTemplateOutlet, PeriodTabs, RouterLink, ScoreDialog, Share],
   providers: [provideIcons({
-    lucideArrowLeft, lucideArrowUpRight, lucideAward, lucideCalendar, lucideCircleDot, lucideGitPullRequest, lucideGlobe, lucideInfo,
+    lucideArrowLeft, lucideArrowUpRight, lucideAward, lucideCircleDot, lucideGitPullRequest, lucideInfo,
     lucideBadgeCheck, lucideChevronDown, lucideChevronUp, lucideCrown, lucideFileCode, lucideLink, lucideLinkedin, lucideMessageCircle,
-    lucidePackage, lucideSmilePlus, lucideTrophy,
+    lucideSmilePlus, lucideTrophy,
     simpleBluesky, simpleFacebook, simpleGithub, simpleInstagram, simpleMastodon, simpleNpm, simpleReddit, simpleThreads, simpleTwitch, simpleX,
-    simpleYoutube,
+    simpleYoutube, ...PACKAGE_ICONS,
   })],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'relative block isolate' },
@@ -180,16 +192,16 @@ const SINCE = new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric'
         </div>
       </app-container>
 
-      @if (person.packages.length) {
+      @if (packages().length) {
         <app-container class="pb-12">
           <section aria-labelledby="packages-title">
             <h2 id="packages-title" class="mb-1 text-2xl font-medium tracking-tight">Contributed to</h2>
-            <p class="mb-6 text-muted-foreground">Merged PRs in {{ plural(person.packages.length, 'package', 'packages') }} of Angular, by PRs.</p>
+            <p class="mb-6 text-muted-foreground">Merged PRs in {{ plural(packages().length, 'package', 'packages') }} of Angular, by PRs.</p>
             <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               @for (item of shownPackages(); track item.name) {
                 <li class="flex items-center gap-3 rounded-lg px-3 py-2 ring-1 ring-border">
                   <span class="grid size-9 shrink-0 place-items-center rounded-md bg-primary/10 text-primary">
-                    <ng-icon name="lucidePackage" aria-hidden="true" />
+                    <ng-icon [name]="icon(item.name)" aria-hidden="true" />
                   </span>
                   <span class="min-w-0 flex-1">
                     <span class="block truncate text-sm font-medium">{{ item.name }}</span>
@@ -199,9 +211,9 @@ const SINCE = new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric'
                 </li>
               }
             </ul>
-            @if (person.packages.length > PACKAGES_SHOWN) {
+            @if (packages().length > PACKAGES_SHOWN) {
               <button hlmBtn variant="ghost" type="button" class="mt-4" (click)="allPackages.set(!allPackages())">
-                {{ allPackages() ? 'Show less' : 'Show all ' + person.packages.length }}
+                {{ allPackages() ? 'Show less' : 'Show all ' + packages().length }}
                 <ng-icon [name]="allPackages() ? 'lucideChevronUp' : 'lucideChevronDown'" aria-hidden="true" />
               </button>
             }
@@ -356,26 +368,34 @@ export default class Profile {
   });
   protected readonly PACKAGES_SHOWN = 12;
   protected readonly allPackages = signal(false);
+  /** Misspelled scopes (`platform-brower`) folded into the package they mean. */
+  protected readonly packages = computed(() => foldPackages(this.profile.value()?.packages ?? []));
   protected readonly shownPackages = computed(() => {
-    const packages = this.profile.value()?.packages ?? [];
+    const packages = this.packages();
     return this.allPackages() ? packages : packages.slice(0, this.PACKAGES_SHOWN);
   });
   protected readonly packageLabel = packageLabel;
+  protected readonly icon = packageIcon;
   protected readonly plural = plural;
   /** Earned from the data: the Angular team, the all-time top 10, #1 of a year, 100+ review comments. */
   protected readonly badges = computed(() => {
     const person = this.profile.value();
     if (!person) return [];
-    const strong = 'bg-primary/10 text-primary ring-primary/30';
-    const neutral = 'bg-muted/50 ring-border';
+    // One colour per kind, the profile's stat colours: gold for a #1, sky for the all-time top 10, violet (comments)
+    // for reviews. As soft tints, readable in both themes.
+    const gold = 'bg-amber-500/10 text-amber-700 ring-amber-500/30 dark:text-amber-400';
+    const sky = 'bg-sky-500/10 text-sky-700 ring-sky-500/30 dark:text-sky-400';
+    const violet = 'bg-violet-500/10 text-violet-700 ring-violet-500/30 dark:text-violet-400';
     const badges: Array<{ label: string, title: string, icon: string, style: string }> = [];
     // The gradient Angular logo of the press kit, only to say "member of the Angular team" (the site's mark stays the A).
     if (person.team) badges.push({ label: 'Angular team', title: 'A public member of the angular organization on GitHub', icon: 'angular', style: 'bg-[#dc087d]/10 text-foreground ring-[#dc087d]/40' });
-    if (person.rank <= 10) badges.push({ label: 'Top 10 all time', title: `#${formatNumber(person.rank)} of all time`, icon: 'lucideTrophy', style: strong });
-    for (const year of this.years().filter(row => row.rank === 1).slice(0, 3)) {
-      badges.push({ label: `#1 in ${year.period}`, title: `The top Angularian of ${year.period}`, icon: 'lucideCrown', style: strong });
+    // Every year at #1 in one badge: "#1 in 2024–2026", "#1 in 2019, 2024".
+    const firsts = this.years().filter(row => row.rank === 1).map(row => Number(row.period)).sort((x, y) => x - y);
+    if (firsts.length) {
+      badges.push({ label: `#1 in ${yearRanges(firsts)}`, title: `The top Angularian of ${plural(firsts.length, 'year', 'years')}`, icon: 'lucideCrown', style: gold });
     }
-    if (person.reviewComments >= 100) badges.push({ label: 'Reviewer', title: `${formatNumber(person.reviewComments)} review comments on code`, icon: 'lucideFileCode', style: neutral });
+    if (person.rank <= 10) badges.push({ label: 'Top 10 all time', title: `#${formatNumber(person.rank)} of all time`, icon: 'lucideTrophy', style: sky });
+    if (person.reviewComments >= 100) badges.push({ label: 'Reviewer', title: `${formatNumber(person.reviewComments)} review comments on code`, icon: 'lucideFileCode', style: violet });
     return badges;
   });
   /** The contributor's rank in each period they contributed in, for the period tabs. */

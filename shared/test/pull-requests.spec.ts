@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { inferPullRequestType, landedPullRequests, packageRepo, prCloseNumbers, pullRequestScopes, type PullRequestInput } from '../src/pull-requests.ts'
+import { canonicalPackage, inferPullRequestType, landedPullRequests, packageRepo, prCloseNumbers, pullRequestScopes, type PullRequestInput } from '../src/pull-requests.ts'
 import { isBotAccount } from '../src/bots.ts'
 
 describe('inferPullRequestType', () => {
@@ -151,4 +151,13 @@ describe('packageRepo', () => {
     ['@angular/build', 'angular/angular-cli'],
     ['@schematics/angular', 'angular/angular-cli'],
   ])('%s → %s', (name, repo) => expect(packageRepo(name)).toBe(repo))
+})
+
+describe('canonicalPackage', () => {
+  it('folds misspelled scopes into the package they mean', () => {
+    expect(canonicalPackage('platform-brower')).toBe('platform-browser')
+    expect(canonicalPackage('migration')).toBe('migrations')
+    expect(canonicalPackage('router')).toBe('router')
+    expect(pullRequestScopes('fix(dev-tools): x')).toEqual(['devtools'])
+  })
 })
