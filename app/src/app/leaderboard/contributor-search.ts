@@ -101,6 +101,6 @@ export class ContributorSearch {
     const { username } = item as ContributorSummary
     this.term.set('')
     this.results.set([])
-    void this.router.navigate(['/', username], { queryParams: profileQuery(this.period()) })
+    void this.router.navigate(['/', username], { queryParams: profileQuery(this.period(), this.country()) })
   }
 }
