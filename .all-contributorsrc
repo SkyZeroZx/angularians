@@ -43,6 +43,15 @@
         "ideas",
         "bug"
       ]
+    },
+    {
+      "login": "geromegrignon",
+      "name": "Gerome Grignon",
+      "avatar_url": "https://avatars.githubusercontent.com/u/32737308?v=4",
+      "profile": "https://gerome.dev",
+      "contributions": [
+        "ideas"
+      ]
     }
   ],
   "commitType": "docs"
