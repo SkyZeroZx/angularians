@@ -69,7 +69,7 @@ const CARD_TILES = 12;
     </div>
 
     <div class="flex min-w-0 flex-col gap-4">
-      <ol class="-mx-2 max-h-96 overflow-y-auto pr-1" aria-label="Countries, from the most contributors">
+      <ol class="-mx-2 max-h-100 overflow-y-auto pr-1" aria-label="Countries, from the most contributors">
         @for (item of map().countries; track item.code) {
           <li>
             <button
@@ -78,6 +78,7 @@ const CARD_TILES = 12;
               [attr.aria-pressed]="item.code === selected()"
               (click)="select.emit(item.code === selected() ? null : item.code)"
             >
+              <span class="w-6 shrink-0 text-right text-xs text-muted-foreground tabular-nums"><span class="sr-only">Rank </span>{{ number(rankOf(item.code)) }}</span>
               <img [src]="flag(item.code)" alt="" width="20" height="20" loading="lazy" class="size-5 shrink-0" />
               <span class="min-w-0 flex-1">
                 <span class="block truncate">{{ name(item.code) }}</span>
@@ -136,11 +137,19 @@ export class World {
   /** One tile per person shown, known from the count: the card keeps its size while they load. */
   protected readonly tiles = computed(() => Array.from({ length: Math.min(CARD_TILES, this.current()?.count ?? 0) }, (_, index) => this.people()[index] ?? null));
   private readonly largest = computed(() => this.map().countries[0]?.count ?? 1);
+  /** Countries with the same count share a rank: 1, 2, 2, 4. */
+  private readonly ranks = computed(() => {
+    const firstAt = new Map<number, number>();
+    return new Map(this.map().countries.map((item, index) => {
+      if (!firstAt.has(item.count)) firstAt.set(item.count, index + 1);
+      return [item.code, firstAt.get(item.count)!];
+    }));
+  });
 
   protected readonly name = countryName;
   protected readonly number = formatNumber;
   protected readonly flag = flagUrl;
   protected readonly avatar = (person: ContributorSummary) => avatarUrl(person.githubId, 56);
-  protected readonly rankOf = (code: string) => this.map().countries.findIndex(item => item.code === code) + 1;
+  protected readonly rankOf = (code: string) => this.ranks().get(code) ?? 0;
   protected readonly barWidth = (item: CountryStats) => Math.max(2, item.count / this.largest() * 100);
 }
