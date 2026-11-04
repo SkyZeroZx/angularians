@@ -3,7 +3,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core'
 import { RouterLink } from '@angular/router'
 import { NgIcon, provideIcons } from '@ng-icons/core'
-import { lucideArrowRight, lucideAward, lucideCircle, lucideCircleCheck, lucideGithub, lucideInfo } from '@ng-icons/lucide'
+import { lucideArrowRight, lucideAward, lucideCircleDot, lucideGitPullRequest, lucideGithub, lucideInfo, lucideMessageCircleHeart } from '@ng-icons/lucide'
 import { HlmButton } from '@spartan-ng/helm/button'
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton'
 import { HlmTooltip } from '@spartan-ng/helm/tooltip'
@@ -27,7 +27,7 @@ const SIGNED_OUT = 'min-h-64 lg:min-h-80'
 @Component({
   selector: 'app-me-card',
   imports: [AngularLogo, HlmButton, HlmSkeleton, HlmTooltip, NgIcon, RouterLink, ScoreDialog, Share],
-  providers: [provideIcons({ lucideArrowRight, lucideAward, lucideCircle, lucideCircleCheck, lucideGithub, lucideInfo })],
+  providers: [provideIcons({ lucideArrowRight, lucideAward, lucideCircleDot, lucideGitPullRequest, lucideGithub, lucideInfo, lucideMessageCircleHeart })],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block w-full' },
   template: `
@@ -82,9 +82,9 @@ const SIGNED_OUT = 'min-h-64 lg:min-h-80'
           <ul class="flex flex-col gap-2">
             @for (item of unlocks(); track item.label) {
               <li class="flex items-center gap-2">
-                <ng-icon [name]="item.value > 0 ? 'lucideCircleCheck' : 'lucideCircle'" size="1.25rem" class="shrink-0"
-                  [class.text-primary]="item.value > 0" [class.text-muted-foreground]="!item.value" aria-hidden="true" />
-                <span><span class="font-medium tabular-nums">{{ number(item.value) }}</span> {{ item.label }}</span>
+                <!-- The profile's stat colours: pink PRs, sky issues, violet comments; grey until there is one -->
+                <ng-icon [name]="item.icon" size="1.25rem" [class]="'shrink-0 ' + (item.value > 0 ? item.color : 'text-muted-foreground/60')" aria-hidden="true" />
+                <span><span class="font-medium tabular-nums">{{ number(item.value) }}</span> {{ item.value === 1 ? item.one : item.label }}</span>
                 @if (item.hint) {
                   <ng-icon name="lucideInfo" class="text-muted-foreground" [hlmTooltip]="item.hint" [attr.aria-label]="item.hint" tabindex="0" />
                 }
@@ -153,9 +153,9 @@ export class MeCard {
   protected readonly unlocks = computed(() => {
     const person = this.me()?.angularian
     return [
-      { label: 'merged pull requests', value: person?.pullRequests.all ?? 0, hint: null },
-      { label: 'helpful issues', value: person?.helpfulIssues ?? 0, hint: 'Completed, or 3+ reactions, or 5+ comments' },
-      { label: 'helpful comments', value: person?.helpfulComments ?? 0, hint: '3+ reactions' },
+      { label: 'merged pull requests', one: 'merged pull request', value: person?.pullRequests.all ?? 0, hint: null, icon: 'lucideGitPullRequest', color: 'text-primary' },
+      { label: 'helpful issues', one: 'helpful issue', value: person?.helpfulIssues ?? 0, hint: 'Completed, or 3+ reactions, or 5+ comments', icon: 'lucideCircleDot', color: 'text-sky-600 dark:text-sky-400' },
+      { label: 'helpful comments', one: 'helpful comment', value: person?.helpfulComments ?? 0, hint: '3+ reactions', icon: 'lucideMessageCircleHeart', color: 'text-violet-600 dark:text-violet-400' },
     ]
   })
 

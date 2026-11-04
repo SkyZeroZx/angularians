@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideGithub } from '@ng-icons/lucide';
@@ -6,10 +6,12 @@ import { HlmButton } from '@spartan-ng/helm/button';
 import { Container } from './container';
 import { LogoMark } from './logo-mark';
 import { ThemeToggle } from './theme-toggle';
+import { UserMenu } from './user-menu';
+import { AuthService } from '../auth/auth.service';
 
 @Component({
   selector: 'app-site-header',
-  imports: [Container, HlmButton, LogoMark, NgIcon, RouterLink, ThemeToggle],
+  imports: [Container, HlmButton, LogoMark, NgIcon, RouterLink, ThemeToggle, UserMenu],
   providers: [provideIcons({ lucideGithub })],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { role: 'banner', class: 'sticky top-0 z-40 block border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60' },
@@ -20,12 +22,20 @@ import { ThemeToggle } from './theme-toggle';
         <span>Angularians</span>
       </a>
       <nav class="ml-auto flex items-center gap-1" aria-label="Site">
-        <a hlmBtn variant="ghost" size="icon" href="https://github.com/erkamyaman/angularians" target="_blank" rel="noopener" aria-label="Angularians on GitHub" title="Angularians on GitHub">
-          <ng-icon name="lucideGithub" aria-hidden="true" />
-        </a>
-        <app-theme-toggle />
+        <!-- As on nuxt.com: signed in, the avatar and its menu (the theme is in it); signed out, GitHub and the theme -->
+        @if (signedIn()) {
+          <app-user-menu />
+        } @else {
+          <a hlmBtn variant="ghost" size="icon" href="https://github.com/erkamyaman/angularians" target="_blank" rel="noopener" aria-label="Angularians on GitHub" title="Angularians on GitHub">
+            <ng-icon name="lucideGithub" aria-hidden="true" />
+          </a>
+          <app-theme-toggle />
+        }
       </nav>
     </app-container>
   `,
 })
-export class SiteHeader {}
+export class SiteHeader {
+  private readonly auth = inject(AuthService);
+  protected readonly signedIn = computed(() => !!this.auth.state()?.user);
+}

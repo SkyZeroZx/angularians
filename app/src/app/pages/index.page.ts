@@ -114,7 +114,8 @@ export const routeMeta = {
         @for (way of becomeWays; track way.title) {
           <a [href]="way.url" target="_blank" rel="noopener" hlmCard class="transition hover:bg-muted/40">
             <div hlmCardHeader>
-              <ng-icon [name]="way.icon" class="text-primary" size="22" aria-hidden="true" />
+              <!-- The profile's stat colours: pink PRs, sky issues, violet comments -->
+              <ng-icon [name]="way.icon" [class]="way.color" size="22" aria-hidden="true" />
               <h3 hlmCardTitle class="mt-2">{{ way.title }}</h3>
               <p hlmCardDescription>{{ way.description }}</p>
             </div>
@@ -159,9 +160,9 @@ export default class Home {
   protected readonly placeholders = Array.from({ length: 30 }, (_, index) => index);
   /** The three ways onto the board (Nuxters' "How to become a Nuxter"). */
   protected readonly becomeWays = [
-    { title: 'Merge a pull request', description: 'Fix a bug, ship a feature or improve the docs in any Angular repository.', icon: 'lucideGitPullRequest', url: 'https://github.com/angular/angular/blob/main/CONTRIBUTING.md' },
-    { title: 'Open a helpful issue', description: 'An issue that gets completed, or collects 3+ reactions or 5+ comments.', icon: 'lucideCircleDot', url: 'https://github.com/angular/angular/issues' },
-    { title: 'Write a helpful comment', description: 'Answer a question or review a PR: a comment with 3+ reactions counts.', icon: 'lucideMessageCircleHeart', url: 'https://github.com/angular/angular/pulls' },
+    { title: 'Merge a pull request', description: 'Fix a bug, ship a feature or improve the docs in any Angular repository.', icon: 'lucideGitPullRequest', color: 'text-primary', url: 'https://github.com/angular/angular/blob/main/CONTRIBUTING.md' },
+    { title: 'Open a helpful issue', description: 'An issue that gets completed, or collects 3+ reactions or 5+ comments.', icon: 'lucideCircleDot', color: 'text-sky-600 dark:text-sky-400', url: 'https://github.com/angular/angular/issues' },
+    { title: 'Write a helpful comment', description: 'Answer a question or review a PR: a comment with 3+ reactions counts.', icon: 'lucideMessageCircleHeart', color: 'text-violet-600 dark:text-violet-400', url: 'https://github.com/angular/angular/pulls' },
   ];
   protected readonly number = formatNumber;
   protected readonly phrase = periodPhrase;
