@@ -21,8 +21,7 @@ export default defineConfig(() => ({
       prerender: { routes: [] },
       nitro: {
         // The two fonts of the Angularian card (src/server/card), inlined in the server: about 60 KB.
-        // And the brand font, Norse Bold, for the word "Angularian": downloaded by scripts/fetch-fonts.ts before the
-        // build (its licence does not let us commit it), about 30 KB. Without it the cards set the word in Inter.
+        // And the brand font, Norse Bold, for the word "Angularian" (public/fonts), about 30 KB.
         serverAssets: [
           { baseName: 'card-fonts', dir: fileURLToPath(new URL('./src/server/card/fonts', import.meta.url)) },
           { baseName: 'brand-font', dir: fileURLToPath(new URL('./public/fonts', import.meta.url)) },

@@ -23,7 +23,7 @@ BOARDS = (8, 13, 18)                                 # design y of the gaps betw
 
 SHIELD = Polygon([(12, .8), (22.6, 4.6), (21, 18.4), (12, 23.4), (3, 18.4), (1.4, 4.6)]).buffer(.5, join_style='round', quad_segs=8)
 
-# The capital A of Norse Bold by Joel Carrouche (free for commercial use; the font itself is not in this repository),
+# The capital A of Norse Bold by Joel Carrouche (app/public/fonts; THIRD_PARTY_NOTICES.md),
 # its outline in font units, y up. Under its crossbar the feet are cut off and the legs go on straight, out
 # through the bottom of the shield.
 A_RINGS = [[(279, 205), (287, 172), (296, 166), (288, 156), (292, 128), (305, 2), (322, -7), (335, -7), (409, 17), (398, 60), (383, 76), (389, 84), (379, 147), (354, 240), (354, 254), (306, 495), (294, 504), (301, 522), (269, 675), (265, 685), (262, 693), (263, 728), (246, 736), (164, 732), (154, 669), (145, 627), (138, 587), (149, 572), (131, 551), (101, 417), (101, 399), (95, 378), (92, 359), (72, 236), (73, 216), (62, 205), (52, 142), (25, 20), (60, -2), (122, -8), (133, 59), (126, 87), (135, 98), (146, 169), (166, 177), (175, 181), (242, 197), (262, 211), (263, 211), (277, 213), (279, 205)], [(187, 434), (182, 450), (192, 455), (212, 577), (227, 471), (231, 453), (235, 401), (255, 293), (227, 286), (162, 266), (163, 273), (175, 338), (174, 337), (187, 434)]]

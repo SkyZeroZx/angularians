@@ -76,12 +76,10 @@ unchanged and only to show membership of the Angular team; the Angularians mark 
 
 ## Norse
 
-The hero's "Angularians" is set in Norse Bold by Joël Carrouché (https://www.joelcarrouche.net), and the A of the
-Angularians mark is its capital A. Its free font licence allows personal and commercial use and embedding in web
-pages, but not modifying or sharing the font files. So the font is not in this repository:
-`app/scripts/fetch-fonts.ts` downloads it unmodified from https://www.1001fonts.com/norse-font.html at build time,
-and the site serves it as a web font. The mark uses only the outline of the A (`app/scripts/logo/build.py`), and the
-README's wordmark draws the word from its outlines (`app/scripts/logo/wordmark.py`): no font file in either.
+The word "Angularian(s)" on the site and the cards is set in Norse Bold by Joël Carrouché (https://www.joelcarrouche.net),
+and the A of the Angularians mark is its capital A; the README's wordmark draws the word from its outlines. The font file
+is `app/public/fonts/Norse-Bold.otf`, unmodified. Its licence (free font EULA v1.0, March 2014) does not allow selling the
+font or modifying the files; to use it anywhere else, get it from https://www.joelcarrouche.net.
 
 ## Data
 
