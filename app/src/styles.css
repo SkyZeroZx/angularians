@@ -9,8 +9,8 @@
 
 /*
  * Spartan's zinc theme, with an Angular-inspired accent (red to magenta) as the primary color.
- * Dark mode is the `dark` class on <html>, set by ThemeService (and by the inline script in index.html
- * before the first paint).
+ * Dark mode, the default, is the `dark` class on <html>: in index.html, removed for a saved light theme by its
+ * inline script before the first paint, then kept by ThemeService.
  */
 :root {
   color-scheme: light;

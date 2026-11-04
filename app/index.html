@@ -1,22 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark" style="color-scheme: dark">
   <head>
     <meta charset="utf-8" />
     <title>Angularians</title>
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="The people whose pull requests landed in angular/angular, ranked. A community project." />
+    <meta name="description" content="Everyone who has contributed to Angular since 2014, ranked: merged pull requests, issues, comments and code reviews. A community project." />
     <meta name="color-scheme" content="light dark" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="stylesheet" href="/src/styles.css" />
-    <!-- Before the first paint: the saved theme, or the system setting. Same key as ThemeService. -->
+    <!-- Before the first paint: dark (the class above), or a saved light theme. Same key as ThemeService. -->
     <script>
       (function () {
         var theme = null
         try { theme = localStorage.getItem('theme') } catch (e) {}
-        var dark = theme === 'dark' || (theme !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)
-        document.documentElement.classList.toggle('dark', dark)
-        document.documentElement.style.colorScheme = dark ? 'dark' : 'light'
+        if (theme === 'light') {
+          document.documentElement.classList.remove('dark')
+          document.documentElement.style.colorScheme = 'light'
+        }
       })()
     </script>
   </head>
