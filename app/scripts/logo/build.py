@@ -5,7 +5,7 @@
 
 The mark: the Angular shield cut in two along the right leg of the capital A of Norse Bold. The left piece holds
 the A, which cuts through the shield from its tip out through its bottom. The right piece is a contribution graph:
-a grid of squares tilted to the shield's top edge, cut by its outline, in three shades and the grey of empty days.
+a grid of squares tilted to the shield's top edge, cut by its outline, in three greens and the grey of empty days.
 The parts: `solid` (the left piece), `empty`, `l1`, `l2`, `l3` (the squares, darkest to brightest).
 """
 import json, math, random
@@ -14,9 +14,9 @@ from shapely.ops import unary_union
 from shapely import affinity
 
 STRIPE, GAP = 1.4, 1.1                 # the strip between the A's right leg and the cut; the gap between the pieces
-PITCH, SIZE = 1.62, 1.36               # the grid: the step between squares, and their side
+PITCH, SIZE = 1.9, 1.6               # the grid: the step between squares, and their side
 KEEP, EDGE = .03, .45                  # a square is kept when this much of it is inside; an empty day below EDGE
-SEED, EXTRA_EMPTY = 4, 6               # the pattern, and a few more empty days among the whole squares
+SEED, EXTRA_EMPTY = 4, 5               # the pattern, and a few more empty days among the whole squares
 
 SHIELD = Polygon([(12, .8), (22.6, 4.6), (21, 18.4), (12, 23.4), (3, 18.4), (1.4, 4.6)]).buffer(.5, join_style='round', quad_segs=8)
 
@@ -56,7 +56,7 @@ wing = affinity.translate(SHIELD.intersection(right_side), *dr)
 # The contribution graph, tilted to the shield's top right edge.
 rng = random.Random(SEED)
 cells = {'empty': [], 'l1': [], 'l2': [], 'l3': []}
-pick = lambda: rng.choices(['empty', 'l1', 'l1', 'l2', 'l3'], weights=[.9, 2, 2.5, 2.5, 2.5])[0]
+pick = lambda: rng.choices(['empty', 'l1', 'l1', 'l2', 'l3'], weights=[.4, 1.5, 2.5, 3, 3.5])[0]
 angle = math.degrees(math.atan2(4.6 - .8, 22.6 - 12))
 w = affinity.rotate(wing, -angle, origin=(12, 12))
 wx, wy, wX, wY = w.bounds

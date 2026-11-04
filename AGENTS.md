@@ -36,4 +36,4 @@ pnpm build        # the site, as Netlify builds it
 - Update `docs/` in the same change as the code.
 - Never write secrets, tokens, absolute local paths or personal data into the repository.
 - Pages are cached by the CDN for everyone: never render the signed-in user into a page; read it in the browser from `/api/auth/me`.
-- No gradients: the brand is amber gold, in flat colours (the mark's graph uses its shades and a grey).
+- No gradients: the brand is forest green, in flat colours (the mark's graph uses its shades and a grey).

@@ -12,3 +12,9 @@
   # 24: the collector and the build scripts run TypeScript directly (type stripping).
   NODE_VERSION = "24"
   NITRO_PRESET = "netlify"
+
+# The brand font never changes: browsers keep it a year (the CDN serves static files itself, not the server).
+[[headers]]
+  for = "/fonts/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
