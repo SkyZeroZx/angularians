@@ -51,6 +51,11 @@ describe('parts', () => {
     expect(merged.stats).toMatchObject({ landedPullRequests: 7, comments: 4 })
   })
 
+  it('of test runs merge, from the earliest start', () => {
+    const test = (since: string) => ({ ...part('angular/angular', '2026-11-04T03:17:00.000Z', [record(1, 'ann', 1)], 1), since })
+    expect(mergeParts([test('2026-10-28T03:17:09.000Z'), test('2026-10-28T03:17:02.000Z')]).since).toBe('2026-10-28T03:17:02.000Z')
+  })
+
   it('refuse to merge a test run with a full one', () => {
     const test = { ...part('angular/components', '2026-11-04T03:17:00.000Z', [record(2, 'bob', 1)], 1), since: '2026-10-01T00:00:00.000Z' }
     expect(() => mergeParts([part('angular/angular', '2026-11-04T03:17:00.000Z', [record(1, 'ann', 1)], 1), test])).toThrow(/different/)

@@ -56,7 +56,7 @@ jobs:
         run: echo "artifact=part-${REPO//\//__}" >> "$GITHUB_OUTPUT"
         env:
           REPO: ${{ matrix.repo }}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.name.outputs.artifact }}
           path: ${{ runner.temp }}/part
@@ -75,7 +75,7 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           pattern: part-*
           path: ${{ runner.temp }}/parts
@@ -91,7 +91,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.COLLECT_TOKEN }}
       - name: Upload the test run
         if: inputs.since
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-data
           path: ${{ runner.temp }}/test-data

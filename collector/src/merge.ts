@@ -11,10 +11,13 @@ import { emptyStats, readPart, writeData, type Collected, type Stats } from './f
 
 export function mergeParts(parts: readonly Collected[]): Collected {
   if (!parts.length) throw new Error('No parts to merge')
-  const { since, activity } = parts[0]!
-  if (parts.some(part => part.since !== since || part.activity !== activity)) {
-    throw new Error('The parts were collected with different --since or --activity: run them again together')
+  const { activity } = parts[0]!
+  // A test run's `--since=7d` starts a few seconds apart in each job: only a test part with a full one is an error.
+  const tests = parts.filter(part => part.since !== null)
+  if ((tests.length && tests.length < parts.length) || parts.some(part => part.activity !== activity)) {
+    throw new Error('A test run (--since) and a full one, or runs with and without --activity: run them again together')
   }
+  const since = tests.map(part => part.since!).sort()[0] ?? null
   const periods = new Map<Period, ContributorRecord[][]>()
   for (const part of parts) {
     for (const [period, records] of part.files) {
