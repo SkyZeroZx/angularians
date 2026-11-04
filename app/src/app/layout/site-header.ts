@@ -4,6 +4,7 @@ import { NgIcon, provideIcons } from '@ng-icons/core';
 import { simpleGithub } from '@ng-icons/simple-icons';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { Container } from './container';
+import { BrandPicker } from './brand-picker';
 import { LogoMark } from './logo-mark';
 import { ThemeToggle } from './theme-toggle';
 import { UserMenu } from './user-menu';
@@ -11,7 +12,7 @@ import { AuthService } from '../auth/auth.service';
 
 @Component({
   selector: 'app-site-header',
-  imports: [Container, HlmButton, LogoMark, NgIcon, RouterLink, ThemeToggle, UserMenu],
+  imports: [BrandPicker, Container, HlmButton, LogoMark, NgIcon, RouterLink, ThemeToggle, UserMenu],
   providers: [provideIcons({ simpleGithub })],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { role: 'banner', class: 'sticky top-0 z-40 block border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60' },
@@ -23,6 +24,10 @@ import { AuthService } from '../auth/auth.service';
       </a>
       <nav class="ml-auto flex items-center gap-1" aria-label="Site">
         <!-- GitHub and the theme always; then, signed in, the avatar and its menu -->
+        @if (!signedIn() && !(auth.wasSignedIn() && auth.state() === null)) {
+          <!-- Signed out: try a brand colour, in this browser only -->
+          <app-brand-picker />
+        }
         <a hlmBtn variant="ghost" size="icon" href="https://github.com/erkamyaman/angularians" target="_blank" rel="noopener" aria-label="Angularians on GitHub" title="Angularians on GitHub">
           <ng-icon name="simpleGithub" aria-hidden="true" />
         </a>
