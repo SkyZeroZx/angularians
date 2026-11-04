@@ -65,7 +65,6 @@ const SINCE = new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric'
   host: { class: 'relative block isolate' },
   template: `
     <!-- A soft glow of the brand colour behind the top of the profile, like the Nuxters pages -->
-    <div class="pointer-events-none absolute inset-x-0 top-0 -z-10 h-96 bg-linear-to-b from-primary/10 to-transparent" aria-hidden="true"></div>
     <app-container class="pt-8">
       <a hlmBtn variant="link" class="px-0" routerLink="/" [queryParams]="backQuery()">
         <ng-icon name="lucideArrowLeft" aria-hidden="true" />All contributors

@@ -13,6 +13,7 @@ import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import { getContributorsMap, getLeaderboard } from '../data/contributors.server';
 import { PageGrid } from '../layout/page-grid';
+import { LogoMark } from '../layout/logo-mark';
 import { PageHero } from '../layout/page-hero';
 import { PageSection } from '../layout/page-section';
 import { ContributorSearch } from '../leaderboard/contributor-search';
@@ -33,7 +34,7 @@ export const routeMeta = {
 @Component({
   selector: 'app-home',
   imports: [
-    ContributorSearch, CountrySelect, FindProfile, HlmBadge, HlmButton, HlmCardImports, HlmSkeleton, LeaderboardGrid, NgIcon,
+    ContributorSearch, CountrySelect, FindProfile, HlmBadge, HlmButton, HlmCardImports, HlmSkeleton, LeaderboardGrid, LogoMark, NgIcon,
     PageGrid, PageHero, PageSection, PeriodTabs, World,
   ],
   providers: [provideIcons({ lucideBookOpen, lucideBrushCleaning, lucideCalendar, lucideCircleDot, lucideGitPullRequest, lucideMessageCircle, lucideMessageCircleHeart, lucideRocket, lucideUsers, lucideWrench })],
@@ -41,7 +42,7 @@ export const routeMeta = {
   template: `
     <app-page-hero [description]="description">
       <span heroHeadline hlmBadge variant="secondary" class="mb-4">Updated every day</span>
-      <span heroTitle>Meet the <span class="bg-linear-to-r from-brand-from to-brand-to bg-clip-text text-transparent">Angularians</span></span>
+      <span heroTitle class="group inline-flex flex-wrap items-center gap-x-4"><app-logo-mark class="size-[1.1em] shrink-0" animated /><span>Meet the <span class="text-brand-from">Angularians</span></span></span>
       <ng-container heroActions>
         <a hlmBtn href="#how-it-works">How the score works</a>
         <a hlmBtn variant="outline" href="https://github.com/angular/angular/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">How to contribute</a>

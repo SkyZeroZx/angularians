@@ -24,6 +24,8 @@ export default defineConfig(() => ({
           // the CDN keeps a page an hour and may serve a stale one for a day while it refreshes it.
           // 400s and 404s too: they only change with the data. The API routes set their own, longer browser cache.
           '/**': { headers: { 'cache-control': 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400' } },
+          // Sign-in: per person, with cookies. Never in a shared cache.
+          '/api/auth/**': { headers: { 'cache-control': 'private, no-store' } },
           // Hashed file names: never change.
           '/assets/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
         },

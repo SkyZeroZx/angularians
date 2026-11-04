@@ -89,7 +89,7 @@
 
 
 @theme inline {
-  /* The Angular gradient, for the logo mark and the hero heading. */
+  /* The brand colour (flat: no gradients), for the logo mark and the hero heading; brand-to is unused. */
   --color-brand-from: oklch(0.6 0.24 15);
   --color-brand-to: oklch(0.55 0.25 320);
 }

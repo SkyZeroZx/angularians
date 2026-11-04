@@ -3,22 +3,14 @@ import { Container } from './container';
 
 /**
  * The top of a page (Nuxt UI `UPageHero`, as on nuxt.com/nuxters): a heading, a description and optional actions,
- * with an optional card beside them on wide screens (`heroAside`), over a soft glow of the brand colour.
+ * with an optional card beside them on wide screens (`heroAside`).
  */
 @Component({
   selector: 'app-page-hero',
   imports: [Container],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'relative block isolate overflow-hidden' },
-  styles: `
-    .glow {
-      background:
-        radial-gradient(60% 100% at 20% 0%, color-mix(in oklch, var(--color-brand-from) 22%, transparent), transparent 70%),
-        radial-gradient(45% 80% at 80% 0%, color-mix(in oklch, var(--color-brand-to) 14%, transparent), transparent 70%);
-    }
-  `,
+  host: { class: 'block' },
   template: `
-    <div class="glow pointer-events-none absolute inset-x-0 top-0 -z-10 h-[32rem]" aria-hidden="true"></div>
     <app-container class="grid items-center gap-10 pt-16 pb-12 sm:pt-24 sm:pb-16 lg:grid-cols-2 lg:gap-16">
       <div>
         <ng-content select="[heroHeadline]" />
