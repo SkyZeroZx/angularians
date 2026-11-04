@@ -1,19 +1,21 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { simpleGithub } from '@ng-icons/simple-icons';
+import { lucideFileText, lucideGlobe } from '@ng-icons/lucide';
+import { simpleGithub, simpleNuxt } from '@ng-icons/simple-icons';
 import { Container } from './container';
 import { LogoMark } from './logo-mark';
 
 const REPO = 'https://github.com/erkamyaman/angularians';
 
-interface FooterLink { label: string; href: string; route?: boolean }
+/** `icon`: an ng-icons name; `logo`: a project's own logo in public/credits (theirs, to credit them). */
+interface FooterLink { label: string; href: string; route?: boolean; icon?: string; logo?: string; color?: string }
 
 /** The footer: the brand and its pitch, three short columns of links, then the small print. */
 @Component({
   selector: 'app-site-footer',
   imports: [Container, LogoMark, NgIcon, RouterLink],
-  providers: [provideIcons({ simpleGithub })],
+  providers: [provideIcons({ lucideFileText, lucideGlobe, simpleGithub, simpleNuxt })],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { role: 'contentinfo', class: 'block border-t' },
   template: `
@@ -36,11 +38,15 @@ interface FooterLink { label: string; href: string; route?: boolean }
             <ul class="flex flex-col gap-2">
               @for (link of column.links; track link.label) {
                 <li>
-                  @if (link.route) {
-                    <a class="text-muted-foreground hover:text-foreground" [href]="link.href">{{ link.label }}</a>
-                  } @else {
-                    <a class="text-muted-foreground hover:text-foreground" [href]="link.href" target="_blank" rel="noopener">{{ link.label }}</a>
-                  }
+                  <a class="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground" [href]="link.href"
+                    [attr.target]="link.route ? null : '_blank'" [attr.rel]="link.route ? null : 'noopener'">
+                    @if (link.logo) {
+                      <img [src]="link.logo" alt="" width="16" height="16" class="size-4 shrink-0 object-contain" />
+                    } @else if (link.icon) {
+                      <ng-icon [name]="link.icon" class="shrink-0" [style.color]="link.color ?? null" aria-hidden="true" />
+                    }
+                    <span>{{ link.label }}</span>
+                  </a>
                 </li>
               }
             </ul>
@@ -82,10 +88,12 @@ export class SiteFooter {
     {
       title: 'Credits',
       links: [
-        { label: 'Inspired by Nuxters', href: 'https://nuxt.com/nuxters' },
-        { label: 'Countries: GeoNames', href: 'https://www.geonames.org' },
-        { label: 'UI: spartan/ui', href: 'https://spartan.ng' },
-        { label: 'All notices', href: `${REPO}/blob/main/THIRD_PARTY_NOTICES.md` },
+        { label: 'Inspired by Nuxters', href: 'https://nuxt.com/nuxters', icon: 'simpleNuxt', color: '#00DC82' },
+        { label: 'Built with AnalogJS', href: 'https://analogjs.org', logo: '/credits/analogjs.svg' },
+        { label: 'UI by spartan/ui', href: 'https://spartan.ng', logo: '/credits/spartan.svg' },
+        { label: 'Icons by ng-icons', href: 'https://ng-icons.github.io/ng-icons', logo: '/credits/ng-icons.svg' },
+        { label: 'Countries by GeoNames', href: 'https://www.geonames.org', icon: 'lucideGlobe' },
+        { label: 'All notices', href: `${REPO}/blob/main/THIRD_PARTY_NOTICES.md`, icon: 'lucideFileText' },
       ],
     },
   ];
