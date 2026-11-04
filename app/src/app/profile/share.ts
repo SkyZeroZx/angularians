@@ -9,6 +9,9 @@ import { HlmSelectImports } from '@spartan-ng/helm/select'
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton'
 import { SITE_URL } from '../site'
 
+/** The skeleton shows at least this long, so a fast card does not flicker it. */
+const MIN_LOADING_MS = 500
+
 const query = (period?: Period) => (!period || period === 'all' ? '' : `?period=${period}`)
 
 /** Copy the profile link, or the Markdown of the Angularian card for a GitHub profile README. */
@@ -50,29 +53,41 @@ const query = (period?: Period) => (!period || period === 'all' ? '' : `?period=
               </hlm-select>
             </div>
           }
-          <!-- The card's own background while it loads -->
+          <!-- The card's own background while it loads. Changing the period keeps the card on screen (the avatar and the
+               name do not change) and only the parts that do (the rank, the points, the four stats) shimmer until the
+               new one fades in over it. -->
           <div class="relative aspect-[1200/630] w-full overflow-hidden rounded-md bg-neutral-950 ring-1 ring-border">
+            @if (shownUrl(); as shown) {
+              <img [src]="shown" alt="" aria-hidden="true" width="1200" height="630" class="absolute inset-0 size-full" />
+            }
             @for (url of [previewUrl()]; track url) {
               <img [src]="url" [alt]="username() + '’s Angularian card'" width="1200" height="630"
-                class="size-full transition-opacity duration-300" [class.opacity-0]="cardState() !== 'loaded'"
-                (load)="cardState.set('loaded')" (error)="cardState.set('error')" />
+                class="relative size-full transition-opacity duration-300" [class.opacity-0]="cardState() !== 'loaded'"
+                (load)="loaded(url)" (error)="cardState.set('error')" />
             }
             @if (cardState() === 'loading') {
-              <!-- The card's own shape while it renders: the avatar and its lines, the four stat boxes -->
               <div class="absolute inset-0 flex gap-[5.3%] p-[5.3%]" role="status">
                 <span class="sr-only">Loading the card</span>
-                <div class="flex w-[31.7%] flex-col items-center gap-[6%]" aria-hidden="true">
-                  <div hlmSkeleton class="aspect-square w-[46%] rounded-full bg-white/10"></div>
-                  <div hlmSkeleton class="h-[7%] w-[70%] bg-white/10"></div>
-                  <div hlmSkeleton class="h-[5%] w-[55%] bg-white/10"></div>
-                  <div hlmSkeleton class="h-[6%] w-[40%] bg-white/10"></div>
-                </div>
+                @if (shownUrl()) {
+                  <!-- A card is shown: only the rank and the points change on the left (measured on the 1200 × 630 card) -->
+                  <div hlmSkeleton class="absolute top-[54%] left-[9%] h-[15%] w-[24%] rounded-md bg-neutral-950/80" aria-hidden="true"></div>
+                  <div class="w-[31.7%]" aria-hidden="true"></div>
+                } @else {
+                  <div class="flex w-[31.7%] flex-col items-center gap-[6%]" aria-hidden="true">
+                    <div hlmSkeleton class="aspect-square w-[46%] rounded-full bg-white/10"></div>
+                    <div hlmSkeleton class="h-[7%] w-[70%] bg-white/10"></div>
+                    <div hlmSkeleton class="h-[5%] w-[55%] bg-white/10"></div>
+                    <div hlmSkeleton class="h-[6%] w-[40%] bg-white/10"></div>
+                  </div>
+                }
                 <div class="grid flex-1 grid-cols-2 content-center gap-[5%]" aria-hidden="true">
-                  @for (box of [1, 2, 3, 4]; track box) { <div hlmSkeleton class="aspect-[1.35] rounded-xl bg-white/10"></div> }
+                  @for (box of [1, 2, 3, 4]; track box) {
+                    <div hlmSkeleton class="aspect-[1.35] rounded-xl" [class]="shownUrl() ? 'bg-neutral-950/70' : 'bg-white/10'"></div>
+                  }
                 </div>
               </div>
             } @else if (cardState() === 'error') {
-              <div class="absolute inset-0 flex items-center justify-center gap-2 text-sm text-neutral-400" role="status">
+              <div class="absolute inset-0 flex items-center justify-center gap-2 bg-neutral-950 text-sm text-neutral-400" role="status">
                 <ng-icon name="lucideImageOff" aria-hidden="true" /> The card could not be loaded
               </div>
             }
@@ -102,6 +117,8 @@ export class Share {
   protected readonly copied = signal<'link' | 'markdown' | null>(null)
   /** The card renders on demand: its background and a loader meanwhile. */
   protected readonly cardState = signal<'loading' | 'loaded' | 'error'>('loading')
+  /** The last card that loaded: it stays under the next one while that renders. */
+  protected readonly shownUrl = signal<string | null>(null)
   protected readonly cardPeriod = linkedSignal(() => this.period())
   protected readonly periodItems = computed(() => sortPeriods(['all', ...this.periods()]).map(value => ({ value, label: periodLabel(value) })))
 
@@ -119,13 +136,33 @@ export class Share {
   protected opened(state: string): void {
     if (state !== 'open') return
     this.cardPeriod.set(this.period())
-    this.cardState.set('loading')
+    this.shownUrl.set(null)
+    this.startLoading()
   }
 
   protected pick(value: Period | null | undefined): void {
     if (!value || value === this.cardPeriod()) return
     this.cardPeriod.set(value)
+    this.startLoading()
+  }
+
+  private loadingSince = 0
+  private loadedTimer: ReturnType<typeof setTimeout> | undefined
+
+  private startLoading(): void {
+    clearTimeout(this.loadedTimer)
+    this.loadingSince = Date.now()
     this.cardState.set('loading')
+  }
+
+  protected loaded(url: string): void {
+    clearTimeout(this.loadedTimer)
+    this.loadedTimer = setTimeout(() => {
+      // A later pick may have started another card meanwhile: only the one on screen counts.
+      if (url !== this.previewUrl()) return
+      this.cardState.set('loaded')
+      this.shownUrl.set(url)
+    }, Math.max(0, MIN_LOADING_MS - (Date.now() - this.loadingSince)))
   }
 
   protected readonly periodName = (value: Period | null) => (value ? periodLabel(value) : '')
