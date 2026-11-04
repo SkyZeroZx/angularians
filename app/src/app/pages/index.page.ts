@@ -101,6 +101,7 @@ export const routeMeta = {
     @if (map.value(); as world) {
       @if (world.countries.length) {
         <app-page-section sectionId="world" title="Angularians around the world" [description]="worldDescription(world.countries.length)">
+          <span sectionTitleNote class="text-muted-foreground">(<span class="brand">ng-halla</span>)</span>
           <app-world
             [map]="world"
             [selected]="country()"

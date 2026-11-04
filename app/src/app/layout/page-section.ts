@@ -10,7 +10,7 @@ import { Container } from './container';
     <app-container [class]="flush() ? 'pb-12 sm:pb-16' : 'py-12 sm:py-16'">
       @if (title()) {
         <header class="mb-8">
-          <h2 [id]="headingId()" class="text-2xl font-medium tracking-tight sm:text-3xl">{{ title() }}</h2>
+          <h2 [id]="headingId()" class="text-2xl font-medium tracking-tight sm:text-3xl">{{ title() }} <ng-content select="[sectionTitleNote]" /></h2>
           @if (description()) {
             <p class="mt-2 max-w-2xl text-pretty text-muted-foreground">{{ description() }}</p>
           }
