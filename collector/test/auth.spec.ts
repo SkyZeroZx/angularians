@@ -25,7 +25,7 @@ describe('currentToken', () => {
   const stub = () => {
     let n = 0
     const fetch = vi.fn(async (url: string, _init?: RequestInit) => {
-      if (url.endsWith('/repos/erkamyaman/angularians/installation')) return new Response(JSON.stringify({ id: 9 }))
+      if (url.endsWith('/app/installations')) return new Response(JSON.stringify([{ id: 8, account: { login: 'someone' } }, { id: 9, account: { login: 'ErkamYaman' } }]))
       if (url.endsWith('/app/installations/9/access_tokens')) {
         n++
         return new Response(JSON.stringify({ token: `ghs_${n}`, expires_at: new Date(Date.parse('2026-11-04T08:00:00Z') + (n - 1) * 3600_000).toISOString() }))
@@ -49,6 +49,11 @@ describe('currentToken', () => {
     expect(fetch.mock.calls.filter(([url]) => String(url).endsWith('access_tokens'))).toHaveLength(2)
     // Signed with the App's JWT, not a token.
     expect(fetch.mock.calls[0]![1]?.headers).toMatchObject({ authorization: expect.stringMatching(/^Bearer ey/) })
+  })
+
+  it('fails clearly when the App is not installed on the account', async () => {
+    stub()
+    await expect(currentToken({ ...app, GITHUB_REPOSITORY: 'other/repo' }, Date.parse('2026-11-04T07:00:00Z'))).rejects.toThrow(/not installed on other/)
   })
 
   it('reads a key pasted with \\n written out', async () => {

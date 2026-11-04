@@ -37,13 +37,18 @@ async function appRequest<T>(path: string, jwt: string, method = 'GET'): Promise
   return JSON.parse(body) as T
 }
 
-/** A new installation token of the App, from its installation on the repository the workflow runs in. */
+/**
+ * A new installation token of the App, from its installation on the account of the repository the workflow runs in.
+ * The App reads public repositories only: it asks for no permissions, so the installation has no repository of its own.
+ */
 async function installationToken(env: NodeJS.ProcessEnv, now: number): Promise<{ token: string, expiresAt: number }> {
   // Secrets pasted from a file can come with `\n` written out, or Windows line ends.
   const key = env['COLLECT_APP_KEY']!.replace(/\\n/g, '\n').replace(/\r/g, '').trim()
   const jwt = appJwt(env['COLLECT_APP_ID']!.trim(), key, now)
-  const repo = env['GITHUB_REPOSITORY'] ?? 'erkamyaman/angularians'
-  const installation = await appRequest<{ id: number }>(`/repos/${repo}/installation`, jwt)
+  const owner = (env['GITHUB_REPOSITORY'] ?? 'erkamyaman/angularians').split('/')[0]!.toLowerCase()
+  const installations = await appRequest<Array<{ id: number, account: { login: string } | null }>>('/app/installations', jwt)
+  const installation = installations.find(item => item.account?.login.toLowerCase() === owner)
+  if (!installation) throw new Error(`GitHub App: not installed on ${owner} (Install App in the App's settings)`)
   const { token, expires_at } = await appRequest<{ token: string, expires_at: string }>(`/app/installations/${installation.id}/access_tokens`, jwt, 'POST')
   return { token, expiresAt: Date.parse(expires_at) }
 }
