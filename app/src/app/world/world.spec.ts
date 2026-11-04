@@ -41,6 +41,22 @@ describe('World', () => {
     return fixture;
   }
 
+  it('filters the list by country name and keeps the ranks', () => {
+    const fixture = render(null);
+    const element: HTMLElement = fixture.nativeElement;
+    const input = element.querySelector('input[aria-label="Search a country"]') as HTMLInputElement;
+    const type = (value: string) => {
+      input.value = value;
+      input.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+    };
+    type('tÜr');
+    const rows = [...element.querySelectorAll('ol li button')].map(button => button.textContent!.replace(/\s+/g, ' ').trim());
+    expect(rows).toEqual(['Rank 2Turkey2']);
+    type('nowhere');
+    expect(element.querySelector('ol')!.textContent).toContain('No country found');
+  });
+
   it('gives countries with the same count the same rank', () => {
     TestBed.configureTestingModule({ providers: [provideRouter([])] });
     const fixture = TestBed.createComponent(World);
