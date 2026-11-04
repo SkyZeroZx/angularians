@@ -9,6 +9,9 @@ export const KNOWN_BOT_ACCOUNTS: readonly string[] = [
   'codecov-commenter',
   // Found in the first angular/angular run: dependency and docs updates.
   'angular-robot',
+  // Found in the first run with comments: the merge bot and the CLA bot.
+  'mary-poppins',
+  'googlebot',
 ]
 
 /** GitHub apps (`renovate[bot]`), `-bot` accounts, the `ghost` of deleted accounts, and the known list. */
