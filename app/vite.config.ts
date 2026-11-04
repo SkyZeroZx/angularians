@@ -4,6 +4,7 @@ import { defineConfig } from 'vite';
 import analog from '@analogjs/platform';
 import tailwindcss from '@tailwindcss/vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
+import { fileURLToPath } from 'node:url';
 
 // https://vitejs.dev/config/
 export default defineConfig(() => ({
@@ -19,6 +20,8 @@ export default defineConfig(() => ({
       // default board for every shared link until the browser corrected it. Every page is server-rendered.
       prerender: { routes: [] },
       nitro: {
+        // The two fonts of the Angularian card (src/server/card), inlined in the server: about 60 KB.
+        serverAssets: [{ baseName: 'card-fonts', dir: fileURLToPath(new URL('./src/server/card/fonts', import.meta.url)) }],
         routeRules: {
           // Pages change with the data, once a night with a new deploy (which clears the CDN): browsers revalidate,
           // the CDN keeps a page an hour and may serve a stale one for a day while it refreshes it.

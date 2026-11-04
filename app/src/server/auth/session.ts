@@ -1,3 +1,4 @@
+import type { ContributorProfile } from '@angularians/shared'
 import { createError, getRequestURL, useSession, type H3Event } from 'h3'
 
 /**
@@ -16,12 +17,18 @@ export interface AuthSession {
   returnTo?: string
 }
 
-/** What `GET /api/auth/me` answers. */
+/** What `GET /api/auth/me` answers (nuxt.com's `NuxterMe`, without Discord). */
 export interface SignedIn {
-  /** False when the site has no sign-in set up: the button is not shown. */
+  /** False when the site has no sign-in set up: the card says so instead of offering a sign-in that fails. */
   enabled: boolean
-  /** Rank and score all time, `null` with no contribution yet. */
-  user: { githubId: number, login: string, rank: number | null, score: number | null } | null
+  user: {
+    githubId: number
+    login: string
+    /** The signed-in account's profile, by GitHub id; `null` with no contribution yet. */
+    angularian: ContributorProfile | null
+    /** `Angularian` (a merged PR, a helpful issue or a helpful comment), `Angular team`. */
+    badges: string[]
+  } | null
 }
 
 const MAX_AGE = 60 * 60 * 24 * 30

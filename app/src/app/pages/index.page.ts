@@ -18,7 +18,7 @@ import { PageHero } from '../layout/page-hero';
 import { PageSection } from '../layout/page-section';
 import { ContributorSearch } from '../leaderboard/contributor-search';
 import { CountrySelect } from '../leaderboard/country-select';
-import { FindProfile } from '../leaderboard/find-profile';
+import { MeCard } from '../leaderboard/me-card';
 import { formatDate, formatNumber, plural } from '../leaderboard/format';
 import { LeaderboardGrid } from '../leaderboard/leaderboard-grid';
 import { PeriodTabs } from '../leaderboard/period-tabs';
@@ -34,7 +34,7 @@ export const routeMeta = {
 @Component({
   selector: 'app-home',
   imports: [
-    ContributorSearch, CountrySelect, FindProfile, HlmBadge, HlmButton, HlmCardImports, HlmSkeleton, LeaderboardGrid, LogoMark, NgIcon,
+    ContributorSearch, CountrySelect, HlmBadge, HlmButton, HlmCardImports, HlmSkeleton, LeaderboardGrid, LogoMark, MeCard, NgIcon,
     PageGrid, PageHero, PageSection, PeriodTabs, World,
   ],
   providers: [provideIcons({ lucideBookOpen, lucideBrushCleaning, lucideCalendar, lucideCircleDot, lucideGitPullRequest, lucideMessageCircle, lucideMessageCircleHeart, lucideRocket, lucideUsers, lucideWrench })],
@@ -47,7 +47,8 @@ export const routeMeta = {
         <a hlmBtn href="#how-it-works">How the score works</a>
         <a hlmBtn variant="outline" href="https://github.com/angular/angular/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">How to contribute</a>
       </ng-container>
-      <app-find-profile heroAside [top]="board()?.items?.slice(0, 5) ?? []" [total]="board()?.total ?? 0" />
+      <!-- @container: the card's height follows its own width -->
+      <div heroAside class="@container"><app-me-card /></div>
     </app-page-hero>
 
     <app-page-section sectionId="leaderboard" [flush]="true">

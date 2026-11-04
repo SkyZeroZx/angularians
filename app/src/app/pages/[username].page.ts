@@ -17,7 +17,6 @@ import {
   simpleBluesky, simpleFacebook, simpleGithub, simpleInstagram, simpleMastodon, simpleNpm, simpleReddit, simpleThreads, simpleTwitch, simpleX,
   simpleYoutube,
 } from '@ng-icons/simple-icons';
-import { HlmDialogImports } from '@spartan-ng/helm/dialog';
 import { injectParams } from 'ngxtension/inject-params';
 import { injectQueryParams } from 'ngxtension/inject-query-params';
 import { HlmButton } from '@spartan-ng/helm/button';
@@ -29,7 +28,10 @@ import { Container } from '../layout/container';
 import { avatarUrl, flagUrl, formatNumber, formatPoints, plural, profileQuery } from '../leaderboard/format';
 import { PeriodTabs } from '../leaderboard/period-tabs';
 import { packageLabel } from '../profile/packages';
-import { ScoreBreakdown } from '../profile/score-breakdown';
+import { ScoreDialog } from '../profile/score-dialog';
+import { Share } from '../profile/share';
+import { AuthService } from '../auth/auth.service';
+import { SITE_URL } from '../site';
 
 export const routeMeta = {
   title: 'Contributor · Angularians',
@@ -53,7 +55,7 @@ const SINCE = new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric'
 
 @Component({
   selector: 'app-profile',
-  imports: [AngularLogo, Container, HlmButton, HlmDialogImports, HlmSkeleton, HlmTooltip, NgIcon, NgTemplateOutlet, PeriodTabs, RouterLink, ScoreBreakdown],
+  imports: [AngularLogo, Container, HlmButton, HlmSkeleton, HlmTooltip, NgIcon, NgTemplateOutlet, PeriodTabs, RouterLink, ScoreDialog, Share],
   providers: [provideIcons({
     lucideArrowLeft, lucideArrowUpRight, lucideAward, lucideCalendar, lucideCircleDot, lucideGitPullRequest, lucideGlobe, lucideInfo,
     lucideBadgeCheck, lucideChevronDown, lucideChevronUp, lucideCrown, lucideFileCode, lucideLink, lucideLinkedin, lucideMessageCircle,
@@ -100,22 +102,7 @@ const SINCE = new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric'
                 <span class="text-muted-foreground" aria-hidden="true">·</span>
                 <span class="inline-flex items-center gap-1">
                   <strong class="font-semibold">{{ number(current().score) }}</strong> pts
-                  <hlm-dialog>
-                    <button hlmDialogTrigger hlmBtn variant="ghost" size="icon-xs" type="button" aria-label="Show score breakdown" class="text-muted-foreground">
-                      <ng-icon name="lucideInfo" aria-hidden="true" />
-                    </button>
-                    <hlm-dialog-content *hlmDialogPortal class="max-h-[90dvh] overflow-y-auto sm:max-w-lg">
-                      <hlm-dialog-header>
-                        <h2 hlmDialogTitle>How is the score calculated?</h2>
-                        <p hlmDialogDescription>Each contribution type has a weight. Merged PRs weigh the most.</p>
-                      </hlm-dialog-header>
-                      <div class="my-2 flex flex-col items-center gap-1 rounded-md bg-muted/60 py-4">
-                        <span class="text-4xl font-bold tabular-nums">{{ number(current().score) }}</span>
-                        <span class="text-sm text-muted-foreground">total points {{ phrase(period()) }}</span>
-                      </div>
-                      <app-score-breakdown [stats]="current()" />
-                    </hlm-dialog-content>
-                  </hlm-dialog>
+                  <app-score-dialog [stats]="current()" [phrase]="phrase(period())" />
                 </span>
               </p>
               <p class="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
@@ -147,6 +134,10 @@ const SINCE = new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric'
                     </li>
                   }
                 </ul>
+              }
+              <!-- Your own profile: share it (the period on screen). In the browser only: the page is cached for everyone. -->
+              @if (isOwner()) {
+                <app-share class="hidden lg:flex" [username]="person.username" [period]="period()" [periods]="available()" />
               }
             </div>
           </div>
@@ -304,11 +295,17 @@ export default class Profile {
   private readonly meta = inject(Meta);
   private readonly document = inject(DOCUMENT);
   private readonly response = injectResponse();
+  private readonly auth = inject(AuthService);
 
   protected readonly username = injectParams(params => String(params['username'] ?? ''));
   private readonly requested = injectQueryParams(params => (isPeriod(params['period']) ? (params['period'] as Period) : null));
   /** Every period is in the profile: switching period needs no request. */
   protected readonly profile = injectServerFn(getContributor, () => ({ username: this.username() }));
+  /** Signed in as this contributor (by GitHub id). */
+  protected readonly isOwner = computed(() => {
+    const me = this.auth.state()?.user;
+    return !!me && me.githubId === this.profile.value()?.githubId;
+  });
 
   protected readonly available = computed(() => this.profile.value()?.periods.map(row => row.period) ?? ['all']);
   /** `?period=` when the contributor contributed in it, all time otherwise. */
@@ -455,7 +452,13 @@ export default class Profile {
     this.meta.updateTag({ name: 'description', content: description });
     this.meta.updateTag({ property: 'og:title', content: title });
     this.meta.updateTag({ property: 'og:description', content: description });
-    this.meta.updateTag({ property: 'og:image', content: avatarUrl(person.githubId, 200) });
+    // The Angularian card of the period on screen: 1200×630, a large preview on X, LinkedIn, Slack…
+    const card = `${SITE_URL}/${person.username}/card.png${this.period() === 'all' ? '' : `?period=${this.period()}`}`;
+    this.meta.updateTag({ property: 'og:image', content: card });
+    this.meta.updateTag({ property: 'og:image:width', content: '1200' });
+    this.meta.updateTag({ property: 'og:image:height', content: '630' });
+    this.meta.updateTag({ name: 'twitter:card', content: 'summary_large_image' });
+    this.meta.updateTag({ name: 'twitter:image', content: card });
     let canonical = this.document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');
     if (!canonical) {
       canonical = this.document.createElement('link');
