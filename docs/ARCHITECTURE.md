@@ -42,7 +42,11 @@ http-only cookie; GitHub's access token is used once, to ask who signed in. The 
 | `GITHUB_CLIENT_SECRET` | One of its client secrets |
 | `SESSION_SECRET` | 32 characters or more, to seal the cookie |
 
-The App's callback URL is `https://angularians.dev/api/auth/callback`.
+The App's callback URL is `https://angularians.dev/api/auth/callback`. To sign in locally, add `http://localhost:4202/api/auth/callback` as well.
+
+The App must be public: GitHub answers 404 to everyone but its owner when it is private.
+
+Signing in from the home page ends on your profile, or back on the home page if you have no contributions. From any other page, it ends on that page.
 
 ## Public API
 

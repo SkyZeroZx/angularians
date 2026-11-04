@@ -33,5 +33,13 @@ export default defineEventHandler(async (event) => {
   const returnTo = session.data.returnTo
   await session.update({ githubId: user.id, login: user.login, state: undefined, returnTo: undefined })
   setSignedInHint(event, true)
-  return sendRedirect(event, afterSignIn(returnTo, contributorsData().profileById(user.id)?.username ?? null), 302)
+  return sendRedirect(event, afterSignIn(returnTo, contributorUsername(user.id)), 302)
 })
+
+function contributorUsername(githubId: number): string | null {
+  try {
+    return contributorsData().profileById(githubId)?.username ?? null
+  } catch {
+    return null
+  }
+}
