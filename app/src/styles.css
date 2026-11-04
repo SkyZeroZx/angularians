@@ -4,6 +4,8 @@
 @import "tailwindcss/utilities.css";
 
 @import "@spartan-ng/brain/hlm-tailwind-preset.css";
+/* Inter, self-hosted (SIL Open Font License), like nuxt.com */
+@import "@fontsource-variable/inter";
 
 /*
  * Spartan's zinc theme, with an Angular-inspired accent (red to magenta) as the primary color.
@@ -13,10 +15,7 @@
 :root {
   color-scheme: light;
 
-  --font-sans:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
-    Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-    "Segoe UI Symbol", "Noto Color Emoji";
+  --font-sans: "Inter Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);

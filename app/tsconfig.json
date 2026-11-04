@@ -41,7 +41,8 @@
       "@spartan-ng/helm/card": ["./src/ui/card/src/index.ts"],
       "@spartan-ng/helm/kbd": ["./src/ui/kbd/src/index.ts"],
       "@spartan-ng/helm/progress": ["./src/ui/progress/src/index.ts"],
-      "@spartan-ng/helm/separator": ["./src/ui/separator/src/index.ts"]
+      "@spartan-ng/helm/separator": ["./src/ui/separator/src/index.ts"],
+      "@spartan-ng/helm/dialog": ["./src/ui/dialog/src/index.ts"]
     }
   },
   "angularCompilerOptions": {

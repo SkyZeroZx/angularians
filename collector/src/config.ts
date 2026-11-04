@@ -6,6 +6,8 @@ export interface Config {
   /** Only PRs closed and commits made since then: a test run, its files are marked partial. */
   since: Date | null
   pulls: 'rest' | 'search'
+  /** Issues, conversation comments and inline review comments. Off: landed PRs only (as in v1). */
+  activity: boolean
   profiles: boolean
   outputDir: string
   cacheDir: string
@@ -31,8 +33,9 @@ export function parseRepos(value: string): Config['repos'] {
 }
 
 /**
- * `node src/main.ts [--since=90d] [--pulls=rest|search] [--no-profiles] [--out=dir] [--repos=a/b,c/d]`,
- * or the same as env vars: COLLECT_SINCE, COLLECT_PULLS, COLLECT_PROFILES=false, CONTRIBUTORS_OUTPUT_DIR, COLLECT_REPOS.
+ * `node src/main.ts [--since=90d] [--pulls=rest|search] [--no-activity] [--no-profiles] [--out=dir] [--repos=a/b,c/d]`,
+ * or the same as env vars: COLLECT_SINCE, COLLECT_PULLS, COLLECT_ACTIVITY=false, COLLECT_PROFILES=false,
+ * CONTRIBUTORS_OUTPUT_DIR, COLLECT_REPOS.
  */
 export function parseConfig(argv: string[], env: NodeJS.ProcessEnv, now = new Date()): Config {
   const flags = new Map<string, string>()
@@ -43,7 +46,7 @@ export function parseConfig(argv: string[], env: NodeJS.ProcessEnv, now = new Da
     if (!match) throw new Error(`Unknown argument "${arg}"`)
     flags.set(match[2]!, match[1] ? 'false' : match[3] ?? 'true')
   }
-  const known = new Set(['since', 'pulls', 'profiles', 'out', 'repos'])
+  const known = new Set(['since', 'pulls', 'activity', 'profiles', 'out', 'repos'])
   for (const flag of flags.keys()) if (!known.has(flag)) throw new Error(`Unknown flag --${flag}`)
 
   const pulls = flags.get('pulls') ?? env['COLLECT_PULLS'] ?? 'rest'
@@ -53,6 +56,7 @@ export function parseConfig(argv: string[], env: NodeJS.ProcessEnv, now = new Da
     repos: parseRepos(flags.get('repos') ?? env['COLLECT_REPOS'] ?? 'angular/angular'),
     since: since ? parseSince(since, now) : null,
     pulls,
+    activity: (flags.get('activity') ?? env['COLLECT_ACTIVITY'] ?? 'true') !== 'false',
     profiles: (flags.get('profiles') ?? env['COLLECT_PROFILES'] ?? 'true') !== 'false',
     outputDir: resolve(flags.get('out') ?? env['CONTRIBUTORS_OUTPUT_DIR'] ?? `${ROOT}data`),
     cacheDir: resolve(env['COLLECT_CACHE_DIR'] ?? `${ROOT}.cache`),

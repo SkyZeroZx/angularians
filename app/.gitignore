@@ -57,3 +57,6 @@ src/server/data/bundle.generated.json
 
 # Netlify function, written by the build on Netlify
 /netlify
+
+# Copied from circle-flags by scripts/copy-flags.ts
+/public/flags

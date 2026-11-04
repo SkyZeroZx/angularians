@@ -24,21 +24,51 @@ export interface LandedPullRequest {
   number: number
   author: GitHubUser
   type: PullRequestType
+  /** The packages named in the title, `fix(router): …` → `['router']`. Empty without a scope. */
+  scopes: string[]
   /** ISO date: GitHub's `merged_at`, or the date of its `PR Close #N` commit on the main branch. */
   landedAt: string
+}
+
+/** One line of `packages.json`: the packages a contributor's merged PRs touched, all time, most first. */
+export interface PackagesRecord {
+  githubId: number
+  packages: Array<{ name: string, pullRequests: number }>
+}
+
+/** One line of `team.json`: a public member of the GitHub organization of the repository. */
+export interface TeamRecord {
+  githubId: number
+  username: string
 }
 
 /**
  * One line of `contributors.json` (all time) or `contributors-<period>.json`, as the collector writes it.
  * Sorted by score, then username.
  */
-export interface ContributorRecord {
+export interface ContributorRecord extends ActivityCounts {
   githubId: number
   username: string
   score: number
   pullRequests: PullRequestCounts
-  /** ISO date of the first landed PR, across all periods. `null` when unknown. */
+  /** ISO date of the first counted contribution (landed PR, issue, comment or review comment). `null` when unknown. */
   firstContributionAt: string | null
+}
+
+/** What a contributor did besides landing PRs, in one period. */
+export interface ActivityCounts {
+  /** Issues opened (not PRs). */
+  issues: number
+  /** Of those: closed as completed, or 3+ reactions, or 5+ comments. */
+  helpfulIssues: number
+  /** Conversation comments on issues and PRs. */
+  comments: number
+  /** Of those: 3+ reactions. */
+  helpfulComments: number
+  /** Inline comments on the code of PRs. */
+  reviewComments: number
+  /** Received on the contributor's issues, PRs and comments, counted on the day of the item. */
+  reactions: number
 }
 
 /** A contributor's stats over one period, ranked. */
@@ -71,13 +101,17 @@ export interface ProfileRecord {
   country: string | null
 }
 
-/** `/[username]`: all-time stats, plus every period the contributor has landed PRs in. */
+/** `/[username]`: all-time stats, plus every period the contributor contributed in. */
 export interface ContributorProfile extends Contributor {
   periods: ContributorPeriodStats[]
   name: string | null
   website: string | null
   socialAccounts: SocialAccount[]
   country: string | null
+  /** The packages the contributor's merged PRs named, all time, most first. */
+  packages: Array<{ name: string, pullRequests: number }>
+  /** A public member of the organization of the repository (the Angular team badge). */
+  team: boolean
 }
 
 /** A leaderboard row. */
@@ -99,6 +133,10 @@ export interface LeaderboardPage {
   total: number
   /** PRs landed in the period (and country). */
   landedPullRequests: number
+  /** Issues, conversation comments and review comments made in the period (and country). */
+  issues: number
+  comments: number
+  reviewComments: number
   items: ContributorSummary[]
   /** When the data was collected, ISO date. */
   collectedAt: string | null

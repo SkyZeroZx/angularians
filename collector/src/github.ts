@@ -17,7 +17,10 @@ export class GitHubError extends Error {
   }
 }
 
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+/** Tests set `scale` to 0 to retry without waiting. */
+export const retryTiming = { scale: 1 }
+
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms * retryTiming.scale))
 
 function headers(token: string | undefined): Record<string, string> {
   return {
@@ -66,8 +69,26 @@ export async function request(url: string, init: RequestInit = {}, token = proce
   }
 }
 
+/**
+ * A JSON response and its headers. The body is read inside the retries: on a long run GitHub sometimes closes
+ * the connection mid-body ("other side closed"), which `fetch` only reports while reading it.
+ */
+export async function fetchJson<T>(url: string, init: RequestInit = {}): Promise<{ data: T, headers: Headers }> {
+  for (let attempt = 1; ; attempt++) {
+    const response = await request(url, init)
+    try {
+      return { data: JSON.parse(await response.text()) as T, headers: response.headers }
+    }
+    catch (error) {
+      if (attempt >= MAX_ATTEMPTS) throw error
+      console.warn(`Reading ${url} failed (${error instanceof Error ? error.message : error}), retrying`)
+      await sleep(2000 * 2 ** attempt)
+    }
+  }
+}
+
 export async function getJson<T>(url: string): Promise<T> {
-  return await (await request(url)).json() as T
+  return (await fetchJson<T>(url)).data
 }
 
 /** The `rel="next"` URL of a `Link` header. */
@@ -83,14 +104,13 @@ export function nextLink(link: string | null): string | null {
 export async function* paginate<T>(url: string): AsyncGenerator<T[]> {
   let next: string | null = url
   while (next) {
-    const response = await request(next)
-    yield await response.json() as T[]
-    next = nextLink(response.headers.get('link'))
+    const { data, headers } = await fetchJson<T[]>(next)
+    yield data
+    next = nextLink(headers.get('link'))
   }
 }
 
 export async function graphql<T>(query: string, variables: Record<string, unknown>): Promise<{ data: T | null, errors?: Array<{ type?: string, message?: string }> }> {
   if (!process.env['GITHUB_TOKEN']) throw new GitHubError(401, 'GraphQL needs GITHUB_TOKEN')
-  const response = await request('/graphql', { method: 'POST', body: JSON.stringify({ query, variables }) })
-  return await response.json() as { data: T | null, errors?: Array<{ type?: string, message?: string }> }
+  return (await fetchJson<{ data: T | null, errors?: Array<{ type?: string, message?: string }> }>('/graphql', { method: 'POST', body: JSON.stringify({ query, variables }) })).data
 }

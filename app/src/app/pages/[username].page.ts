@@ -1,7 +1,7 @@
 // Ported from nuxt.com `app/pages/nuxters/[username].vue` (MIT, Copyright (c) 2022-2023 NuxtLabs).
 // Without the Nuxt-only parts: modules, blog posts, hackathons, the share card and the signed-in owner view.
-import { DOCUMENT } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, effect, inject } from '@angular/core';
+import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { Router, RouterLink } from '@angular/router';
 import { injectServerFn, type RouteMeta } from '@analogjs/router';
@@ -9,32 +9,64 @@ import { injectResponse } from '@analogjs/router/tokens';
 import { countryName, DEFAULT_PERIOD, isPeriod, periodPhrase, type ContributorProfile, type Period } from '@angularians/shared';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
-  lucideArrowLeft, lucideArrowUpRight, lucideAward, lucideCalendar, lucideGithub, lucideGitPullRequest, lucideGlobe, lucideLink, lucideMapPin,
+  lucideArrowLeft, lucideArrowUpRight, lucideAward, lucideCalendar, lucideCircleDot, lucideGitPullRequest, lucideGlobe, lucideInfo,
+  lucideBadgeCheck, lucideChevronDown, lucideChevronUp, lucideCrown, lucideFileCode, lucideLink, lucideLinkedin, lucideMapPin, lucideMessageCircle,
+  lucidePackage, lucideSmilePlus, lucideTrophy,
 } from '@ng-icons/lucide';
+import {
+  simpleBluesky, simpleFacebook, simpleGithub, simpleInstagram, simpleMastodon, simpleNpm, simpleReddit, simpleThreads, simpleTwitch, simpleX,
+  simpleYoutube,
+} from '@ng-icons/simple-icons';
+import { HlmDialogImports } from '@spartan-ng/helm/dialog';
 import { injectParams } from 'ngxtension/inject-params';
 import { injectQueryParams } from 'ngxtension/inject-query-params';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import { HlmTooltip } from '@spartan-ng/helm/tooltip';
 import { getContributor } from '../data/contributors.server';
+import { AngularLogo } from '../layout/angular-logo';
 import { Container } from '../layout/container';
 import { avatarUrl, formatNumber, formatPoints, plural, profileQuery } from '../leaderboard/format';
 import { PeriodTabs } from '../leaderboard/period-tabs';
+import { packageLabel } from '../profile/packages';
 import { ScoreBreakdown } from '../profile/score-breakdown';
 
 export const routeMeta = {
   title: 'Contributor · Angularians',
 } satisfies RouteMeta;
 
+/** Links set on a GitHub profile, by provider (`generic` and unknown ones: a link icon). */
+const SOCIAL_ICONS: Record<string, string> = {
+  twitter: 'simpleX',
+  bluesky: 'simpleBluesky',
+  linkedin: 'lucideLinkedin',
+  mastodon: 'simpleMastodon',
+  youtube: 'simpleYoutube',
+  twitch: 'simpleTwitch',
+  instagram: 'simpleInstagram',
+  facebook: 'simpleFacebook',
+  threads: 'simpleThreads',
+  reddit: 'simpleReddit',
+  npm: 'simpleNpm',
+};
 const SINCE = new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' });
 const REPO = 'angular/angular';
 
 @Component({
   selector: 'app-profile',
-  imports: [Container, HlmButton, HlmSkeleton, HlmTooltip, NgIcon, PeriodTabs, RouterLink, ScoreBreakdown],
-  providers: [provideIcons({ lucideArrowLeft, lucideArrowUpRight, lucideAward, lucideCalendar, lucideGithub, lucideGitPullRequest, lucideGlobe, lucideLink, lucideMapPin })],
+  imports: [AngularLogo, Container, HlmButton, HlmDialogImports, HlmSkeleton, HlmTooltip, NgIcon, NgTemplateOutlet, PeriodTabs, RouterLink, ScoreBreakdown],
+  providers: [provideIcons({
+    lucideArrowLeft, lucideArrowUpRight, lucideAward, lucideCalendar, lucideCircleDot, lucideGitPullRequest, lucideGlobe, lucideInfo,
+    lucideBadgeCheck, lucideChevronDown, lucideChevronUp, lucideCrown, lucideFileCode, lucideLink, lucideLinkedin, lucideMapPin, lucideMessageCircle,
+    lucidePackage, lucideSmilePlus, lucideTrophy,
+    simpleBluesky, simpleFacebook, simpleGithub, simpleInstagram, simpleMastodon, simpleNpm, simpleReddit, simpleThreads, simpleTwitch, simpleX,
+    simpleYoutube,
+  })],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { class: 'relative block isolate' },
   template: `
+    <!-- A soft glow of the brand colour behind the top of the profile, like the Nuxters pages -->
+    <div class="pointer-events-none absolute inset-x-0 top-0 -z-10 h-96 bg-linear-to-b from-primary/10 to-transparent" aria-hidden="true"></div>
     <app-container class="pt-8">
       <a hlmBtn variant="link" class="px-0" routerLink="/" [queryParams]="backQuery()">
         <ng-icon name="lucideArrowLeft" aria-hidden="true" />All contributors
@@ -69,7 +101,25 @@ const REPO = 'angular/angular';
               <p class="flex flex-wrap items-center gap-x-3 gap-y-1 text-lg tabular-nums">
                 <span>#{{ number(current().rank) }} {{ phrase(period()) }}</span>
                 <span class="text-muted-foreground" aria-hidden="true">·</span>
-                <span><strong class="font-semibold">{{ number(current().score) }}</strong> pts</span>
+                <span class="inline-flex items-center gap-1">
+                  <strong class="font-semibold">{{ number(current().score) }}</strong> pts
+                  <hlm-dialog>
+                    <button hlmDialogTrigger hlmBtn variant="ghost" size="icon-xs" type="button" aria-label="Show score breakdown" class="text-muted-foreground">
+                      <ng-icon name="lucideInfo" aria-hidden="true" />
+                    </button>
+                    <hlm-dialog-content *hlmDialogPortal class="max-h-[90dvh] overflow-y-auto sm:max-w-lg">
+                      <hlm-dialog-header>
+                        <h2 hlmDialogTitle>How is the score calculated?</h2>
+                        <p hlmDialogDescription>Each contribution type has a weight. Merged PRs weigh the most.</p>
+                      </hlm-dialog-header>
+                      <div class="my-2 flex flex-col items-center gap-1 rounded-md bg-muted/60 py-4">
+                        <span class="text-4xl font-bold tabular-nums">{{ number(current().score) }}</span>
+                        <span class="text-sm text-muted-foreground">total points {{ phrase(period()) }}</span>
+                      </div>
+                      <app-score-breakdown [stats]="current()" />
+                    </hlm-dialog-content>
+                  </hlm-dialog>
+                </span>
               </p>
               <p class="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
                 @if (person.country) {
@@ -87,69 +137,116 @@ const REPO = 'angular/angular';
                   </a>
                 }
               </p>
+              @if (badges().length) {
+                <ul class="flex flex-wrap gap-2" aria-label="Badges">
+                  @for (badge of badges(); track badge.label) {
+                    <li [class]="'inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-sm ring-1 ' + badge.style" [hlmTooltip]="badge.title">
+                      @if (badge.icon === 'angular') {
+                        <app-angular-logo class="size-4" />
+                      } @else {
+                        <ng-icon [name]="badge.icon" aria-hidden="true" />
+                      }
+                      {{ badge.label }}
+                    </li>
+                  }
+                </ul>
+              }
             </div>
           </div>
 
           <div class="flex flex-col gap-6 lg:col-span-3">
             <div class="flex lg:justify-end">
-              <app-period-tabs [period]="period()" [periods]="available()" (periodChange)="setPeriod($event)" />
+              <app-period-tabs [period]="period()" [periods]="available()" [ranks]="ranks()" label="Profile period" (periodChange)="setPeriod($event)" />
             </div>
 
-            <a
-              [href]="githubSearch(person)"
-              target="_blank"
-              rel="noopener"
-              class="group relative block rounded-xl bg-primary/5 p-6 ring-1 ring-primary/40 transition hover:bg-primary/10 hover:ring-primary"
-              [attr.aria-label]="githubLabel(person)"
-            >
-              <ng-icon name="lucideArrowUpRight" class="absolute top-5 right-5 text-muted-foreground group-hover:text-foreground" aria-hidden="true" />
-              <ng-icon name="lucideGitPullRequest" class="text-primary" size="22" aria-hidden="true" />
-              <p class="mt-3 text-4xl font-semibold tabular-nums">{{ number(current().pullRequests.all) }}</p>
-              <p class="text-primary">{{ current().pullRequests.all === 1 ? 'Landed pull request' : 'Landed pull requests' }} {{ phrase(period()) }}</p>
-              <p class="mt-1 text-sm text-muted-foreground tabular-nums">
-                {{ number(current().pullRequests.feat) }} feat · {{ number(current().pullRequests.fix) }} fix · {{ number(current().pullRequests.docs) }} docs · {{ number(current().pullRequests.chore) }} chore
-              </p>
-            </a>
+            <ul class="grid grid-cols-2 gap-4" [attr.aria-label]="'Contributions ' + phrase(period())">
+              @for (stat of stats(); track stat.key) {
+                <li>
+                  @if (stat.url) {
+                    <a
+                      [href]="stat.url"
+                      target="_blank"
+                      rel="noopener"
+                      [attr.aria-label]="stat.label"
+                      [class]="'group relative block h-full min-h-44 rounded-xl p-6 ring-1 transition ' + stat.tint"
+                    >
+                      <ng-icon name="lucideArrowUpRight" size="20" class="absolute top-6 right-6 text-muted-foreground group-hover:text-foreground" aria-hidden="true" />
+                      <ng-container [ngTemplateOutlet]="statBody" [ngTemplateOutletContext]="{ $implicit: stat }" />
+                    </a>
+                  } @else {
+                    <div [class]="'h-full min-h-44 rounded-xl p-6 ring-1 ' + stat.tint">
+                      <ng-container [ngTemplateOutlet]="statBody" [ngTemplateOutletContext]="{ $implicit: stat }" />
+                    </div>
+                  }
+                </li>
+              }
+            </ul>
+            <ng-template #statBody let-stat>
+              <ng-icon [name]="stat.icon" [class]="stat.text" size="22" aria-hidden="true" />
+              <p class="mt-6 text-4xl font-semibold tabular-nums">{{ number(stat.value) }}</p>
+              <p [class]="'mt-1 ' + stat.text">{{ stat.name }}</p>
+              <p class="mt-1 text-sm text-muted-foreground tabular-nums">{{ stat.detail }}</p>
+            </ng-template>
 
-            <section class="rounded-xl border p-6" aria-labelledby="score-title">
-              <div class="mb-5 flex items-baseline justify-between gap-4">
-                <h2 id="score-title" class="font-semibold">How the {{ number(current().score) }} points add up</h2>
-                <a routerLink="/" fragment="how-it-works" class="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">Scoring</a>
-              </div>
-              <app-score-breakdown [pullRequests]="current().pullRequests" />
-            </section>
           </div>
         </div>
       </app-container>
 
+      @if (person.packages.length) {
+        <app-container class="pb-12">
+          <section aria-labelledby="packages-title">
+            <h2 id="packages-title" class="mb-1 text-2xl font-medium tracking-tight">Contributed to</h2>
+            <p class="mb-6 text-muted-foreground">Merged PRs in {{ plural(person.packages.length, 'package', 'packages') }} of angular/angular, by PRs.</p>
+            <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              @for (item of shownPackages(); track item.name) {
+                <li class="flex items-center gap-3 rounded-lg px-3 py-2 ring-1 ring-border">
+                  <span class="grid size-9 shrink-0 place-items-center rounded-md bg-primary/10 text-primary">
+                    <ng-icon name="lucidePackage" aria-hidden="true" />
+                  </span>
+                  <span class="min-w-0 flex-1">
+                    <span class="block truncate text-sm font-medium">{{ item.name }}</span>
+                    <span class="block truncate text-xs text-muted-foreground">{{ packageLabel(item.name) }}</span>
+                  </span>
+                  <span class="text-sm tabular-nums text-muted-foreground">{{ plural(item.pullRequests, 'PR', 'PRs') }}</span>
+                </li>
+              }
+            </ul>
+            @if (person.packages.length > PACKAGES_SHOWN) {
+              <button hlmBtn variant="ghost" type="button" class="mt-4" (click)="allPackages.set(!allPackages())">
+                {{ allPackages() ? 'Show less' : 'Show all ' + person.packages.length }}
+                <ng-icon [name]="allPackages() ? 'lucideChevronUp' : 'lucideChevronDown'" aria-hidden="true" />
+              </button>
+            }
+          </section>
+        </app-container>
+      }
+
       @if (years().length > 1) {
         <app-container class="pb-16">
           <section aria-labelledby="years-title">
-            <h2 id="years-title" class="mb-4 text-2xl font-semibold tracking-tight">Year by year</h2>
-            <div class="overflow-x-auto rounded-xl border">
-              <table class="w-full text-sm tabular-nums">
-                <thead class="bg-muted/50 text-left text-muted-foreground">
-                  <tr>
-                    <th scope="col" class="px-4 py-2 font-medium">Year</th>
-                    <th scope="col" class="px-4 py-2 text-right font-medium">Rank</th>
-                    <th scope="col" class="px-4 py-2 text-right font-medium">Landed PRs</th>
-                    <th scope="col" class="px-4 py-2 text-right font-medium">Points</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y">
-                  @for (row of years(); track row.period) {
-                    <tr [class.bg-primary/5]="row.period === period()">
-                      <th scope="row" class="px-4 py-2 text-left font-medium">
-                        <a [routerLink]="[]" [queryParams]="{ period: row.period }" replaceUrl class="underline-offset-4 hover:underline">{{ row.period }}</a>
-                      </th>
-                      <td class="px-4 py-2 text-right">#{{ number(row.rank) }}</td>
-                      <td class="px-4 py-2 text-right">{{ number(row.pullRequests.all) }}</td>
-                      <td class="px-4 py-2 text-right">{{ number(row.score) }}</td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
+            <h2 id="years-title" class="mb-1 text-2xl font-medium tracking-tight">Year by year</h2>
+            <p class="mb-6 text-muted-foreground">Rank and points in every year {{ displayName() }} contributed.</p>
+            <ol class="max-w-3xl" aria-labelledby="years-title">
+              @for (row of years(); track row.period) {
+                <li>
+                  <a
+                    [routerLink]="[]"
+                    [queryParams]="{ period: row.period }"
+                    replaceUrl
+                    class="-mx-2 flex items-center gap-4 rounded-md px-2 py-2 text-sm transition-colors hover:bg-muted/60"
+                    [class.bg-muted]="row.period === period()"
+                    [attr.aria-current]="row.period === period() ? 'true' : null"
+                  >
+                    <span class="w-12 font-medium tabular-nums">{{ row.period }}</span>
+                    <span class="w-14 text-muted-foreground tabular-nums">#{{ number(row.rank) }}</span>
+                    <span class="min-w-0 flex-1">
+                      <span class="block h-1.5 rounded-full bg-primary/70" [style.width.%]="yearBar(row.score)"></span>
+                    </span>
+                    <span class="w-20 text-right tabular-nums"><strong class="font-semibold">{{ number(row.score) }}</strong>&nbsp;<span class="text-muted-foreground">pts</span></span>
+                  </a>
+                </li>
+              }
+            </ol>
           </section>
         </app-container>
       }
@@ -162,9 +259,9 @@ const REPO = 'angular/angular';
       </app-container>
     } @else {
       <app-container class="py-14">
-        <h1 class="text-3xl font-bold tracking-tight">No landed pull requests for {{ username() }}</h1>
+        <h1 class="text-3xl font-bold tracking-tight">No contributions from {{ username() }}</h1>
         <p class="mt-2 max-w-xl text-muted-foreground">
-          {{ profile.error() ? 'The profile could not be loaded. Try again in a moment.' : 'Nobody with this GitHub username has a pull request that landed in angular/angular yet, or the data has not caught up: it updates every night.' }}
+          {{ profile.error() ? 'The profile could not be loaded. Try again in a moment.' : 'Nobody with this GitHub username has a merged pull request, an issue or a comment in angular/angular yet, or the data has not caught up: it updates every night.' }}
         </p>
         <a hlmBtn class="mt-6" href="https://github.com/angular/angular/contribute" target="_blank" rel="noopener">Find a first issue</a>
       </app-container>
@@ -184,15 +281,76 @@ export default class Profile {
   protected readonly profile = injectServerFn(getContributor, () => ({ username: this.username() }));
 
   protected readonly available = computed(() => this.profile.value()?.periods.map(row => row.period) ?? ['all']);
-  /** `?period=` when the contributor has landed PRs in it, all time otherwise. */
+  /** `?period=` when the contributor contributed in it, all time otherwise. */
   protected readonly period = computed<Period>(() => {
     const requested = this.requested();
     return requested && this.available().includes(requested) ? requested : 'all';
   });
   protected readonly current = computed(() => {
     const person = this.profile.value()!;
-    return person.periods.find(row => row.period === this.period()) ?? { period: 'all', rank: person.rank, score: person.score, pullRequests: person.pullRequests };
+    return person.periods.find(row => row.period === this.period()) ?? { ...person, period: 'all' };
   });
+  /** One card per kind of contribution; the ones GitHub can search link to that search. */
+  protected readonly stats = computed(() => {
+    const person = this.profile.value()!;
+    const n = this.current();
+    const prs = n.pullRequests;
+    const search = (q: string, type: 'pullrequests' | 'issues') => `https://github.com/search?${new URLSearchParams({ q: `repo:${REPO} ${q}`, type })}`;
+    return [
+      {
+        key: 'pullRequests', icon: 'lucideGitPullRequest', value: prs.all, name: prs.all === 1 ? 'Merged PR' : 'Merged PRs',
+        detail: `${formatNumber(prs.feat)} feat · ${formatNumber(prs.fix)} fix · ${formatNumber(prs.docs)} docs · ${formatNumber(prs.chore)} chore`,
+        // GitHub shows most landed PRs as closed (PR Close): this lists all of them, landed or not.
+        url: this.githubSearch(person), label: `${this.githubLabel(person)}`,
+        tint: 'bg-primary/5 ring-primary hover:bg-primary/10', text: 'text-primary',
+      },
+      {
+        key: 'issues', icon: 'lucideCircleDot', value: n.issues, name: n.issues === 1 ? 'Issue' : 'Issues', detail: `${formatNumber(n.helpfulIssues)} helpful`,
+        url: search(`is:issue author:${person.username}`, 'issues'), label: `${plural(n.issues, 'issue', 'issues')} ${periodPhrase(this.period())}. Opens ${person.username}'s issues on GitHub`,
+        tint: 'bg-sky-500/5 ring-sky-500 hover:bg-sky-500/10', text: 'text-sky-700 dark:text-sky-400',
+      },
+      {
+        key: 'comments', icon: 'lucideMessageCircle', value: n.comments, name: n.comments === 1 ? 'Comment' : 'Comments',
+        // Inline review comments score on their own (1 pt each): their count goes with the comments.
+        detail: `${formatNumber(n.helpfulComments)} helpful · ${plural(n.reviewComments, 'review comment', 'review comments')} on code`,
+        url: search(`commenter:${person.username}`, 'issues'), label: `${plural(n.comments, 'comment', 'comments')} ${periodPhrase(this.period())}. Opens the issues and pull requests ${person.username} commented on, on GitHub`,
+        tint: 'bg-violet-500/5 ring-violet-500 hover:bg-violet-500/10', text: 'text-violet-700 dark:text-violet-400',
+      },
+      {
+        key: 'reactions', icon: 'lucideSmilePlus', value: n.reactions, name: n.reactions === 1 ? 'Reaction' : 'Reactions', detail: 'received',
+        url: null, label: '',
+        tint: 'bg-amber-500/5 ring-amber-500', text: 'text-amber-700 dark:text-amber-400',
+      },
+    ];
+  });
+  protected readonly PACKAGES_SHOWN = 12;
+  protected readonly allPackages = signal(false);
+  protected readonly shownPackages = computed(() => {
+    const packages = this.profile.value()?.packages ?? [];
+    return this.allPackages() ? packages : packages.slice(0, this.PACKAGES_SHOWN);
+  });
+  protected readonly packageLabel = packageLabel;
+  protected readonly plural = plural;
+  /** Earned from the data: the Angular team, the all-time top 10, #1 of a year, 100+ review comments. */
+  protected readonly badges = computed(() => {
+    const person = this.profile.value();
+    if (!person) return [];
+    const strong = 'bg-primary/10 text-primary ring-primary/30';
+    const neutral = 'bg-muted/50 ring-border';
+    const badges: Array<{ label: string, title: string, icon: string, style: string }> = [];
+    // The gradient Angular logo of the press kit, only to say "member of the Angular team" (the site's mark stays the A).
+    if (person.team) badges.push({ label: 'Angular team', title: 'A public member of the angular organization on GitHub', icon: 'angular', style: 'bg-[#dc087d]/10 text-foreground ring-[#dc087d]/40' });
+    if (person.rank <= 10) badges.push({ label: 'Top 10 all time', title: `#${formatNumber(person.rank)} of all time`, icon: 'lucideTrophy', style: strong });
+    for (const year of this.years().filter(row => row.rank === 1).slice(0, 3)) {
+      badges.push({ label: `#1 in ${year.period}`, title: `The top Angularian of ${year.period}`, icon: 'lucideCrown', style: strong });
+    }
+    if (person.reviewComments >= 100) badges.push({ label: 'Reviewer', title: `${formatNumber(person.reviewComments)} review comments on code`, icon: 'lucideFileCode', style: neutral });
+    return badges;
+  });
+  /** The contributor's rank in each period they contributed in, for the period tabs. */
+  protected readonly ranks = computed(() => Object.fromEntries((this.profile.value()?.periods ?? []).map(row => [row.period, row.rank])));
+  /** The bar of a year: its points against the best year's. */
+  protected readonly yearBar = (score: number) => Math.max(2, score / Math.max(1, ...this.years().map(row => row.score)) * 100);
   protected readonly years = computed(() => (this.profile.value()?.periods ?? []).filter(row => /^\d{4}$/.test(row.period)));
   /** Best rank; on a tie (#1 several years), the year with the most points. */
   protected readonly best = computed(() => this.years().reduce<ReturnType<typeof this.years>[number] | undefined>(
@@ -208,9 +366,9 @@ export default class Profile {
     // Links set on GitHub are user input: never followed by crawlers. `me` for Mastodon verification.
     const rel = 'me nofollow noopener noreferrer';
     const all = [
-      { url: `https://github.com/${person.username}`, label: `github.com/${person.username}`, icon: 'lucideGithub', rel: 'me noopener' },
+      { url: `https://github.com/${person.username}`, label: `github.com/${person.username}`, icon: 'simpleGithub', rel: 'me noopener' },
       ...(person.website ? [{ url: person.website, label: 'Website', icon: 'lucideGlobe', rel }] : []),
-      ...person.socialAccounts.map(account => ({ url: account.url, label: account.displayName, icon: 'lucideLink', rel })),
+      ...person.socialAccounts.map(account => ({ url: account.url, label: account.displayName, icon: SOCIAL_ICONS[account.provider] ?? 'lucideLink', rel })),
     ];
     // A website can also be a social account: one icon per URL, the first wins.
     return all.filter((link, index) => all.findIndex(other => other.url === link.url) === index);
@@ -246,7 +404,7 @@ export default class Profile {
 
   protected githubLabel(person: ContributorProfile): string {
     const count = this.current().pullRequests.all;
-    return `${plural(count, 'landed pull request', 'landed pull requests')} ${periodPhrase(this.period())}. Opens ${person.username}'s pull requests on GitHub`;
+    return `${plural(count, 'merged pull request', 'merged pull requests')} ${periodPhrase(this.period())}. Opens ${person.username}'s pull requests on GitHub`;
   }
 
   /** Shared links show the period on screen; the canonical URL has none, so search engines see one page per profile. */
@@ -260,7 +418,7 @@ export default class Profile {
     const title = this.period() === 'all'
       ? `${person.username}, Angularian #${formatNumber(current.rank)}`
       : `${person.username}: #${formatNumber(current.rank)} ${periodPhrase(this.period())}`;
-    const description = `${person.username} landed ${plural(current.pullRequests.all, 'pull request', 'pull requests')} in angular/angular ${periodPhrase(this.period())}: #${formatNumber(current.rank)} with ${formatPoints(current.score)}.`;
+    const description = `${person.username} merged ${plural(current.pullRequests.all, 'pull request', 'pull requests')}, opened ${plural(current.issues, 'issue', 'issues')} and wrote ${plural(current.comments + current.reviewComments, 'comment', 'comments')} in angular/angular ${periodPhrase(this.period())}: #${formatNumber(current.rank)} with ${formatPoints(current.score)}.`;
     this.title.setTitle(`${title} · Angularians`);
     this.meta.removeTag('name="robots"');
     this.meta.updateTag({ name: 'description', content: description });

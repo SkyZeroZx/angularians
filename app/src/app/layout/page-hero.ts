@@ -6,11 +6,11 @@ import { Container } from './container';
   selector: 'app-page-hero',
   imports: [Container],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'block border-b' },
+  host: { class: 'block' },
   template: `
-    <app-container class="py-16 sm:py-20">
+    <app-container class="pt-16 pb-10 sm:pt-24 sm:pb-12">
       <ng-content select="[heroHeadline]" />
-      <h1 class="text-4xl font-bold tracking-tight text-balance sm:text-5xl">
+      <h1 class="text-4xl font-medium tracking-tight text-balance sm:text-5xl">
         <ng-content select="[heroTitle]" />{{ title() }}
       </h1>
       @if (description()) {

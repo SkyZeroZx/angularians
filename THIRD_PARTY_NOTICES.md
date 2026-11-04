@@ -66,6 +66,12 @@ SOFTWARE.
 https://github.com/spartan-ng/spartan: the helm components copied into `app/src/ui/` (MIT). Two local changes are
 marked in the code: a `buttonAriaLabel` input on the select trigger, and the progress indicator filling by value / max.
 
+## The Angular logo
+
+The gradient Angular icon on the Angular team badge (`app/src/app/layout/angular-logo.ts`) comes from the Angular press
+kit, https://angular.dev/press-kit: © Google, CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). It is used
+unchanged and only to show membership of the Angular team; the Angularians mark is our own.
+
 ## Data
 
 - Country names and coordinates: [GeoNames](https://www.geonames.org), CC BY 4.0.

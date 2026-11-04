@@ -48,6 +48,16 @@ export function inferPullRequestType(title: string, labels: ReadonlyArray<{ name
   return 'feat'
 }
 
+/** `feat(core, compiler)!: …` → `core, compiler`. */
+const SCOPE_RE = /^\s*[a-z]+\(([^)]+)\)!?:/i
+
+/** The packages a PR title names, lowercased: `fix(router): …` → `['router']`. Empty without a scope. */
+export function pullRequestScopes(title: string): string[] {
+  const match = SCOPE_RE.exec(title)
+  if (!match) return []
+  return [...new Set(match[1]!.split(/[,\s]+/).map(scope => scope.trim().toLowerCase()).filter(scope => /^[a-z0-9][a-z0-9.-]*$/.test(scope)))]
+}
+
 const PR_CLOSE_RE = /^PR Close #(\d+)\s*$/gm
 
 /**
@@ -106,6 +116,7 @@ export function landedPullRequests(pulls: Iterable<PullRequestInput>, commits: I
       number: pull.number,
       author,
       type: inferPullRequestType(pull.title, pull.labels),
+      scopes: pullRequestScopes(pull.title),
       landedAt,
     })
   }

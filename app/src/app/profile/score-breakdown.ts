@@ -1,24 +1,42 @@
 // Ported from nuxt.com `app/components/nuxters/NuxtersScoreBreakdown.vue` (MIT, Copyright (c) 2022-2023 NuxtLabs).
-// Inline instead of a modal; landed PRs only, no core bonus.
+// Inline instead of a modal, and no core bonus.
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core'
-import { scoreBreakdown, type PullRequestCounts } from '@angularians/shared'
+import { scoreBreakdown, type ScoredStats } from '@angularians/shared'
 import { NgIcon, provideIcons } from '@ng-icons/core'
-import { lucideBookOpen, lucideBrushCleaning, lucideRocket, lucideWrench } from '@ng-icons/lucide'
+import {
+  lucideBookOpen, lucideBrushCleaning, lucideCircleDot, lucideFileCode, lucideLightbulb, lucideMessageCircle, lucideMessageCircleHeart,
+  lucideRocket, lucideSmilePlus, lucideWrench,
+} from '@ng-icons/lucide'
 import { HlmProgressImports } from '@spartan-ng/helm/progress'
 import { formatNumber, formatPoints } from '../leaderboard/format'
 
-const ICONS: Record<string, string> = { 'rocket': 'lucideRocket', 'wrench': 'lucideWrench', 'book-open': 'lucideBookOpen', 'brush-cleaning': 'lucideBrushCleaning' }
+/** `scoreBreakdown` names Lucide icons in kebab case: their `@ng-icons/lucide` names. */
+const ICONS: Record<string, string> = {
+  'rocket': 'lucideRocket',
+  'wrench': 'lucideWrench',
+  'book-open': 'lucideBookOpen',
+  'brush-cleaning': 'lucideBrushCleaning',
+  'lightbulb': 'lucideLightbulb',
+  'message-circle-heart': 'lucideMessageCircleHeart',
+  'circle-dot': 'lucideCircleDot',
+  'file-code': 'lucideFileCode',
+  'message-circle': 'lucideMessageCircle',
+  'smile-plus': 'lucideSmilePlus',
+}
 
-/** One row per PR type: count × points = total, with a bar on one scale so the rows compare. */
+/** One row per contribution type: count × points = total, with a bar on one scale so the rows compare. */
 @Component({
   selector: 'app-score-breakdown',
   imports: [HlmProgressImports, NgIcon],
-  providers: [provideIcons({ lucideBookOpen, lucideBrushCleaning, lucideRocket, lucideWrench })],
+  providers: [provideIcons({
+    lucideBookOpen, lucideBrushCleaning, lucideCircleDot, lucideFileCode, lucideLightbulb, lucideMessageCircle, lucideMessageCircleHeart,
+    lucideRocket, lucideSmilePlus, lucideWrench,
+  })],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ul class="flex flex-col gap-4">
-      @for (row of rows(); track row.type) {
-        <li class="flex flex-col gap-1.5">
+      @for (row of rows(); track row.key) {
+        <li class="flex flex-col gap-1.5" [class.opacity-50]="!row.amount">
           <div class="flex items-center justify-between gap-2 text-sm">
             <span class="flex items-center gap-2">
               <ng-icon [name]="icon(row.icon)" class="text-muted-foreground" aria-hidden="true" />
@@ -37,9 +55,9 @@ const ICONS: Record<string, string> = { 'rocket': 'lucideRocket', 'wrench': 'luc
   `,
 })
 export class ScoreBreakdown {
-  readonly pullRequests = input.required<PullRequestCounts>()
+  readonly stats = input.required<ScoredStats>()
 
-  protected readonly rows = computed(() => scoreBreakdown(this.pullRequests()))
+  protected readonly rows = computed(() => scoreBreakdown(this.stats()))
   protected readonly max = computed(() => Math.max(1, ...this.rows().map(row => row.total)))
   protected readonly icon = (name: string) => ICONS[name] ?? 'lucideRocket'
   protected readonly number = formatNumber

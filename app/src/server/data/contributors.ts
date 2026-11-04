@@ -36,6 +36,8 @@ export class ContributorsData {
   /** Period → lowercased username → contributor */
   private readonly byUsername = new Map<Period, Map<string, Contributor>>()
   private readonly profiles: Map<number, ProfileRecord>
+  private readonly packages: Map<number, Array<{ name: string, pullRequests: number }>>
+  private readonly team: Set<number>
 
   constructor(bundle: DataBundle) {
     this.byPeriod = new Map(Object.entries(bundle.periods))
@@ -43,6 +45,8 @@ export class ContributorsData {
     this.periods = sortPeriods([...this.byPeriod].filter(([, rows]) => rows.length).map(([period]) => period))
     this.collectedAt = bundle.meta?.collectedAt ?? null
     this.profiles = new Map(bundle.profiles.map(profile => [profile.githubId, profile]))
+    this.packages = new Map((bundle.packages ?? []).map(record => [record.githubId, record.packages]))
+    this.team = new Set((bundle.team ?? []).map(member => member.githubId))
     for (const [period, rows] of this.byPeriod) {
       this.byUsername.set(period, new Map(rows.map(row => [row.username.toLowerCase(), row])))
     }
@@ -68,6 +72,9 @@ export class ContributorsData {
       periods: this.periods,
       total: rows.length,
       landedPullRequests: rows.reduce((sum, row) => sum + row.pullRequests.all, 0),
+      issues: rows.reduce((sum, row) => sum + row.issues, 0),
+      comments: rows.reduce((sum, row) => sum + row.comments, 0),
+      reviewComments: rows.reduce((sum, row) => sum + row.reviewComments, 0),
       items: rows.slice(start, start + size).map(toSummary),
       collectedAt: this.collectedAt,
     }
@@ -83,12 +90,16 @@ export class ContributorsData {
       ...allTime,
       periods: this.periods.flatMap((period) => {
         const row = this.byUsername.get(period)?.get(key)
-        return row ? [{ period, rank: row.rank, score: row.score, pullRequests: row.pullRequests }] : []
+        if (!row) return []
+        const { githubId: _id, username: _username, firstContributionAt: _first, ...stats } = row
+        return [{ period, ...stats }]
       }),
       name: links?.name ?? null,
       website: links?.website ?? null,
       socialAccounts: links?.socialAccounts ?? [],
       country: links?.country ?? null,
+      packages: this.packages.get(allTime.githubId) ?? [],
+      team: this.team.has(allTime.githubId),
     }
   }
 

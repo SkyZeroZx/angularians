@@ -4,11 +4,12 @@ import type { DataBundle } from './bundle'
 import { ContributorsData, MAX_PAGE_SIZE } from './contributors'
 import { ContributorInput, LeaderboardInput, MapInput, queryNumber, SearchInput } from './schemas'
 
-const row = (githubId: number, username: string, rank: number, feat: number): Contributor => ({
-  githubId, username, rank, score: feat * 7, pullRequests: { feat, fix: 0, docs: 0, chore: 0, all: feat }, firstContributionAt: '2016-01-01T00:00:00.000Z',
+const row = (githubId: number, username: string, rank: number, feat: number, comments = 0): Contributor => ({
+  githubId, username, rank, score: feat * 7, pullRequests: { feat, fix: 0, docs: 0, chore: 0, all: feat },
+  issues: 1, helpfulIssues: 0, comments, helpfulComments: 0, reviewComments: 2, reactions: 0, firstContributionAt: '2016-01-01T00:00:00.000Z',
 })
 
-const all = [row(1, 'crisbeto', 1, 50), row(2, 'Cristina', 2, 40), row(3, 'atscott', 3, 30), row(4, 'bob', 4, 20), row(5, 'christian', 5, 10)]
+const all = [row(1, 'crisbeto', 1, 50, 7), row(2, 'Cristina', 2, 40), row(3, 'atscott', 3, 30), row(4, 'bob', 4, 20), row(5, 'christian', 5, 10)]
 const bundle: DataBundle = {
   meta: { collectedAt: '2026-11-03T05:13:36.895Z', partial: false, repos: ['angular/angular'] },
   periods: {
@@ -22,6 +23,8 @@ const bundle: DataBundle = {
     { githubId: 2, username: 'Cristina', name: null, website: 'https://example.com/', socialAccounts: [], country: 'TR' },
     { githubId: 4, username: 'bob', name: 'Robert Builder', website: null, socialAccounts: [], country: 'TR' },
   ],
+  packages: [{ githubId: 1, packages: [{ name: 'core', pullRequests: 40 }, { name: 'router', pullRequests: 10 }] }],
+  team: [{ githubId: 1, username: 'crisbeto' }],
 }
 const data = new ContributorsData(bundle)
 
@@ -34,7 +37,7 @@ describe('ContributorsData', () => {
   it('pages the leaderboard and totals the landed PRs', () => {
     const page = data.leaderboard({ period: 'all', page: 2, pageSize: 2 })
     expect(page.items.map(item => item.username)).toEqual(['atscott', 'bob'])
-    expect(page).toMatchObject({ period: 'all', country: null, total: 5, landedPullRequests: 150, collectedAt: '2026-11-03T05:13:36.895Z' })
+    expect(page).toMatchObject({ period: 'all', country: null, total: 5, landedPullRequests: 150, issues: 5, comments: 7, reviewComments: 10, collectedAt: '2026-11-03T05:13:36.895Z' })
     expect(data.leaderboard({ period: 'all', page: 99 }).items).toEqual([])
     expect(data.leaderboard({ period: 'all', pageSize: 10_000 }).items).toHaveLength(Math.min(5, MAX_PAGE_SIZE))
     expect(data.leaderboard({ period: '2014' })).toMatchObject({ total: 0, items: [] })
@@ -52,9 +55,11 @@ describe('ContributorsData', () => {
       rank: 1,
       name: 'Kristiyan',
       country: 'BG',
-      periods: [{ period: '12m', rank: 2, score: 35 }, { period: 'all', rank: 1, score: 350 }],
+      team: true,
+      packages: [{ name: 'core', pullRequests: 40 }, { name: 'router', pullRequests: 10 }],
+      periods: [{ period: '12m', rank: 2, score: 35, issues: 1, reviewComments: 2 }, { period: 'all', rank: 1, score: 350, comments: 7 }],
     })
-    expect(data.profile('atscott')).toMatchObject({ name: null, country: null, socialAccounts: [] })
+    expect(data.profile('atscott')).toMatchObject({ name: null, country: null, socialAccounts: [], packages: [], team: false })
     expect(data.profile('nobody')).toBeNull()
   })
 

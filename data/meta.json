@@ -1,17 +1,23 @@
 {
-  "collectedAt": "2026-11-03T13:20:56.334Z",
+  "collectedAt": "2026-11-03T21:30:13.433Z",
   "repos": [
     "angular/angular"
   ],
   "partial": false,
   "since": null,
-  "contributors": 2196,
+  "activity": true,
+  "contributors": 30837,
   "landedPullRequests": 24028,
-  "profiles": 2017,
-  "pulls": 38440,
+  "profiles": 23998,
+  "team": 30,
+  "pulls": 38446,
   "commits": 39198,
   "prCloseCommits": 24570,
   "multiPrCommits": 45,
   "landedMerged": 7318,
-  "landedByPrClose": 16710
+  "landedByPrClose": 16710,
+  "issues": 31116,
+  "comments": 319787,
+  "reviewComments": 101887,
+  "activityPages": 5884
 }

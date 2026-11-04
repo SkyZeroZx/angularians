@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { inferPullRequestType, landedPullRequests, prCloseNumbers, type PullRequestInput } from '../src/pull-requests.ts'
+import { inferPullRequestType, landedPullRequests, prCloseNumbers, pullRequestScopes, type PullRequestInput } from '../src/pull-requests.ts'
 import { isBotAccount } from '../src/bots.ts'
 
 describe('inferPullRequestType', () => {
@@ -63,7 +63,7 @@ const pull = (number: number, title: string, author: PullRequestInput['user'], m
 describe('landedPullRequests', () => {
   it('counts PRs GitHub marks merged, on their merge date', () => {
     expect(landedPullRequests([pull(1, 'feat: a', user('alice', 1), '2025-03-01T10:00:00Z')], [])).toEqual([
-      { number: 1, author: user('alice', 1), type: 'feat', landedAt: '2025-03-01T10:00:00Z' },
+      { number: 1, author: user('alice', 1), type: 'feat', scopes: [], landedAt: '2025-03-01T10:00:00Z' },
     ])
   })
 
@@ -73,7 +73,7 @@ describe('landedPullRequests', () => {
       { message: 'fix(core): first commit\n\nPR Close #2', date: '2019-05-01T00:00:00Z' },
     ]
     expect(landedPullRequests([pull(2, 'fix(core): two commits', user('bob', 2))], commits)).toEqual([
-      { number: 2, author: user('bob', 2), type: 'fix', landedAt: '2019-05-01T00:00:00.000Z' },
+      { number: 2, author: user('bob', 2), type: 'fix', scopes: ['core'], landedAt: '2019-05-01T00:00:00.000Z' },
     ])
   })
 
@@ -107,5 +107,20 @@ describe('isBotAccount', () => {
 
   it.each(['alice', 'robot-fan', 'botanist'])('%s is not a bot', (login) => {
     expect(isBotAccount(login)).toBe(false)
+  })
+})
+
+describe('pullRequestScopes', () => {
+  it.each([
+    ['fix(router): keep the query params', ['router']],
+    ['feat(core, compiler): input signals', ['core', 'compiler']],
+    ['feat(Core)!: drop zone.js', ['core']],
+    ['docs(docs-infra): new sidebar', ['docs-infra']],
+    ['refactor(zone.js): clean up', ['zone.js']],
+    ['build: update to bazel 7', []],
+    ['Revert "fix(router): x"', []],
+    ['fix(): empty', []],
+  ] as const)('%s → %j', (title, scopes) => {
+    expect(pullRequestScopes(title)).toEqual(scopes)
   })
 })

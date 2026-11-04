@@ -5,6 +5,11 @@ on:
     # Nightly, off the hour (runs at :00 are often delayed).
     - cron: '17 3 * * *'
   workflow_dispatch:
+    inputs:
+      since:
+        description: 'Test run: only activity since then (e.g. 30d or 2026-10-01). Uploads the files as an artifact, commits nothing.'
+        required: false
+        default: ''
 
 permissions:
   contents: write
@@ -16,21 +21,38 @@ concurrency:
 jobs:
   collect:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # A full run (landed PRs, issues, ~500,000 comments, review comments) takes about 2 hours at 5,000 requests an hour.
+    timeout-minutes: 300
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           # 24: runs the TypeScript sources directly (type stripping).
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @angularians/collector collect
+      - name: Check the token
         env:
-          # The built-in token: 1,000 requests an hour, a full run needs about 450 plus a few dozen GraphQL points.
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COLLECT_TOKEN: ${{ secrets.COLLECT_TOKEN }}
+        run: |
+          if [ -z "$COLLECT_TOKEN" ]; then
+            echo "::error::The COLLECT_TOKEN secret is missing: a fine-grained personal access token with read-only access to public repositories (see collector/README.md)."
+            exit 1
+          fi
+      - name: Collect
+        run: pnpm --filter @angularians/collector collect ${{ inputs.since && format('--since={0} --out={1}/test-data', inputs.since, runner.temp) || '' }}
+        env:
+          # A personal access token: 5,000 requests an hour (the built-in token has 1,000, too few for the comments).
+          GITHUB_TOKEN: ${{ secrets.COLLECT_TOKEN }}
+      - name: Upload the test run
+        if: inputs.since
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-data
+          path: ${{ runner.temp }}/test-data
       - name: Commit the data
+        if: ${{ !inputs.since }}
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'

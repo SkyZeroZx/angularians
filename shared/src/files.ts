@@ -2,7 +2,7 @@
 // and nuxt/nuxters `saveContributors` (MIT, Copyright (c) 2022-2023 NuxtLabs, Copyright (c) 2023 Nuxt).
 import { countryCode } from './countries.ts'
 import { compareRecords, emptyCounts, score } from './scoring.ts'
-import type { Contributor, ProfileRecord, PullRequestCounts, SocialAccount } from './types.ts'
+import type { ActivityCounts, Contributor, PackagesRecord, ProfileRecord, PullRequestCounts, SocialAccount, TeamRecord } from './types.ts'
 
 /** The all-time profiles of the contributors: not a period. */
 export const PROFILES_FILE = 'profiles.json'
@@ -33,7 +33,7 @@ function text(value: unknown, max = MAX_TEXT_LENGTH): string | null {
 
 /**
  * Validate a contributor file and rank it: score, then username.
- * The score is recomputed from the PR counts, so the file cannot rank anyone higher than their PRs.
+ * The score is recomputed from the counts, so the file cannot rank anyone higher than what they did.
  * Invalid entries and duplicates are skipped, not fatal: one bad record must not block the import.
  */
 export function parseContributorsFile(data: unknown): Contributor[] {
@@ -53,13 +53,26 @@ export function parseContributorsFile(data: unknown): Contributor[] {
     const pullRequests: PullRequestCounts = { ...emptyCounts(), feat: count(prs['feat']), fix: count(prs['fix']), docs: count(prs['docs']), chore: count(prs['chore']) }
     pullRequests.all = pullRequests.feat + pullRequests.fix + pullRequests.docs + pullRequests.chore
 
+    // v1 files (landed PRs only) have none of these: they read as 0. A helpful count is never above its total.
+    const issues = count(record['issues'])
+    const comments = count(record['comments'])
+    const activity: ActivityCounts = {
+      issues,
+      helpfulIssues: Math.min(issues, count(record['helpfulIssues'])),
+      comments,
+      helpfulComments: Math.min(comments, count(record['helpfulComments'])),
+      reviewComments: count(record['reviewComments']),
+      reactions: count(record['reactions']),
+    }
+
     const first = typeof record['firstContributionAt'] === 'string' ? new Date(record['firstContributionAt']) : null
     contributors.push({
       githubId: id,
       username,
       rank: 0,
-      score: score(pullRequests),
+      score: score({ pullRequests, ...activity }),
       pullRequests,
+      ...activity,
       firstContributionAt: first && !Number.isNaN(first.getTime()) ? first.toISOString() : null,
     })
   }
@@ -117,4 +130,35 @@ export function parseProfilesFile(data: unknown): ProfileRecord[] {
     profiles.push({ githubId: id, username, name, website, socialAccounts, country })
   }
   return profiles
+}
+
+/** The packages of every contributor, from `packages.json`. Invalid entries are skipped. */
+export const PACKAGES_FILE = 'packages.json'
+export function parsePackagesFile(data: unknown): PackagesRecord[] {
+  if (!Array.isArray(data)) throw new TypeError(`${PACKAGES_FILE} must be an array`)
+  const records: PackagesRecord[] = []
+  for (const entry of data) {
+    if (!entry || typeof entry !== 'object') continue
+    const record = entry as Record<string, unknown>
+    const id = githubId(record['githubId'])
+    if (id === null || !Array.isArray(record['packages'])) continue
+    const packages = record['packages'].flatMap((item: unknown) => {
+      const { name, pullRequests } = (item && typeof item === 'object' ? item : {}) as Record<string, unknown>
+      return typeof name === 'string' && /^[a-z0-9][a-z0-9.-]{0,40}$/.test(name) && count(pullRequests) ? [{ name, pullRequests: count(pullRequests) }] : []
+    })
+    if (packages.length) records.push({ githubId: id, packages })
+  }
+  return records
+}
+
+/** The public members of the organization, from `team.json`. */
+export const TEAM_FILE = 'team.json'
+export function parseTeamFile(data: unknown): TeamRecord[] {
+  if (!Array.isArray(data)) throw new TypeError(`${TEAM_FILE} must be an array`)
+  return data.flatMap((entry: unknown) => {
+    const record = (entry && typeof entry === 'object' ? entry : {}) as Record<string, unknown>
+    const id = githubId(record['githubId'])
+    const username = text(record['username'], MAX_LOGIN_LENGTH)
+    return id !== null && username ? [{ githubId: id, username }] : []
+  })
 }
