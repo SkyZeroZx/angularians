@@ -144,7 +144,7 @@ export function parsePackagesFile(data: unknown): PackagesRecord[] {
     if (id === null || !Array.isArray(record['packages'])) continue
     const packages = record['packages'].flatMap((item: unknown) => {
       const { name, pullRequests } = (item && typeof item === 'object' ? item : {}) as Record<string, unknown>
-      return typeof name === 'string' && /^[a-z0-9][a-z0-9.-]{0,40}$/.test(name) && count(pullRequests) ? [{ name, pullRequests: count(pullRequests) }] : []
+      return typeof name === 'string' && /^(@[a-z0-9-]{1,40}\/)?[a-z0-9][a-z0-9.-]{0,40}$/.test(name) && count(pullRequests) ? [{ name, pullRequests: count(pullRequests) }] : []
     })
     if (packages.length) records.push({ githubId: id, packages })
   }
