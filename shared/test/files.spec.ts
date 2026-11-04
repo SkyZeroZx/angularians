@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseContributorsFile, parseProfilesFile, safeUrl, toJsonLines } from '../src/files.ts'
+import { parseContributorsFile, parsePackagesFile, parseProfilesFile, safeUrl, toJsonLines } from '../src/files.ts'
 
 const record = (githubId: unknown, username: unknown, pullRequests: Record<string, unknown> = { feat: 1 }, extra: Record<string, unknown> = {}) =>
   ({ githubId, username, score: 999, pullRequests, firstContributionAt: '2020-01-01T00:00:00Z', ...extra })
@@ -78,5 +78,21 @@ describe('toJsonLines', () => {
     const text = toJsonLines([{ a: 1 }, { b: 2 }])
     expect(text).toBe('[\n{"a":1},\n{"b":2}\n]\n')
     expect(JSON.parse(text)).toEqual([{ a: 1 }, { b: 2 }])
+  })
+})
+
+describe('parsePackagesFile', () => {
+  it('keeps scopes and npm names, drops anything else', () => {
+    expect(parsePackagesFile([
+      { githubId: 1, packages: [
+        { name: 'router', pullRequests: 2 },
+        { name: '@angular/build', pullRequests: 3 },
+        { name: '@schematics/angular', pullRequests: 1 },
+        { name: '<script>', pullRequests: 1 },
+        { name: '@a/b/c', pullRequests: 1 },
+        { name: 'core', pullRequests: 0 },
+      ] },
+      { githubId: 2, packages: [{ name: 'Not Valid', pullRequests: 1 }] },
+    ])).toEqual([{ githubId: 1, packages: [{ name: 'router', pullRequests: 2 }, { name: '@angular/build', pullRequests: 3 }, { name: '@schematics/angular', pullRequests: 1 }] }])
   })
 })

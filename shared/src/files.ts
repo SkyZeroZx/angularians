@@ -4,6 +4,9 @@ import { countryCode } from './countries.ts'
 import { compareRecords, emptyCounts, score } from './scoring.ts'
 import type { ActivityCounts, Contributor, PackagesRecord, ProfileRecord, PullRequestCounts, SocialAccount, TeamRecord } from './types.ts'
 
+/** GitHub's rule for a username: letters, digits and single hyphens between them, 39 characters at most. */
+export const GITHUB_USERNAME_RE = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i
+
 /** The all-time profiles of the contributors: not a period. */
 export const PROFILES_FILE = 'profiles.json'
 
@@ -144,7 +147,7 @@ export function parsePackagesFile(data: unknown): PackagesRecord[] {
     if (id === null || !Array.isArray(record['packages'])) continue
     const packages = record['packages'].flatMap((item: unknown) => {
       const { name, pullRequests } = (item && typeof item === 'object' ? item : {}) as Record<string, unknown>
-      return typeof name === 'string' && /^[a-z0-9][a-z0-9.-]{0,40}$/.test(name) && count(pullRequests) ? [{ name, pullRequests: count(pullRequests) }] : []
+      return typeof name === 'string' && /^(@[a-z0-9-]{1,40}\/)?[a-z0-9][a-z0-9.-]{0,40}$/.test(name) && count(pullRequests) ? [{ name, pullRequests: count(pullRequests) }] : []
     })
     if (packages.length) records.push({ githubId: id, packages })
   }

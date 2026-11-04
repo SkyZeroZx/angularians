@@ -16,6 +16,8 @@ describe('format', () => {
     expect(avatarUrl(4450522, 112)).toBe('https://avatars.githubusercontent.com/u/4450522?s=224&v=4');
     expect(profileQuery('all')).toEqual({});
     expect(profileQuery('2019')).toEqual({ period: '2019' });
+    expect(profileQuery('2019', 'DE')).toEqual({ period: '2019', country: 'DE' });
+    expect(profileQuery('all', 'TR')).toEqual({ country: 'TR' });
   });
 });
 

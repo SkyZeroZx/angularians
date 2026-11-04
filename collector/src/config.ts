@@ -1,4 +1,5 @@
 import { resolve } from 'node:path'
+import { REPOS } from '@angularians/shared'
 import { fileURLToPath } from 'node:url'
 
 export interface Config {
@@ -11,7 +12,12 @@ export interface Config {
   profiles: boolean
   outputDir: string
   cacheDir: string
+  /** Write this run's repositories as a part for `merge.ts` (one job per repository), not the site's data. */
+  part: boolean
 }
+
+/** The repositories on the board (`REPOS`). CI collects each in a job of its own (`--part`) and merges them (`merge.ts`). */
+export const DEFAULT_REPOS = REPOS.join(',')
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url))
 const DAY_MS = 24 * 60 * 60 * 1000
@@ -33,7 +39,7 @@ export function parseRepos(value: string): Config['repos'] {
 }
 
 /**
- * `node src/main.ts [--since=90d] [--pulls=rest|search] [--no-activity] [--no-profiles] [--out=dir] [--repos=a/b,c/d]`,
+ * `node src/main.ts [--since=90d] [--pulls=rest|search] [--no-activity] [--no-profiles] [--out=dir] [--repos=a/b,c/d] [--part]`,
  * or the same as env vars: COLLECT_SINCE, COLLECT_PULLS, COLLECT_ACTIVITY=false, COLLECT_PROFILES=false,
  * CONTRIBUTORS_OUTPUT_DIR, COLLECT_REPOS.
  */
@@ -46,19 +52,20 @@ export function parseConfig(argv: string[], env: NodeJS.ProcessEnv, now = new Da
     if (!match) throw new Error(`Unknown argument "${arg}"`)
     flags.set(match[2]!, match[1] ? 'false' : match[3] ?? 'true')
   }
-  const known = new Set(['since', 'pulls', 'activity', 'profiles', 'out', 'repos'])
+  const known = new Set(['since', 'pulls', 'activity', 'profiles', 'out', 'repos', 'part'])
   for (const flag of flags.keys()) if (!known.has(flag)) throw new Error(`Unknown flag --${flag}`)
 
   const pulls = flags.get('pulls') ?? env['COLLECT_PULLS'] ?? 'rest'
   if (pulls !== 'rest' && pulls !== 'search') throw new Error(`--pulls must be rest or search, not "${pulls}"`)
   const since = flags.get('since') ?? env['COLLECT_SINCE']
   return {
-    repos: parseRepos(flags.get('repos') ?? env['COLLECT_REPOS'] ?? 'angular/angular'),
+    repos: parseRepos(flags.get('repos') ?? env['COLLECT_REPOS'] ?? DEFAULT_REPOS),
     since: since ? parseSince(since, now) : null,
     pulls,
     activity: (flags.get('activity') ?? env['COLLECT_ACTIVITY'] ?? 'true') !== 'false',
     profiles: (flags.get('profiles') ?? env['COLLECT_PROFILES'] ?? 'true') !== 'false',
     outputDir: resolve(flags.get('out') ?? env['CONTRIBUTORS_OUTPUT_DIR'] ?? `${ROOT}data`),
     cacheDir: resolve(env['COLLECT_CACHE_DIR'] ?? `${ROOT}.cache`),
+    part: (flags.get('part') ?? 'false') !== 'false',
   }
 }

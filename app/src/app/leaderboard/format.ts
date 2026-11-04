@@ -17,9 +17,16 @@ export function avatarUrl(githubId: number, size: number): string {
   return `https://avatars.githubusercontent.com/u/${githubId}?s=${size * 2}&v=4`
 }
 
+/** The avatar at 1× and 2×: a screen of 1 device pixel per CSS pixel downloads a quarter of the 2× pixels. */
+export function avatarSrcset(githubId: number, size: number): string {
+  const url = (pixels: number) => `https://avatars.githubusercontent.com/u/${githubId}?s=${pixels}&v=4`
+  return `${url(size)} 1x, ${url(size * 2)} 2x`
+}
+
 /** The profile opens on the period of the board it was picked from (all time is its default). */
-export function profileQuery(period: Period): Record<string, string> {
-  return period === 'all' ? {} : { period }
+export function profileQuery(period: Period, country: string | null = null): Record<string, string> {
+  // The country only takes the profile's back link to the board it came from.
+  return { ...(period === 'all' ? {} : { period }), ...(country ? { country } : {}) }
 }
 
 /** A round flag (circle-flags, copied to public/flags by scripts/copy-flags.ts). */

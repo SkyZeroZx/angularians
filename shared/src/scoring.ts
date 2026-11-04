@@ -244,3 +244,44 @@ function toUser(user: IssueInput['user']): GitHubUser | null {
   if (!login || typeof id !== 'number' || !Number.isSafeInteger(id) || id <= 0 || isBotAccount(login)) return null
   return { login, id }
 }
+
+/**
+ * One period's records of several repositories (each collected on its own) as one list: counts added up per
+ * contributor, the score recomputed, the earliest first contribution kept, sorted as the collector sorts.
+ */
+export function mergeRecords(lists: ReadonlyArray<readonly ContributorRecord[]>): ContributorRecord[] {
+  const merged = new Map<number, ContributorRecord>()
+  for (const records of lists) {
+    for (const record of records) {
+      const current = merged.get(record.githubId)
+      if (!current) {
+        merged.set(record.githubId, { ...record, pullRequests: { ...record.pullRequests } })
+        continue
+      }
+      for (const key of Object.keys(emptyActivity()) as Array<keyof ActivityCounts>) current[key] += record[key]
+      for (const key of Object.keys(emptyCounts()) as Array<keyof PullRequestCounts>) current.pullRequests[key] += record.pullRequests[key]
+      if (record.firstContributionAt && (!current.firstContributionAt || record.firstContributionAt < current.firstContributionAt)) {
+        current.firstContributionAt = record.firstContributionAt
+      }
+    }
+  }
+  return [...merged.values()].map(record => ({ ...record, score: score(record) })).sort(compareRecords)
+}
+
+/** `packages.json` of several repositories as one: PRs added up per package (names are distinct across repositories). */
+export function mergePackages(lists: ReadonlyArray<readonly PackagesRecord[]>): PackagesRecord[] {
+  const merged = new Map<number, Map<string, number>>()
+  for (const records of lists) {
+    for (const { githubId, packages } of records) {
+      let counts = merged.get(githubId)
+      if (!counts) merged.set(githubId, (counts = new Map()))
+      for (const { name, pullRequests } of packages) counts.set(name, (counts.get(name) ?? 0) + pullRequests)
+    }
+  }
+  return [...merged]
+    .map(([githubId, counts]) => ({
+      githubId,
+      packages: [...counts].map(([name, pullRequests]) => ({ name, pullRequests })).sort((a, b) => b.pullRequests - a.pullRequests || a.name.localeCompare(b.name)),
+    }))
+    .sort((a, b) => a.githubId - b.githubId)
+}

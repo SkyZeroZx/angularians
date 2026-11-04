@@ -5,7 +5,7 @@ import { Container } from './container';
   selector: 'app-site-footer',
   imports: [Container],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'block border-t' },
+  host: { role: 'contentinfo', class: 'block border-t' },
   template: `
     <app-container class="flex flex-col gap-2 py-8 text-sm text-muted-foreground">
       <p>
@@ -15,6 +15,9 @@ import { Container } from './container';
       <p>
         Counts merged pull requests, issues, comments and code reviews in
         <a class="underline underline-offset-4 hover:text-foreground" href="https://github.com/angular/angular" target="_blank" rel="noopener">angular/angular</a>,
+        <a class="underline underline-offset-4 hover:text-foreground" href="https://github.com/angular/components" target="_blank" rel="noopener">components</a>,
+        <a class="underline underline-offset-4 hover:text-foreground" href="https://github.com/angular/angular-cli" target="_blank" rel="noopener">angular-cli</a> and
+        <a class="underline underline-offset-4 hover:text-foreground" href="https://github.com/angular/dev-infra" target="_blank" rel="noopener">dev-infra</a>,
         updated nightly. Inspired by and ported from
         <a class="underline underline-offset-4 hover:text-foreground" href="https://nuxt.com/nuxters" target="_blank" rel="noopener">Nuxters</a>
         (MIT, © NuxtLabs and Nuxt). Country data from

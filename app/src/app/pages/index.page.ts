@@ -1,11 +1,12 @@
 // Ported from nuxt.com `app/pages/nuxters/index.vue` (MIT, Copyright (c) 2022-2023 NuxtLabs).
+import { DOCUMENT } from '@angular/common';
 import { afterRenderEffect, ChangeDetectionStrategy, Component, computed, effect, inject, linkedSignal, untracked } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { injectServerFn, type RouteMeta } from '@analogjs/router';
-import { ACTIVITY_POINTS, countryCode, countryName, DEFAULT_PERIOD, isPeriod, periodPhrase, PULL_REQUEST_POINTS, type Period } from '@angularians/shared';
+import { countryCode, countryName, DEFAULT_PERIOD, isPeriod, periodPhrase, type Period } from '@angularians/shared';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideBookOpen, lucideBrushCleaning, lucideCalendar, lucideCircleDot, lucideGitPullRequest, lucideMessageCircle, lucideMessageCircleHeart, lucideRocket, lucideUsers, lucideWrench } from '@ng-icons/lucide';
+import { lucideBookOpen, lucideCalendar, lucideCircleDot, lucideGitPullRequest, lucideMessageCircle, lucideMessageCircleHeart, lucideMessagesSquare, lucideUsers } from '@ng-icons/lucide';
 import { injectQueryParams } from 'ngxtension/inject-query-params';
 import { HlmBadge } from '@spartan-ng/helm/badge';
 import { HlmButton } from '@spartan-ng/helm/button';
@@ -13,16 +14,20 @@ import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import { getContributorsMap, getLeaderboard } from '../data/contributors.server';
 import { PageGrid } from '../layout/page-grid';
+import { LogoMark } from '../layout/logo-mark';
 import { PageHero } from '../layout/page-hero';
 import { PageSection } from '../layout/page-section';
 import { ContributorSearch } from '../leaderboard/contributor-search';
 import { CountrySelect } from '../leaderboard/country-select';
+import { MeCard } from '../leaderboard/me-card';
+import { ScoreRules } from '../leaderboard/score-rules';
+import { setCanonical, SITE_URL } from '../site';
 import { formatDate, formatNumber, plural } from '../leaderboard/format';
 import { LeaderboardGrid } from '../leaderboard/leaderboard-grid';
 import { PeriodTabs } from '../leaderboard/period-tabs';
 import { World } from '../world/world';
 
-const SITE_DESCRIPTION = 'Everyone who has contributed to angular/angular since 2014, ranked: merged pull requests, issues, comments and code reviews.';
+const SITE_DESCRIPTION = 'Everyone who has contributed to Angular since 2014, ranked: merged pull requests, issues, comments and code reviews in angular/angular, Components, the CLI and dev-infra.';
 
 export const routeMeta = {
   title: 'Angularians',
@@ -32,24 +37,27 @@ export const routeMeta = {
 @Component({
   selector: 'app-home',
   imports: [
-    ContributorSearch, CountrySelect, HlmBadge, HlmButton, HlmCardImports, HlmSkeleton, LeaderboardGrid, NgIcon,
+    ContributorSearch, CountrySelect, HlmBadge, HlmButton, HlmCardImports, HlmSkeleton, LeaderboardGrid, LogoMark, MeCard, NgIcon, ScoreRules,
     PageGrid, PageHero, PageSection, PeriodTabs, World,
   ],
-  providers: [provideIcons({ lucideBookOpen, lucideBrushCleaning, lucideCalendar, lucideCircleDot, lucideGitPullRequest, lucideMessageCircle, lucideMessageCircleHeart, lucideRocket, lucideUsers, lucideWrench })],
+  providers: [provideIcons({ lucideBookOpen, lucideCalendar, lucideCircleDot, lucideGitPullRequest, lucideMessageCircle, lucideMessageCircleHeart, lucideMessagesSquare, lucideUsers })],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-page-hero [description]="description">
       <span heroHeadline hlmBadge variant="secondary" class="mb-4">Updated every day</span>
-      <span heroTitle>Meet the <span class="bg-linear-to-r from-brand-from to-brand-to bg-clip-text text-transparent">Angularians</span></span>
+      <span heroTitle class="group inline-flex flex-wrap items-center gap-x-4"><app-logo-mark class="size-[1.1em] shrink-0 max-sm:hidden" animated /><span>Meet the <span class="text-brand-from">Angularians</span></span></span>
+      <!-- @container: the card's height follows its own width -->
       <ng-container heroActions>
-        <a hlmBtn href="#how-it-works">How the score works</a>
+        <app-score-rules />
         <a hlmBtn variant="outline" href="https://github.com/angular/angular/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">How to contribute</a>
       </ng-container>
+      <div heroAside class="@container"><app-me-card /></div>
     </app-page-hero>
 
     <app-page-section sectionId="leaderboard" [flush]="true">
       <h2 class="sr-only">Leaderboard</h2>
-      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <!-- One row from lg: tabs, the country select and search do not fit side by side on a tablet -->
+      <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <app-period-tabs [period]="period()" [periods]="board()?.periods ?? []" (periodChange)="setPeriod($event)" />
         <div class="flex flex-col gap-3 sm:flex-row">
           <app-country-select [countries]="map.value()?.countries ?? []" [value]="country()" (valueChange)="setCountry($event)" />
@@ -97,46 +105,10 @@ export const routeMeta = {
       }
     }
 
-    <app-page-section sectionId="how-it-works" title="How the score works" description="Every contribution to angular/angular counts, for its author, on the day it was made. Pull requests count once they are merged, by type, from the title (feat, fix, docs…): the convention the repository already enforces.">
-      <app-page-grid class="lg:grid-cols-4">
-        @for (way of ways; track way.title) {
-          <section hlmCard>
-            <div hlmCardHeader>
-              <ng-icon [name]="way.icon" class="text-primary" size="22" aria-hidden="true" />
-              <h3 hlmCardTitle>{{ way.title }}</h3>
-              <p hlmCardDescription>{{ way.description }}</p>
-            </div>
-            <div hlmCardContent>
-              <p class="text-3xl font-semibold tabular-nums">{{ way.points }} <span class="text-base font-normal text-muted-foreground">pts</span></p>
-            </div>
-          </section>
-        }
-      </app-page-grid>
-      <h3 class="mt-10 mb-4 font-semibold">Everything else counts too</h3>
-      <div class="overflow-x-auto rounded-xl border">
-        <table class="w-full text-sm">
-          <tbody class="divide-y">
-            @for (rule of rules; track rule.what) {
-              <tr>
-                <th scope="row" class="px-4 py-2.5 text-left font-medium">{{ rule.what }}</th>
-                <td class="px-4 py-2.5 text-muted-foreground">{{ rule.when }}</td>
-                <td class="px-4 py-2.5 text-right font-semibold whitespace-nowrap tabular-nums">{{ rule.points }}</td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-      <p class="mt-6 max-w-3xl text-sm text-muted-foreground">
-        Most PRs from 2017 to 2025 show as closed on GitHub, not merged: Angular's merge tooling pushes the commits itself and adds
-        <code class="rounded bg-muted px-1 py-0.5 text-xs">PR Close #N</code> to them. Those count as merged too. Reactions count on the day of the
-        issue or comment they are on. Bots are left out. The weights are the ones of Nuxters, plus review comments.
-      </p>
-    </app-page-section>
-
     <app-page-section>
       <header class="mx-auto mb-10 max-w-3xl text-center">
         <h2 class="text-3xl font-medium tracking-tight sm:text-4xl">How to become an Angularian</h2>
-        <p class="mt-4 text-lg text-pretty text-muted-foreground">One of these contributions to angular/angular puts you on the board, the next night.</p>
+        <p class="mt-4 text-lg text-pretty text-muted-foreground">One of these contributions, in angular/angular, angular/components, angular/angular-cli or angular/dev-infra, unlocks the Angularian badge.</p>
       </header>
       <app-page-grid>
         @for (way of becomeWays; track way.title) {
@@ -150,12 +122,24 @@ export const routeMeta = {
         }
       </app-page-grid>
     </app-page-section>
+
+    <app-page-section>
+      <section class="rounded-xl bg-muted/40 px-6 py-12 text-center ring-1 ring-border sm:px-12 sm:py-16" aria-labelledby="join-title">
+        <h2 id="join-title" class="text-3xl font-medium tracking-tight text-balance sm:text-4xl">Ready to join us?</h2>
+        <p class="mx-auto mt-4 max-w-2xl text-lg text-pretty text-muted-foreground">Help shape the future of Angular. Contribute, collaborate and join the community today.</p>
+        <div class="mt-8 flex flex-wrap justify-center gap-3">
+          <a hlmBtn href="https://github.com/angular/angular/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener"><ng-icon name="lucideBookOpen" aria-hidden="true" /> Contribution guide</a>
+          <a hlmBtn variant="outline" href="https://discord.gg/angular" target="_blank" rel="noopener"><ng-icon name="lucideMessagesSquare" aria-hidden="true" /> Join Discord</a>
+        </div>
+      </section>
+    </app-page-section>
   `,
 })
 export default class Home {
   private readonly router = inject(Router);
   private readonly title = inject(Title);
   private readonly meta = inject(Meta);
+  private readonly document = inject(DOCUMENT);
 
   /** `?period=` and `?country=` are the state: shareable, and kept on reload. Unknown values fall back. */
   private readonly requestedPeriod = injectQueryParams(params => (isPeriod(params['period']) ? (params['period'] as Period) : null));
@@ -171,28 +155,13 @@ export default class Home {
     computation: (value, previous) => value ?? previous?.value,
   });
 
-  protected readonly description = SITE_DESCRIPTION;
+  protected readonly description = 'The people behind Angular, its CLI and its components, ranked by their contributions. Thanks to every one of them, Angular is a first-class framework and a true community project.';
   protected readonly placeholders = Array.from({ length: 30 }, (_, index) => index);
-  protected readonly ways = [
-    { title: 'Features', description: 'feat and perf PRs: new APIs, capabilities and speed.', icon: 'lucideRocket', points: PULL_REQUEST_POINTS.feat },
-    { title: 'Fixes', description: 'fix PRs: bugs found and fixed.', icon: 'lucideWrench', points: PULL_REQUEST_POINTS.fix },
-    { title: 'Docs', description: 'docs PRs: guides, API docs and examples on angular.dev.', icon: 'lucideBookOpen', points: PULL_REQUEST_POINTS.docs },
-    { title: 'Chores', description: 'refactor, test, build, ci, release and reverts.', icon: 'lucideBrushCleaning', points: PULL_REQUEST_POINTS.chore },
-  ];
   /** The three ways onto the board (Nuxters' "How to become a Nuxter"). */
   protected readonly becomeWays = [
-    { title: 'Merge a pull request', description: 'Fix a bug, ship a feature or improve the docs of angular/angular.', icon: 'lucideGitPullRequest', url: 'https://github.com/angular/angular/blob/main/CONTRIBUTING.md' },
+    { title: 'Merge a pull request', description: 'Fix a bug, ship a feature or improve the docs in any Angular repository.', icon: 'lucideGitPullRequest', url: 'https://github.com/angular/angular/blob/main/CONTRIBUTING.md' },
     { title: 'Open a helpful issue', description: 'An issue that gets completed, or collects 3+ reactions or 5+ comments.', icon: 'lucideCircleDot', url: 'https://github.com/angular/angular/issues' },
-    { title: 'Write a helpful comment', description: 'Answer a question or review a PR: a comment with 3+ reactions counts, every review comment too.', icon: 'lucideMessageCircleHeart', url: 'https://github.com/angular/angular/pulls' },
-  ];
-  /** Everything besides merged PRs, as `ACTIVITY_POINTS` weighs it. */
-  protected readonly rules = [
-    { what: 'Issue', when: 'every issue opened', points: `${ACTIVITY_POINTS.issues} pt` },
-    { what: 'Helpful issue', when: 'on top: closed as completed, or 3+ reactions, or 5+ comments', points: `+${ACTIVITY_POINTS.helpfulIssues} pts` },
-    { what: 'Review comment', when: 'every comment on the code of a pull request', points: `${ACTIVITY_POINTS.reviewComments} pt` },
-    { what: 'Comment', when: 'every comment on an issue or a pull request', points: `${ACTIVITY_POINTS.comments} pt` },
-    { what: 'Helpful comment', when: 'on top: 3+ reactions', points: `+${ACTIVITY_POINTS.helpfulComments} pts` },
-    { what: 'Reaction', when: 'received on your issues, pull requests and comments', points: `${ACTIVITY_POINTS.reactions} pt` },
+    { title: 'Write a helpful comment', description: 'Answer a question or review a PR: a comment with 3+ reactions counts.', icon: 'lucideMessageCircleHeart', url: 'https://github.com/angular/angular/pulls' },
   ];
   protected readonly number = formatNumber;
   protected readonly phrase = periodPhrase;
@@ -223,12 +192,21 @@ export default class Home {
       const shared = this.requestedPeriod() && page?.total ? page : null;
       const title = shared ? `Top Angularians ${periodPhrase(shared.period)}` : 'Angularians';
       const description = shared
-        ? `${plural(shared.total, 'person', 'people')} contributed to angular/angular ${periodPhrase(shared.period)}: ${plural(shared.landedPullRequests, 'merged pull request', 'merged pull requests')}, ${plural(shared.issues, 'issue', 'issues')} and ${plural(shared.comments + shared.reviewComments, 'comment', 'comments')}.`
+        ? `${plural(shared.total, 'person', 'people')} contributed to Angular ${periodPhrase(shared.period)}: ${plural(shared.landedPullRequests, 'merged pull request', 'merged pull requests')}, ${plural(shared.issues, 'issue', 'issues')} and ${plural(shared.comments + shared.reviewComments, 'comment', 'comments')}.`
         : SITE_DESCRIPTION;
       this.title.setTitle(title);
       this.meta.updateTag({ name: 'description', content: description });
       this.meta.updateTag({ property: 'og:title', content: title });
       this.meta.updateTag({ property: 'og:description', content: description });
+      // The site's card, or the card of the shared period; the canonical URL has no `?period=`.
+      const query = shared ? `?period=${shared.period}` : '';
+      this.meta.updateTag({ property: 'og:url', content: `${SITE_URL}/${query}` });
+      this.meta.updateTag({ property: 'og:image', content: `${SITE_URL}/og.png${query}` });
+      this.meta.updateTag({ property: 'og:image:width', content: '1200' });
+      this.meta.updateTag({ property: 'og:image:height', content: '630' });
+      this.meta.updateTag({ name: 'twitter:card', content: 'summary_large_image' });
+      this.meta.updateTag({ name: 'twitter:image', content: `${SITE_URL}/og.png${query}` });
+      setCanonical(this.document, '/');
     });
   }
 

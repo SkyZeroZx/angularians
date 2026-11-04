@@ -37,6 +37,7 @@ import { booleanAttribute, ChangeDetectionStrategy, Component, input } from '@an
         animation: logo-wing 760ms 260ms cubic-bezier(0.34, 1.5, 0.5, 1) both;
       }
       :host(.animated:hover) .wing,
+      :host-context(.group:hover):host(.animated) .wing,
       :host-context(a:hover):host(.animated) .wing,
       :host-context(a:focus-visible):host(.animated) .wing {
         transform: translateY(-1px);

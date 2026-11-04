@@ -1,6 +1,6 @@
 // Ported from nuxt.com `app/components/nuxters/NuxtersPeriodTabs.vue` (MIT, Copyright (c) 2022-2023 NuxtLabs).
 import { ChangeDetectionStrategy, Component, computed, input, linkedSignal, output } from '@angular/core'
-import type { Period } from '@angularians/shared'
+import { periodPhrase, type Period } from '@angularians/shared'
 import { HlmSelectImports } from '@spartan-ng/helm/select'
 import { HlmTabsImports } from '@spartan-ng/helm/tabs'
 
@@ -29,6 +29,11 @@ const RANK = new Intl.NumberFormat('en-US')
             </button>
           }
         </hlm-tabs-list>
+        <!-- The tabs switch the board below, which is not inside them: each tab still needs its panel (aria-controls),
+             so a panel per tab says so to screen readers. Out of sight and out of the tab order. -->
+        @for (tab of tabs(); track tab.value) {
+          <p [hlmTabsContent]="tab.value" class="sr-only" tabindex="-1">The board below shows {{ phraseOf(tab.value) }}.</p>
+        }
       </hlm-tabs>
     }
     @if (years().length) {
@@ -68,6 +73,7 @@ export class PeriodTabs {
 
   /** Follows a click right away: `period` only changes once the new board has loaded. */
   protected readonly selected = linkedSignal(() => this.period())
+  protected readonly phraseOf = (period: string) => periodPhrase(period).replace(/^(in|of) /, '')
   protected readonly tabs = computed(() => ['30d', '12m', 'all']
     .filter(value => this.periods().includes(value))
     .map(value => ({ value, label: TAB_LABELS[value]! })))

@@ -1,0 +1,42 @@
+name: Bug report
+description: Something does not work, or looks wrong
+labels: [bug, needs triage]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Leaderboard, search or countries
+        - A profile
+        - Sign in, sharing or the README card
+        - The data (a missing contribution, a wrong count, a bot)
+        - The API
+        - Something else
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: Say what you did, what you expected and what you got instead.
+    validations:
+      required: true
+  - type: input
+    id: url
+    attributes:
+      label: The page
+      placeholder: https://angularians.netlify.app/your-username?period=2025
+  - type: input
+    id: environment
+    attributes:
+      label: Browser and operating system
+      placeholder: Chrome 142, macOS 26
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you submit
+      options:
+        - label: I searched the existing issues.
+          required: true
+        - label: For the data, I know it updates once a night.

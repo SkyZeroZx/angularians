@@ -1,0 +1,39 @@
+# How the score works
+
+Every contribution counts for its author, on the day it was made. The weights are those of [Nuxters](https://nuxt.com/nuxters),
+plus review comments. The rules live in `shared/src/scoring.ts` and `shared/src/pull-requests.ts`.
+
+## Merged pull requests, by type
+
+The type comes from the PR title, the convention the Angular repositories already enforce.
+
+| Type | Points | PR title prefixes |
+| --- | --- | --- |
+| feat | 7 | `feat`, `perf` |
+| fix | 5 | `fix` |
+| docs | 4 | `docs` |
+| chore | 3 | `chore`, `ci`, `build`, `test`, `refactor`, `style`, `release`, `revert` |
+
+## Everything else
+
+| Contribution | Points |
+| --- | --- |
+| Issue | 1 |
+| Helpful issue (closed as completed, or 3+ reactions, or 5+ comments) | +3 |
+| Review comment (inline, on the code of a PR) | 1 |
+| Comment (on an issue or a PR) | 0.5 |
+| Helpful comment (3+ reactions) | +2 |
+| Reaction received (on the day of the issue, PR or comment) | 0.1 |
+
+The sum is rounded once.
+
+## What counts as merged
+
+A PR has landed if GitHub marks it merged, **or** a commit on the default branch has a `PR Close #N` line for it. Angular's merge
+tooling pushes the commits itself and closes the PR, so GitHub shows most PRs from 2017 to 2025 as closed, not merged.
+
+Bots are left out: GitHub apps, `-bot` accounts and the list in `shared/src/bots.ts`.
+
+## Periods
+
+All time, the last 30 days, the last 12 months, and every year from 2014. A contributor's rank is per period.

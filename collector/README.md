@@ -1,6 +1,7 @@
 # Collector
 
-Collects what everyone contributed to angular/angular (landed pull requests, issues, conversation comments, inline
+Collects what everyone contributed to the Angular repositories (`REPOS` in `shared/src/repos.ts`: angular/angular,
+angular/components, angular/angular-cli and angular/dev-infra; landed pull requests, issues, conversation comments, inline
 review comments, reactions received) and writes the contributor files the app reads.
 Based on [nuxt/nuxters](https://github.com/nuxt/nuxters) (MIT, Copyright (c) 2023 Nuxt).
 
@@ -9,7 +10,7 @@ Based on [nuxt/nuxters](https://github.com/nuxt/nuxters) (MIT, Copyright (c) 202
 Every night it re-collects everything, like nuxt/nuxters: no cache, every score recomputed.
 
 A PR has landed if GitHub marks it merged, **or** a commit on the default branch has a `PR Close #N` line for it.
-angular/angular's merge tool pushes the commits itself and closes the PR, so GitHub shows most PRs from
+Angular's merge tool (used by all four repositories) pushes the commits itself and closes the PR, so GitHub shows most PRs from
 2017 to 2025 as closed, not merged. The landed PR is credited to its author. Scoring rules are in
 `shared/src/scoring.ts` and `shared/src/pull-requests.ts`.
 
@@ -22,7 +23,8 @@ GITHUB_TOKEN=… pnpm collect -- --since=90d --out=/tmp/test  # a quick test run
 
 | Flag | Env var | Default | |
 |---|---|---|---|
-| `--repos=a/b,c/d` | `COLLECT_REPOS` | `angular/angular` | |
+| `--repos=a/b,c/d` | `COLLECT_REPOS` | the four repositories | |
+| `--part` | | off | Write the repositories as a part for `merge.ts`, not the site's data |
 | `--since=90d` or `--since=2026-08-01` | `COLLECT_SINCE` | full history | Test runs only |
 | `--pulls=rest\|search` | `COLLECT_PULLS` | `rest` | `search` when `/pulls` is not reachable: same data, more requests |
 | `--no-activity` | `COLLECT_ACTIVITY=false` | activity on | Landed PRs only: no issues, comments or review comments |
@@ -31,9 +33,20 @@ GITHUB_TOKEN=… pnpm collect -- --since=90d --out=/tmp/test  # a quick test run
 | | `COLLECT_CACHE_DIR` | `.cache/` | The treeless git clone of the repo |
 
 Commits come from a local treeless git clone (commit messages only, about 16 MB), not the API.
-A full run needs about 10,000 REST requests (most of them the ~500,000 comments, 100 a page) and some GraphQL
-points: about 2 hours at the 5,000 requests an hour of a personal token. The built-in Actions token (1,000 an hour)
-is not enough.
+A full run of angular/angular alone needs about 6,500 REST requests (most of them its ~420,000 comments and review
+comments, 100 a page) and takes about 3 hours; angular/components and angular/angular-cli are about half its size each.
+The built-in Actions token (1,000 requests an hour) is not enough: use a personal token (5,000 an hour).
+
+### In CI: one job per repository
+
+One after the other, the four repositories take longer than a job may run. The workflow collects each in a job of its
+own, in parallel (`collect --part --repos=…`), and a last job merges the parts into `data/` (`merge`): counts added up
+per contributor, scores recomputed, then the team and the profiles. If one repository fails, nothing is published.
+
+```bash
+pnpm collect -- --part --repos=angular/components --out=/tmp/parts/components
+pnpm merge -- --out=data /tmp/parts/angular /tmp/parts/components …
+```
 
 ### The token
 
