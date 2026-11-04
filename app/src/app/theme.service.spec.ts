@@ -1,15 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { ThemeService, THEME_STORAGE_KEY } from './theme.service';
 
-function setSystemDark(dark: boolean) {
-  window.matchMedia = ((query: string) => ({
-    matches: dark && query.includes('dark'),
-    media: query,
-    addEventListener: () => {},
-    removeEventListener: () => {},
-  })) as unknown as typeof window.matchMedia;
-}
-
 describe('ThemeService', () => {
   beforeEach(() => {
     localStorage.clear();
@@ -17,32 +8,28 @@ describe('ThemeService', () => {
     TestBed.resetTestingModule();
   });
 
-  it('follows the system setting by default', () => {
-    setSystemDark(true);
+  it('is dark by default, whatever the system setting', () => {
     const theme = TestBed.inject(ThemeService);
     TestBed.tick();
-    expect(theme.preference()).toBe('system');
-    expect(theme.dark()).toBe(true);
+    expect(theme.theme()).toBe('dark');
     expect(document.documentElement.classList.contains('dark')).toBe(true);
   });
 
-  it('cycles system → light → dark → system, and remembers the choice', () => {
-    setSystemDark(false);
+  it('toggles dark → light → dark, remembering only a light choice', () => {
     const theme = TestBed.inject(ThemeService);
-    theme.cycle();
-    expect(theme.preference()).toBe('light');
+    theme.toggle();
+    TestBed.tick();
+    expect(theme.theme()).toBe('light');
     expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe('light');
-    theme.cycle();
+    expect(document.documentElement.classList.contains('dark')).toBe(false);
+    theme.toggle();
     TestBed.tick();
-    expect(theme.preference()).toBe('dark');
-    expect(document.documentElement.classList.contains('dark')).toBe(true);
-    theme.cycle();
-    expect(theme.preference()).toBe('system');
+    expect(theme.theme()).toBe('dark');
     expect(localStorage.getItem(THEME_STORAGE_KEY)).toBeNull();
+    expect(document.documentElement.classList.contains('dark')).toBe(true);
   });
 
-  it('restores a saved choice over the system setting', () => {
-    setSystemDark(true);
+  it('restores a saved light theme', () => {
     localStorage.setItem(THEME_STORAGE_KEY, 'light');
     const theme = TestBed.inject(ThemeService);
     TestBed.tick();

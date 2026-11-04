@@ -19,6 +19,6 @@ import { ThemeService } from './theme.service';
   `,
 })
 export class App {
-  // Created with the app, so the theme follows the system setting from the start.
+  // Created with the app, so a saved light theme applies from the start.
   private readonly theme = inject(ThemeService)
 }

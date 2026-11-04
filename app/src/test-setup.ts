@@ -12,7 +12,7 @@ globalThis.ResizeObserver ??= class {
   disconnect(): void {}
 } as unknown as typeof ResizeObserver;
 
-// jsdom has no IntersectionObserver either; `@defer (on viewport)` uses one. Nothing is ever in view.
+// jsdom has no IntersectionObserver either; the globe waits for one. Nothing is ever in view.
 globalThis.IntersectionObserver ??= class {
   readonly root = null;
   readonly rootMargin = '';

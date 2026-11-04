@@ -57,6 +57,24 @@ const COMPONENTS_PACKAGES = new Set([
   'material-luxon-adapter', 'material-moment-adapter', 'material-date-fns-adapter',
 ])
 
+/** Misspelled or variant scopes of angular/angular, as some PR titles have them: the package they mean. */
+const SCOPE_ALIASES: Readonly<Record<string, string>> = {
+  'platform-brower': 'platform-browser',
+  'migration': 'migrations',
+  'dev-tools': 'devtools',
+  'animation': 'animations',
+  'form': 'forms',
+  'routing': 'router',
+  'service-workers': 'service-worker',
+  'zone': 'zone.js',
+  'zonejs': 'zone.js',
+}
+
+/** A package name of `packages.json` as the site shows it: aliases folded into the package they mean. */
+export function canonicalPackage(name: string): string {
+  return SCOPE_ALIASES[name] ?? name
+}
+
 /**
  * The package a scope names in a repository, `null` when it is not one. Names are distinct across repositories:
  * - angular/angular: the scope itself (`router`), as before there were other repositories.
@@ -65,7 +83,7 @@ const COMPONENTS_PACKAGES = new Set([
  * - Other repositories (angular/dev-infra): no packages.
  */
 function repoPackage(repo: string, scope: string): string | null {
-  if (repo === 'angular/angular') return /^[a-z0-9][a-z0-9.-]*$/.test(scope) ? scope : null
+  if (repo === 'angular/angular') return /^[a-z0-9][a-z0-9.-]*$/.test(scope) ? canonicalPackage(scope) : null
   if (repo === 'angular/components') {
     const name = scope.split('/')[0]!
     return COMPONENTS_PACKAGES.has(name) ? `@angular/${name}` : null

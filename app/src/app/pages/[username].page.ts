@@ -6,18 +6,17 @@ import { Meta, Title } from '@angular/platform-browser';
 import { Router, RouterLink } from '@angular/router';
 import { injectServerFn, type RouteMeta } from '@analogjs/router';
 import { injectResponse } from '@analogjs/router/tokens';
-import { countryName, DEFAULT_PERIOD, isPeriod, periodPhrase, reposQuery, type ContributorProfile, type Period } from '@angularians/shared';
+import { countryCode, countryName, DEFAULT_PERIOD, GITHUB_USERNAME_RE, isPeriod, periodPhrase, reposQuery, type ContributorProfile, type Period } from '@angularians/shared';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
-  lucideArrowLeft, lucideArrowUpRight, lucideAward, lucideCalendar, lucideCircleDot, lucideGitPullRequest, lucideGlobe, lucideInfo,
-  lucideBadgeCheck, lucideChevronDown, lucideChevronUp, lucideCrown, lucideFileCode, lucideLink, lucideLinkedin, lucideMapPin, lucideMessageCircle,
-  lucidePackage, lucideSmilePlus, lucideTrophy,
+  lucideArrowLeft, lucideArrowUpRight, lucideAward, lucideCircleDot, lucideGitPullRequest, lucideInfo,
+  lucideBadgeCheck, lucideChevronDown, lucideChevronUp, lucideCrown, lucideFileCode, lucideLink, lucideLinkedin, lucideMessageCircle,
+  lucideSmilePlus, lucideTrophy,
 } from '@ng-icons/lucide';
 import {
   simpleBluesky, simpleFacebook, simpleGithub, simpleInstagram, simpleMastodon, simpleNpm, simpleReddit, simpleThreads, simpleTwitch, simpleX,
   simpleYoutube,
 } from '@ng-icons/simple-icons';
-import { HlmDialogImports } from '@spartan-ng/helm/dialog';
 import { injectParams } from 'ngxtension/inject-params';
 import { injectQueryParams } from 'ngxtension/inject-query-params';
 import { HlmButton } from '@spartan-ng/helm/button';
@@ -26,10 +25,13 @@ import { HlmTooltip } from '@spartan-ng/helm/tooltip';
 import { getContributor } from '../data/contributors.server';
 import { AngularLogo } from '../layout/angular-logo';
 import { Container } from '../layout/container';
-import { avatarUrl, formatNumber, formatPoints, plural, profileQuery } from '../leaderboard/format';
+import { avatarUrl, flagUrl, formatNumber, formatPoints, plural, profileQuery } from '../leaderboard/format';
 import { PeriodTabs } from '../leaderboard/period-tabs';
-import { packageLabel } from '../profile/packages';
-import { ScoreBreakdown } from '../profile/score-breakdown';
+import { foldPackages, PACKAGE_ICONS, packageIcon, packageLabel } from '../profile/packages';
+import { ScoreDialog } from '../profile/score-dialog';
+import { Share } from '../profile/share';
+import { AuthService } from '../auth/auth.service';
+import { setCanonical, SITE_URL } from '../site';
 
 export const routeMeta = {
   title: 'Contributor · Angularians',
@@ -51,21 +53,31 @@ const SOCIAL_ICONS: Record<string, string> = {
 };
 const SINCE = new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' });
 
+/** Years as ranges: [2019, 2024, 2025, 2026] → "2019, 2024–2026". */
+export function yearRanges(years: readonly number[]): string {
+  const parts: string[] = [];
+  for (let i = 0; i < years.length; i++) {
+    let j = i;
+    while (j + 1 < years.length && years[j + 1] === years[j]! + 1) j++;
+    parts.push(j > i ? `${years[i]}–${years[j]}` : `${years[i]}`);
+    i = j;
+  }
+  return parts.join(', ');
+}
+
 @Component({
   selector: 'app-profile',
-  imports: [AngularLogo, Container, HlmButton, HlmDialogImports, HlmSkeleton, HlmTooltip, NgIcon, NgTemplateOutlet, PeriodTabs, RouterLink, ScoreBreakdown],
+  imports: [AngularLogo, Container, HlmButton, HlmSkeleton, HlmTooltip, NgIcon, NgTemplateOutlet, PeriodTabs, RouterLink, ScoreDialog, Share],
   providers: [provideIcons({
-    lucideArrowLeft, lucideArrowUpRight, lucideAward, lucideCalendar, lucideCircleDot, lucideGitPullRequest, lucideGlobe, lucideInfo,
-    lucideBadgeCheck, lucideChevronDown, lucideChevronUp, lucideCrown, lucideFileCode, lucideLink, lucideLinkedin, lucideMapPin, lucideMessageCircle,
-    lucidePackage, lucideSmilePlus, lucideTrophy,
+    lucideArrowLeft, lucideArrowUpRight, lucideAward, lucideCircleDot, lucideGitPullRequest, lucideInfo,
+    lucideBadgeCheck, lucideChevronDown, lucideChevronUp, lucideCrown, lucideFileCode, lucideLink, lucideLinkedin, lucideMessageCircle,
+    lucideSmilePlus, lucideTrophy,
     simpleBluesky, simpleFacebook, simpleGithub, simpleInstagram, simpleMastodon, simpleNpm, simpleReddit, simpleThreads, simpleTwitch, simpleX,
-    simpleYoutube,
+    simpleYoutube, ...PACKAGE_ICONS,
   })],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'relative block isolate' },
   template: `
-    <!-- A soft glow of the brand colour behind the top of the profile, like the Nuxters pages -->
-    <div class="pointer-events-none absolute inset-x-0 top-0 -z-10 h-96 bg-linear-to-b from-primary/10 to-transparent" aria-hidden="true"></div>
     <app-container class="pt-8">
       <a hlmBtn variant="link" class="px-0" routerLink="/" [queryParams]="backQuery()">
         <ng-icon name="lucideArrowLeft" aria-hidden="true" />All contributors
@@ -102,29 +114,14 @@ const SINCE = new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric'
                 <span class="text-muted-foreground" aria-hidden="true">·</span>
                 <span class="inline-flex items-center gap-1">
                   <strong class="font-semibold">{{ number(current().score) }}</strong> pts
-                  <hlm-dialog>
-                    <button hlmDialogTrigger hlmBtn variant="ghost" size="icon-xs" type="button" aria-label="Show score breakdown" class="text-muted-foreground">
-                      <ng-icon name="lucideInfo" aria-hidden="true" />
-                    </button>
-                    <hlm-dialog-content *hlmDialogPortal class="max-h-[90dvh] overflow-y-auto sm:max-w-lg">
-                      <hlm-dialog-header>
-                        <h2 hlmDialogTitle>How is the score calculated?</h2>
-                        <p hlmDialogDescription>Each contribution type has a weight. Merged PRs weigh the most.</p>
-                      </hlm-dialog-header>
-                      <div class="my-2 flex flex-col items-center gap-1 rounded-md bg-muted/60 py-4">
-                        <span class="text-4xl font-bold tabular-nums">{{ number(current().score) }}</span>
-                        <span class="text-sm text-muted-foreground">total points {{ phrase(period()) }}</span>
-                      </div>
-                      <app-score-breakdown [stats]="current()" />
-                    </hlm-dialog-content>
-                  </hlm-dialog>
+                  <app-score-dialog [stats]="current()" [phrase]="phrase(period())" />
                 </span>
               </p>
               <p class="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
                 @if (person.country) {
                   <!-- nofollow: crawlers would render every country × period. -->
                   <a routerLink="/" [queryParams]="countryQuery(person.country)" fragment="leaderboard" rel="nofollow" class="inline-flex items-center gap-1.5 hover:text-foreground">
-                    <ng-icon name="lucideMapPin" aria-hidden="true" />{{ country(person.country) }}
+                    <img [src]="flag(person.country)" alt="" width="16" height="16" class="size-4 shrink-0 rounded-full" />{{ country(person.country) }}
                   </a>
                 }
                 @if (since(); as date) {
@@ -132,7 +129,7 @@ const SINCE = new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric'
                 }
                 @if (best(); as year) {
                   <a [routerLink]="[]" [queryParams]="{ period: year.period }" replaceUrl class="inline-flex items-center gap-1.5 tabular-nums hover:text-foreground">
-                    <ng-icon name="lucideAward" aria-hidden="true" />Best year {{ year.period }}, #{{ number(year.rank) }} with {{ number(year.score) }} pts
+                    <ng-icon name="lucideAward" aria-hidden="true" />Best year {{ year.period }}, #{{ number(year.rank) }} with {{ points(year.score) }}
                   </a>
                 }
               </p>
@@ -149,6 +146,10 @@ const SINCE = new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric'
                     </li>
                   }
                 </ul>
+              }
+              <!-- Your own profile: share it (the period on screen). In the browser only: the page is cached for everyone. -->
+              @if (isOwner()) {
+                <app-share class="hidden lg:flex" [username]="person.username" [period]="period()" [periods]="available()" />
               }
             </div>
           </div>
@@ -191,16 +192,16 @@ const SINCE = new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric'
         </div>
       </app-container>
 
-      @if (person.packages.length) {
+      @if (packages().length) {
         <app-container class="pb-12">
           <section aria-labelledby="packages-title">
             <h2 id="packages-title" class="mb-1 text-2xl font-medium tracking-tight">Contributed to</h2>
-            <p class="mb-6 text-muted-foreground">Merged PRs in {{ plural(person.packages.length, 'package', 'packages') }} of Angular, by PRs.</p>
+            <p class="mb-6 text-muted-foreground">Merged PRs in {{ plural(packages().length, 'package', 'packages') }} of Angular, by PRs.</p>
             <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               @for (item of shownPackages(); track item.name) {
                 <li class="flex items-center gap-3 rounded-lg px-3 py-2 ring-1 ring-border">
                   <span class="grid size-9 shrink-0 place-items-center rounded-md bg-primary/10 text-primary">
-                    <ng-icon name="lucidePackage" aria-hidden="true" />
+                    <ng-icon [name]="icon(item.name)" aria-hidden="true" />
                   </span>
                   <span class="min-w-0 flex-1">
                     <span class="block truncate text-sm font-medium">{{ item.name }}</span>
@@ -210,9 +211,9 @@ const SINCE = new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric'
                 </li>
               }
             </ul>
-            @if (person.packages.length > PACKAGES_SHOWN) {
+            @if (packages().length > PACKAGES_SHOWN) {
               <button hlmBtn variant="ghost" type="button" class="mt-4" (click)="allPackages.set(!allPackages())">
-                {{ allPackages() ? 'Show less' : 'Show all ' + person.packages.length }}
+                {{ allPackages() ? 'Show less' : 'Show all ' + packages().length }}
                 <ng-icon [name]="allPackages() ? 'lucideChevronUp' : 'lucideChevronDown'" aria-hidden="true" />
               </button>
             }
@@ -249,18 +250,51 @@ const SINCE = new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric'
           </section>
         </app-container>
       }
-    } @else if (profile.isLoading()) {
-      <app-container class="py-14" aria-busy="true">
-        <div class="flex items-center gap-4">
-          <div hlmSkeleton class="size-20 rounded-xl"></div>
-          <div class="flex-1 space-y-2"><div hlmSkeleton class="h-8 w-56"></div><div hlmSkeleton class="h-5 w-32"></div></div>
+    } @else if (profile.isLoading() && validUsername()) {
+      <!-- The shape of the profile below, so nothing jumps when it arrives. -->
+      <app-container class="py-8 lg:py-14" aria-busy="true">
+        <span class="sr-only">Loading the profile of {{ username() }}</span>
+        <div class="grid items-start gap-8 lg:grid-cols-5 lg:gap-12" aria-hidden="true">
+          <div class="flex flex-col items-start gap-5 lg:col-span-2">
+            <div class="flex w-full items-center gap-4 lg:flex-col lg:items-start lg:gap-6">
+              <div hlmSkeleton class="size-20 shrink-0 rounded-xl lg:size-28"></div>
+              <div class="flex flex-1 flex-col gap-2 lg:w-full">
+                <div hlmSkeleton class="h-9 w-3/4 max-w-72"></div>
+                <div hlmSkeleton class="h-5 w-32"></div>
+                <div class="flex gap-2 pt-1">
+                  @for (i of [1, 2, 3, 4]; track i) { <div hlmSkeleton class="size-7 rounded-md"></div> }
+                </div>
+              </div>
+            </div>
+            <div class="flex w-full flex-col gap-2">
+              <div hlmSkeleton class="h-7 w-56"></div>
+              <div hlmSkeleton class="h-4 w-72 max-w-full"></div>
+              <div hlmSkeleton class="h-4 w-64 max-w-full"></div>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              @for (w of ['w-32', 'w-28', 'w-24']; track w) { <div hlmSkeleton [class]="'h-8 rounded-md ' + w"></div> }
+            </div>
+          </div>
+          <div class="flex flex-col gap-4 lg:col-span-3">
+            <div hlmSkeleton class="h-10 w-full max-w-md self-end rounded-lg"></div>
+            <div class="grid gap-4 sm:grid-cols-2">
+              @for (i of [1, 2, 3, 4]; track i) { <div hlmSkeleton class="min-h-44 rounded-xl"></div> }
+            </div>
+          </div>
+        </div>
+        <div class="mt-14 flex flex-col gap-3" aria-hidden="true">
+          <div hlmSkeleton class="h-7 w-48"></div>
+          <div hlmSkeleton class="h-5 w-80 max-w-full"></div>
+          <div class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            @for (i of [1, 2, 3, 4, 5, 6, 7, 8]; track i) { <div hlmSkeleton class="h-16 rounded-lg"></div> }
+          </div>
         </div>
       </app-container>
     } @else {
       <app-container class="py-14">
         <h1 class="text-3xl font-bold tracking-tight">No contributions from {{ username() }}</h1>
         <p class="mt-2 max-w-xl text-muted-foreground">
-          {{ profile.error() ? 'The profile could not be loaded. Try again in a moment.' : 'Nobody with this GitHub username has a merged pull request, an issue or a comment in Angular's repositories yet, or the data has not caught up: it updates every night.' }}
+          {{ notFoundText() }}
         </p>
         <a hlmBtn class="mt-6" href="https://github.com/angular/angular/contribute" target="_blank" rel="noopener">Find a first issue</a>
       </app-container>
@@ -273,11 +307,23 @@ export default class Profile {
   private readonly meta = inject(Meta);
   private readonly document = inject(DOCUMENT);
   private readonly response = injectResponse();
+  private readonly auth = inject(AuthService);
 
   protected readonly username = injectParams(params => String(params['username'] ?? ''));
   private readonly requested = injectQueryParams(params => (isPeriod(params['period']) ? (params['period'] as Period) : null));
   /** Every period is in the profile: switching period needs no request. */
   protected readonly profile = injectServerFn(getContributor, () => ({ username: this.username() }));
+  /** Signed in as this contributor (by GitHub id). */
+  /** In the class, not the template: an apostrophe in a template string ends it. */
+  /** GitHub's rule for a username; anything else is not found, not a failed load. */
+  protected readonly validUsername = computed(() => GITHUB_USERNAME_RE.test(this.username()));
+  protected readonly notFoundText = computed(() => this.profile.error() && this.validUsername()
+    ? 'The profile could not be loaded. Try again in a moment.'
+    : "Nobody with this GitHub username has a merged pull request, an issue or a comment in Angular's repositories yet, or the data has not caught up: it updates every night.");
+  protected readonly isOwner = computed(() => {
+    const me = this.auth.state()?.user;
+    return !!me && me.githubId === this.profile.value()?.githubId;
+  });
 
   protected readonly available = computed(() => this.profile.value()?.periods.map(row => row.period) ?? ['all']);
   /** `?period=` when the contributor contributed in it, all time otherwise. */
@@ -324,26 +370,35 @@ export default class Profile {
   });
   protected readonly PACKAGES_SHOWN = 12;
   protected readonly allPackages = signal(false);
+  /** Misspelled scopes (`platform-brower`) folded into the package they mean. */
+  protected readonly packages = computed(() => foldPackages(this.profile.value()?.packages ?? []));
   protected readonly shownPackages = computed(() => {
-    const packages = this.profile.value()?.packages ?? [];
+    const packages = this.packages();
     return this.allPackages() ? packages : packages.slice(0, this.PACKAGES_SHOWN);
   });
   protected readonly packageLabel = packageLabel;
+  protected readonly icon = packageIcon;
   protected readonly plural = plural;
+  protected readonly points = formatPoints;
   /** Earned from the data: the Angular team, the all-time top 10, #1 of a year, 100+ review comments. */
   protected readonly badges = computed(() => {
     const person = this.profile.value();
     if (!person) return [];
-    const strong = 'bg-primary/10 text-primary ring-primary/30';
-    const neutral = 'bg-muted/50 ring-border';
+    // One colour per kind, the profile's stat colours: gold for a #1, sky for the all-time top 10, violet (comments)
+    // for reviews. As soft tints, readable in both themes.
+    const gold = 'bg-amber-500/10 text-amber-700 ring-amber-500/30 dark:text-amber-400';
+    const sky = 'bg-sky-500/10 text-sky-700 ring-sky-500/30 dark:text-sky-400';
+    const violet = 'bg-violet-500/10 text-violet-700 ring-violet-500/30 dark:text-violet-400';
     const badges: Array<{ label: string, title: string, icon: string, style: string }> = [];
     // The gradient Angular logo of the press kit, only to say "member of the Angular team" (the site's mark stays the A).
     if (person.team) badges.push({ label: 'Angular team', title: 'A public member of the angular organization on GitHub', icon: 'angular', style: 'bg-[#dc087d]/10 text-foreground ring-[#dc087d]/40' });
-    if (person.rank <= 10) badges.push({ label: 'Top 10 all time', title: `#${formatNumber(person.rank)} of all time`, icon: 'lucideTrophy', style: strong });
-    for (const year of this.years().filter(row => row.rank === 1).slice(0, 3)) {
-      badges.push({ label: `#1 in ${year.period}`, title: `The top Angularian of ${year.period}`, icon: 'lucideCrown', style: strong });
+    // Every year at #1 in one badge: "#1 in 2024–2026", "#1 in 2019, 2024".
+    const firsts = this.years().filter(row => row.rank === 1).map(row => Number(row.period)).sort((x, y) => x - y);
+    if (firsts.length) {
+      badges.push({ label: `#1 in ${yearRanges(firsts)}`, title: `The top Angularian of ${plural(firsts.length, 'year', 'years')}`, icon: 'lucideCrown', style: gold });
     }
-    if (person.reviewComments >= 100) badges.push({ label: 'Reviewer', title: `${formatNumber(person.reviewComments)} review comments on code`, icon: 'lucideFileCode', style: neutral });
+    if (person.rank <= 10) badges.push({ label: 'Top 10 all time', title: `#${formatNumber(person.rank)} of all time`, icon: 'lucideTrophy', style: sky });
+    if (person.reviewComments >= 100) badges.push({ label: 'Reviewer', title: `${formatNumber(person.reviewComments)} review comments on code`, icon: 'lucideFileCode', style: violet });
     return badges;
   });
   /** The contributor's rank in each period they contributed in, for the period tabs. */
@@ -373,18 +428,25 @@ export default class Profile {
     return all.filter((link, index) => all.findIndex(other => other.url === link.url) === index);
   });
   /** Back to the board of the period on screen; the board's default period keeps its URL clean. */
-  protected readonly backQuery = computed(() => (this.period() === DEFAULT_PERIOD ? {} : { period: this.period() }));
+  /** The board the profile was opened from: its period and, from the grid, its country (`?country=`). */
+  private readonly fromCountry = injectQueryParams(params => countryCode(params['country']));
+  protected readonly backQuery = computed(() => ({
+    ...(this.period() === DEFAULT_PERIOD ? {} : { period: this.period() }),
+    ...(this.fromCountry() ? { country: this.fromCountry() } : {}),
+  }));
 
   protected readonly avatar = (person: ContributorProfile) => avatarUrl(person.githubId, 112);
   protected readonly number = formatNumber;
   protected readonly phrase = periodPhrase;
   protected readonly country = countryName;
+  protected readonly flag = flagUrl;
   protected readonly countryQuery = (code: string) => ({ ...profileQuery(this.period()), country: code });
 
   constructor() {
     effect(() => {
       const person = this.profile.value();
-      if (person === null && this.response) this.response.statusCode = 404;
+      // Nobody with this username, or a path that cannot be one (`/-x-`): not found.
+      if ((person === null || !this.validUsername()) && this.response) this.response.statusCode = 404;
       // One URL per profile: /CrisBeto → /crisbeto, keeping the period.
       if (person && person.username !== this.username()) {
         void this.router.navigate(['/', person.username], { queryParamsHandling: 'preserve', replaceUrl: true });
@@ -423,13 +485,14 @@ export default class Profile {
     this.meta.updateTag({ name: 'description', content: description });
     this.meta.updateTag({ property: 'og:title', content: title });
     this.meta.updateTag({ property: 'og:description', content: description });
-    this.meta.updateTag({ property: 'og:image', content: avatarUrl(person.githubId, 200) });
-    let canonical = this.document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');
-    if (!canonical) {
-      canonical = this.document.createElement('link');
-      canonical.rel = 'canonical';
-      this.document.head.appendChild(canonical);
-    }
-    canonical.setAttribute('href', `/${person.username}`);
+    // The Angularian card of the period on screen: 1200×630, a large preview on X, LinkedIn, Slack…
+    const card = `${SITE_URL}/${person.username}/card.png${this.period() === 'all' ? '' : `?period=${this.period()}`}`;
+    this.meta.updateTag({ property: 'og:image', content: card });
+    this.meta.updateTag({ property: 'og:image:width', content: '1200' });
+    this.meta.updateTag({ property: 'og:image:height', content: '630' });
+    this.meta.updateTag({ name: 'twitter:card', content: 'summary_large_image' });
+    this.meta.updateTag({ name: 'twitter:image', content: card });
+    this.meta.updateTag({ property: 'og:url', content: `${SITE_URL}/${person.username}${this.period() === 'all' ? '' : `?period=${this.period()}`}` });
+    setCanonical(this.document, `/${person.username}`);
   }
 }

@@ -1,4 +1,5 @@
-import { Directive } from "@angular/core";
+import { DOCUMENT, isPlatformBrowser } from "@angular/common";
+import { DestroyRef, Directive, ElementRef, PLATFORM_ID, afterNextRender, inject } from "@angular/core";
 import {
   BrnTooltip,
   BrnTooltipPosition,
@@ -26,6 +27,14 @@ export const tooltipPositionVariants = cva("absolute", {
   },
 });
 
+/**
+ * Local fixes over the brain tooltip (see THIRD_PARTY_NOTICES.md). It is drawn once, where its trigger was, so:
+ * - any scroll closes it (any scroll container, not only the page), and cancels one still waiting for its delay;
+ * - a trigger that moves while it is open (a board that swaps, a card that loads) closes it, instead of leaving it
+ *   floating away from its trigger;
+ * - pressing the trigger closes it (an avatar that navigates must not leave it behind);
+ * - focus opens it only from the keyboard (`:focus-visible`), not from a click or a dialog giving focus back.
+ */
 @Directive({
   selector: "[hlmTooltip]",
   exportAs: "hlmTooltip",
@@ -51,4 +60,52 @@ export const tooltipPositionVariants = cva("absolute", {
     },
   ],
 })
-export class HlmTooltip {}
+export class HlmTooltip {
+  private readonly brn = inject(BrnTooltip);
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+  private readonly document = inject(DOCUMENT);
+
+  constructor() {
+    const destroyRef = inject(DestroyRef);
+    // Browser only: in this app's server rendering, after-render hooks run on the server too.
+    if (!isPlatformBrowser(inject(PLATFORM_ID))) return;
+    afterNextRender(() => {
+      // The brain's own `delay(false, -1)` (private in its types, @spartan-ng/brain 1.9.0): hide now, and cancel a
+      // show still waiting for its delay. It has no public close; check this on an upgrade (tooltip spec).
+      const brn = this.brn as unknown as { delay(isShow: boolean, delay?: number): void };
+      const close = () => brn.delay(false, -1);
+      const view = this.document.defaultView;
+      const listeners: Array<[EventTarget, string, EventListener, AddEventListenerOptions]> = [
+        [this.document, "scroll", close, { capture: true, passive: true }],
+        [view ?? this.document, "resize", close, { passive: true }],
+        [this.host, "pointerdown", close, {}],
+        // After the brain's own focus listener, which shows unconditionally.
+        [this.host, "focus", () => queueMicrotask(() => {
+          if (!this.host.matches(":focus-visible")) close();
+        }), {}],
+      ];
+      for (const [target, type, listener, options] of listeners) target.addEventListener(type, listener, options);
+
+      // While open, the trigger must stay where the tooltip was drawn: a layout shift closes it.
+      let frame = 0;
+      const watch = (top: number) => {
+        frame = requestAnimationFrame(() => {
+          if (Math.abs(this.host.getBoundingClientRect().top - top) > 1) close();
+          else watch(top);
+        });
+      };
+      const shown = this.brn.show.subscribe(() => {
+        cancelAnimationFrame(frame);
+        watch(this.host.getBoundingClientRect().top);
+      });
+      const hidden = this.brn.hide.subscribe(() => cancelAnimationFrame(frame));
+
+      destroyRef.onDestroy(() => {
+        for (const [target, type, listener, options] of listeners) target.removeEventListener(type, listener, options);
+        shown.unsubscribe();
+        hidden.unsubscribe();
+        cancelAnimationFrame(frame);
+      });
+    });
+  }
+}

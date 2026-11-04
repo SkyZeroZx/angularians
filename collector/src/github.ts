@@ -1,7 +1,8 @@
 /**
  * A small GitHub REST/GraphQL client on `fetch`: auth, `Link` pagination, and waits on rate limits.
- * `GITHUB_TOKEN` is optional for search, required for GraphQL.
+ * The token comes from `auth.ts`: a GitHub App's, or `GITHUB_TOKEN`; optional for search, required for GraphQL.
  */
+import { currentToken, hasToken } from './auth.ts'
 
 const API = 'https://api.github.com'
 const USER_AGENT = 'angularians-collector'
@@ -46,10 +47,12 @@ export function retryDelay(status: number, responseHeaders: Headers, attempt: nu
   return null
 }
 
-export async function request(url: string, init: RequestInit = {}, token = process.env['GITHUB_TOKEN']): Promise<Response> {
+export async function request(url: string, init: RequestInit = {}): Promise<Response> {
   const target = url.startsWith('http') ? url : `${API}${url}`
   for (let attempt = 1; ; attempt++) {
     let response: Response
+    // Each attempt asks again: a GitHub App's token may have been renewed while this one waited.
+    const token = await currentToken()
     try {
       response = await fetch(target, { ...init, headers: { ...headers(token), ...init.headers as Record<string, string> } })
     }
@@ -111,6 +114,6 @@ export async function* paginate<T>(url: string): AsyncGenerator<T[]> {
 }
 
 export async function graphql<T>(query: string, variables: Record<string, unknown>): Promise<{ data: T | null, errors?: Array<{ type?: string, message?: string }> }> {
-  if (!process.env['GITHUB_TOKEN']) throw new GitHubError(401, 'GraphQL needs GITHUB_TOKEN')
+  if (!hasToken()) throw new GitHubError(401, 'GraphQL needs GITHUB_TOKEN or a GitHub App')
   return (await fetchJson<{ data: T | null, errors?: Array<{ type?: string, message?: string }> }>('/graphql', { method: 'POST', body: JSON.stringify({ query, variables }) })).data
 }

@@ -63,8 +63,10 @@ SOFTWARE.
 
 ## spartan/ui
 
-https://github.com/spartan-ng/spartan: the helm components copied into `app/src/ui/` (MIT). Two local changes are
-marked in the code: a `buttonAriaLabel` input on the select trigger, and the progress indicator filling by value / max.
+https://github.com/spartan-ng/spartan: the helm components copied into `app/src/ui/` (MIT). Three local changes are
+marked in the code: a `buttonAriaLabel` input on the select trigger, the progress indicator filling by value / max, and
+the tooltip closing on any scroll, a press of its trigger or a move of its trigger, and opening on keyboard focus only
+(it calls the brain tooltip's internal `delay`: check it when upgrading `@spartan-ng/brain`).
 
 ## The Angular logo
 
@@ -75,7 +77,8 @@ unchanged and only to show membership of the Angular team; the Angularians mark 
 ## Data
 
 - Country names and coordinates: [GeoNames](https://www.geonames.org), CC BY 4.0.
-- Contributions: the public GitHub API, for the public repository angular/angular.
+- Contributions: the public GitHub API, for the public repositories angular/angular, angular/components,
+  angular/angular-cli and angular/dev-infra.
 - Avatars are served by GitHub (avatars.githubusercontent.com), not stored here.
 
 Angular is a trademark of Google LLC. This project is not affiliated with Google or the Angular team.

@@ -1,23 +1,29 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { Container } from './container';
 
-/** The top of a page: a heading, a description, and optional actions (Nuxt UI `UPageHero`). */
+/**
+ * The top of a page (Nuxt UI `UPageHero`, as on nuxt.com/nuxters): a heading, a description and optional actions,
+ * with an optional card beside them on wide screens (`heroAside`).
+ */
 @Component({
   selector: 'app-page-hero',
   imports: [Container],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block' },
   template: `
-    <app-container class="pt-16 pb-10 sm:pt-24 sm:pb-12">
-      <ng-content select="[heroHeadline]" />
-      <h1 class="text-4xl font-medium tracking-tight text-balance sm:text-5xl">
-        <ng-content select="[heroTitle]" />{{ title() }}
-      </h1>
-      @if (description()) {
-        <p class="mt-4 max-w-2xl text-lg text-pretty text-muted-foreground">{{ description() }}</p>
-      }
-      <div class="mt-8 flex flex-wrap gap-3 empty:hidden"><ng-content select="[heroActions]" /></div>
-      <ng-content />
+    <app-container class="grid items-center gap-10 pt-16 pb-12 sm:pt-24 sm:pb-16 lg:grid-cols-2 lg:gap-16">
+      <div>
+        <ng-content select="[heroHeadline]" />
+        <h1 class="text-4xl font-medium tracking-tight text-balance sm:text-5xl">
+          <ng-content select="[heroTitle]" />{{ title() }}
+        </h1>
+        @if (description()) {
+          <p class="mt-5 max-w-2xl text-lg text-pretty text-muted-foreground">{{ description() }}</p>
+        }
+        <div class="mt-8 flex flex-wrap gap-3 empty:hidden"><ng-content select="[heroActions]" /></div>
+        <ng-content />
+      </div>
+      <ng-content select="[heroAside]" />
     </app-container>
   `,
 })
