@@ -3,7 +3,9 @@
   "projectOwner": "erkamyaman",
   "repoType": "github",
   "repoHost": "https://github.com",
-  "files": ["README.md"],
+  "files": [
+    "README.md"
+  ],
   "imageSize": 100,
   "commit": false,
   "commitConvention": "angular",
@@ -15,7 +17,23 @@
       "name": "Erkam Yaman",
       "avatar_url": "https://avatars.githubusercontent.com/u/88717125?v=4",
       "profile": "https://github.com/erkamyaman",
-      "contributions": ["code", "design", "doc", "infra", "maintenance"]
+      "contributions": [
+        "code",
+        "design",
+        "doc",
+        "infra",
+        "maintenance"
+      ]
+    },
+    {
+      "login": "SkyZeroZx",
+      "name": "Jaime Burgos",
+      "avatar_url": "https://avatars.githubusercontent.com/u/73321943?v=4",
+      "profile": "https://skyzerozx.com/",
+      "contributions": [
+        "code"
+      ]
     }
-  ]
+  ],
+  "commitType": "docs"
 }
