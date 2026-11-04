@@ -18,18 +18,20 @@ type Node = { type: string, props: Record<string, unknown> & { style?: Record<st
 const h = (type: string, style: Record<string, unknown>, children?: unknown, props: Record<string, unknown> = {}): Node =>
   ({ type, props: { ...props, style: { display: 'flex', ...style }, children } })
 
+/** Satori sets Norse a little high on the baseline: moved down by this much of the font size, measured. */
+const NUDGE = 0.09
 const format = new Intl.NumberFormat('en-US').format
 const label = (value: number, one: string, many: string) => (value === 1 ? one : many)
 
 /**
- * Text with the word "Angularian(s)" set in the brand font, a size up to match (as the site's `brand` utility):
+ * Text with the word "Angularian(s)" set in the brand font (its capitals are as tall as Inter's):
  * the pieces as flex items, so the line still wraps between them.
  */
 function branded(text: string, style: Record<string, unknown>, brandColor?: string): Node {
   const size = Number(style.fontSize ?? 16)
   const pieces = text.split(/(Angularians?)/).filter(Boolean)
   return h('div', { flexWrap: 'wrap', alignItems: 'baseline', columnGap: size * .25, ...style }, pieces.map(piece => /^Angularians?$/.test(piece)
-    ? h('span', { fontFamily: 'Norse', fontWeight: 700, fontSize: size * 1.18, letterSpacing: size * .02, ...(brandColor ? { color: brandColor } : {}) }, piece)
+    ? h('span', { fontFamily: 'Norse', fontWeight: 700, fontSize: size, letterSpacing: size * .02, position: 'relative', top: size * NUDGE, ...(brandColor ? { color: brandColor } : {}) }, piece)
     : h('span', {}, piece.trim())))
 }
 
@@ -86,7 +88,8 @@ export function homeTree(input: { title: string, description: string, avatars: A
     h('div', { flexDirection: 'column' }, [
       h('div', { alignItems: 'center', gap: 16 }, [
         h('svg', { width: 56, height: 56 }, h('path', {}, undefined, { d: MARK, fill: BRAND }), { viewBox: '0 0 24 24', width: 56, height: 56 }),
-        branded('Angularians', { fontSize: 40 }, BRAND),
+        // Norse's capitals sit high in their line box: moved down so they centre on the mark.
+        h('div', { fontFamily: 'Norse', fontWeight: 700, fontSize: 48, letterSpacing: 1, color: BRAND, lineHeight: 1, marginTop: 13 }, 'Angularians'),
       ]),
       branded(input.title, { fontSize: 76, fontWeight: 600, marginTop: 48, lineHeight: 1.1 }, BRAND),
       h('div', { fontSize: 32, color: '#a3a3a3', marginTop: 24, maxWidth: 980, lineHeight: 1.35 }, input.description),

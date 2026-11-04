@@ -46,7 +46,7 @@ export const routeMeta = {
   template: `
     <app-page-hero>
       <span heroHeadline hlmBadge variant="secondary" class="mb-4">Updated every day</span>
-      <span heroTitle class="group inline-flex items-center gap-x-4"><app-logo-mark class="size-[1.1em] shrink-0 max-sm:hidden" animated /><span>Meet the <span class="brand text-[1.15em] leading-[inherit] whitespace-nowrap text-brand-from">Angularians</span></span></span>
+      <span heroTitle class="group inline-flex items-center gap-x-4"><app-logo-mark class="size-[1.1em] shrink-0 max-sm:hidden" animated /><span>Meet the <span class="brand whitespace-nowrap text-brand-from">Angularians</span></span></span>
       <!-- @container: the card's height follows its own width -->
       <span heroDescription>
         The people behind

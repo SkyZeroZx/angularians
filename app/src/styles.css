@@ -108,13 +108,14 @@
   --font-display: "Norse", Georgia, serif;
 }
 
-/* The word "Angularian(s)" wherever the site shows it: in the display font, a size up to match the text around it. */
+/*
+ * The word "Angularian(s)" wherever the site shows it, in the display font: same size as the text around it (Norse's
+ * capitals are as tall as Inter's), on the same baseline.
+ */
 @utility brand {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 1.18em;
   letter-spacing: 0.02em;
-  line-height: 1;
 }
 
 @layer base {
