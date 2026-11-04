@@ -10,7 +10,7 @@ import { countryName, DEFAULT_PERIOD, isPeriod, periodPhrase, reposQuery, type C
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucideArrowLeft, lucideArrowUpRight, lucideAward, lucideCalendar, lucideCircleDot, lucideGitPullRequest, lucideGlobe, lucideInfo,
-  lucideBadgeCheck, lucideChevronDown, lucideChevronUp, lucideCrown, lucideFileCode, lucideLink, lucideLinkedin, lucideMapPin, lucideMessageCircle,
+  lucideBadgeCheck, lucideChevronDown, lucideChevronUp, lucideCrown, lucideFileCode, lucideLink, lucideLinkedin, lucideMessageCircle,
   lucidePackage, lucideSmilePlus, lucideTrophy,
 } from '@ng-icons/lucide';
 import {
@@ -26,7 +26,7 @@ import { HlmTooltip } from '@spartan-ng/helm/tooltip';
 import { getContributor } from '../data/contributors.server';
 import { AngularLogo } from '../layout/angular-logo';
 import { Container } from '../layout/container';
-import { avatarUrl, formatNumber, formatPoints, plural, profileQuery } from '../leaderboard/format';
+import { avatarUrl, flagUrl, formatNumber, formatPoints, plural, profileQuery } from '../leaderboard/format';
 import { PeriodTabs } from '../leaderboard/period-tabs';
 import { packageLabel } from '../profile/packages';
 import { ScoreBreakdown } from '../profile/score-breakdown';
@@ -56,7 +56,7 @@ const SINCE = new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric'
   imports: [AngularLogo, Container, HlmButton, HlmDialogImports, HlmSkeleton, HlmTooltip, NgIcon, NgTemplateOutlet, PeriodTabs, RouterLink, ScoreBreakdown],
   providers: [provideIcons({
     lucideArrowLeft, lucideArrowUpRight, lucideAward, lucideCalendar, lucideCircleDot, lucideGitPullRequest, lucideGlobe, lucideInfo,
-    lucideBadgeCheck, lucideChevronDown, lucideChevronUp, lucideCrown, lucideFileCode, lucideLink, lucideLinkedin, lucideMapPin, lucideMessageCircle,
+    lucideBadgeCheck, lucideChevronDown, lucideChevronUp, lucideCrown, lucideFileCode, lucideLink, lucideLinkedin, lucideMessageCircle,
     lucidePackage, lucideSmilePlus, lucideTrophy,
     simpleBluesky, simpleFacebook, simpleGithub, simpleInstagram, simpleMastodon, simpleNpm, simpleReddit, simpleThreads, simpleTwitch, simpleX,
     simpleYoutube,
@@ -64,7 +64,6 @@ const SINCE = new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric'
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'relative block isolate' },
   template: `
-    <!-- A soft glow of the brand colour behind the top of the profile, like the Nuxters pages -->
     <app-container class="pt-8">
       <a hlmBtn variant="link" class="px-0" routerLink="/" [queryParams]="backQuery()">
         <ng-icon name="lucideArrowLeft" aria-hidden="true" />All contributors
@@ -123,7 +122,7 @@ const SINCE = new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric'
                 @if (person.country) {
                   <!-- nofollow: crawlers would render every country × period. -->
                   <a routerLink="/" [queryParams]="countryQuery(person.country)" fragment="leaderboard" rel="nofollow" class="inline-flex items-center gap-1.5 hover:text-foreground">
-                    <ng-icon name="lucideMapPin" aria-hidden="true" />{{ country(person.country) }}
+                    <img [src]="flag(person.country)" alt="" width="16" height="16" class="size-4 shrink-0 rounded-full" />{{ country(person.country) }}
                   </a>
                 }
                 @if (since(); as date) {
@@ -249,10 +248,43 @@ const SINCE = new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric'
         </app-container>
       }
     } @else if (profile.isLoading()) {
-      <app-container class="py-14" aria-busy="true">
-        <div class="flex items-center gap-4">
-          <div hlmSkeleton class="size-20 rounded-xl"></div>
-          <div class="flex-1 space-y-2"><div hlmSkeleton class="h-8 w-56"></div><div hlmSkeleton class="h-5 w-32"></div></div>
+      <!-- The shape of the profile below, so nothing jumps when it arrives. -->
+      <app-container class="py-8 lg:py-14" aria-busy="true">
+        <span class="sr-only">Loading the profile of {{ username() }}</span>
+        <div class="grid items-start gap-8 lg:grid-cols-5 lg:gap-12" aria-hidden="true">
+          <div class="flex flex-col items-start gap-5 lg:col-span-2">
+            <div class="flex w-full items-center gap-4 lg:flex-col lg:items-start lg:gap-6">
+              <div hlmSkeleton class="size-20 shrink-0 rounded-xl lg:size-28"></div>
+              <div class="flex flex-1 flex-col gap-2 lg:w-full">
+                <div hlmSkeleton class="h-9 w-3/4 max-w-72"></div>
+                <div hlmSkeleton class="h-5 w-32"></div>
+                <div class="flex gap-2 pt-1">
+                  @for (i of [1, 2, 3, 4]; track i) { <div hlmSkeleton class="size-7 rounded-md"></div> }
+                </div>
+              </div>
+            </div>
+            <div class="flex w-full flex-col gap-2">
+              <div hlmSkeleton class="h-7 w-56"></div>
+              <div hlmSkeleton class="h-4 w-72 max-w-full"></div>
+              <div hlmSkeleton class="h-4 w-64 max-w-full"></div>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              @for (w of ['w-32', 'w-28', 'w-24']; track w) { <div hlmSkeleton [class]="'h-8 rounded-md ' + w"></div> }
+            </div>
+          </div>
+          <div class="flex flex-col gap-4 lg:col-span-3">
+            <div hlmSkeleton class="h-10 w-full max-w-md self-end rounded-lg"></div>
+            <div class="grid gap-4 sm:grid-cols-2">
+              @for (i of [1, 2, 3, 4]; track i) { <div hlmSkeleton class="min-h-44 rounded-xl"></div> }
+            </div>
+          </div>
+        </div>
+        <div class="mt-14 flex flex-col gap-3" aria-hidden="true">
+          <div hlmSkeleton class="h-7 w-48"></div>
+          <div hlmSkeleton class="h-5 w-80 max-w-full"></div>
+          <div class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            @for (i of [1, 2, 3, 4, 5, 6, 7, 8]; track i) { <div hlmSkeleton class="h-16 rounded-lg"></div> }
+          </div>
         </div>
       </app-container>
     } @else {
@@ -378,6 +410,7 @@ export default class Profile {
   protected readonly number = formatNumber;
   protected readonly phrase = periodPhrase;
   protected readonly country = countryName;
+  protected readonly flag = flagUrl;
   protected readonly countryQuery = (code: string) => ({ ...profileQuery(this.period()), country: code });
 
   constructor() {
