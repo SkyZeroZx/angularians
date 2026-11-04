@@ -2,7 +2,7 @@
 
 ## Supported versions
 
-Only the live site, [angularians.netlify.app](https://angularians.netlify.app), and the latest commit on the main branch are supported.
+Only the live site, [angularians.dev](https://angularians.dev), and the latest commit on the main branch are supported.
 
 ## Report a vulnerability
 

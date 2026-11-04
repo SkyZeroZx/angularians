@@ -40,7 +40,7 @@ http-only cookie; GitHub's access token is used once, to ask who signed in. The 
 | `GITHUB_CLIENT_SECRET` | One of its client secrets |
 | `SESSION_SECRET` | 32 characters or more, to seal the cookie |
 
-The App's callback URL is `https://angularians.netlify.app/api/auth/callback`.
+The App's callback URL is `https://angularians.dev/api/auth/callback`.
 
 ## Public API
 

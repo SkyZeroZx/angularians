@@ -6,7 +6,7 @@
 [![Sponsor](https://img.shields.io/badge/sponsor-erkamyaman-db61a2?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/erkamyaman)
 
 Everyone who has contributed to Angular since 2014, ranked. Inspired by [Nuxters](https://nuxt.com/nuxters), built for Angular.
-Live at **[angularians.netlify.app](https://angularians.netlify.app)**, updated every night.
+Live at **[angularians.dev](https://angularians.dev)**, updated every night.
 
 <p align="center">
   <img alt="The Angularians home page: the hero, sign in with GitHub, and the leaderboard" src="docs/assets/screenshot.png" width="800">

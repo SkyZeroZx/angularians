@@ -98,7 +98,7 @@ export function homeTree(input: { title: string, description: string, avatars: A
       h('div', { alignItems: 'center' }, avatars.map((avatar, index) => avatar
         ? h('img', { width: 88, height: 88, borderRadius: 9999, border: '4px solid #0a0a0a', marginLeft: index ? -18 : 0 }, undefined, { src: avatar, width: 88, height: 88 })
         : h('div', { width: 88, height: 88, borderRadius: 9999, border: '4px solid #0a0a0a', backgroundColor: '#262626', marginLeft: index ? -18 : 0 }))),
-      h('div', { fontSize: 26, color: '#737373' }, 'angularians.netlify.app'),
+      h('div', { fontSize: 26, color: '#737373' }, 'angularians.dev'),
     ]),
   ])
 }
