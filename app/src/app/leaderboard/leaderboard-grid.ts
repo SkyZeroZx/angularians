@@ -40,8 +40,8 @@ export class LeaderboardMemory {
           <a
             [routerLink]="['/', item.username]"
             [queryParams]="query()"
-            [hlmTooltip]="item.username + ' · ' + points(item)"
-            [attr.aria-label]="item.username + ', #' + rank(item) + ', ' + points(item)"
+            [hlmTooltip]="who(item) + ' · ' + points(item)"
+            [attr.aria-label]="who(item) + ', #' + rank(item) + ', ' + points(item)"
             class="block aspect-square overflow-hidden rounded-lg bg-muted ring-1 ring-border transition hover:ring-2 hover:ring-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           >
             <img [src]="avatar(item)" [srcset]="avatars(item)" alt="" [width]="AVATAR_SIZE" [height]="AVATAR_SIZE" loading="lazy" decoding="async" class="size-full object-cover" />
@@ -83,6 +83,8 @@ export class LeaderboardGrid {
   protected readonly AVATAR_SIZE = AVATAR_SIZE
   protected readonly avatar = (item: ContributorSummary) => avatarUrl(item.githubId, AVATAR_SIZE)
   protected readonly avatars = (item: ContributorSummary) => avatarSrcset(item.githubId, AVATAR_SIZE)
+  protected readonly who = (item: ContributorSummary) =>
+    item.name && item.name.toLowerCase() !== item.username.toLowerCase() ? `${item.name} (${item.username})` : item.username
   protected readonly rank = (item: ContributorSummary) => formatNumber(item.rank)
   protected readonly points = (item: ContributorSummary) => formatPoints(item.score)
 

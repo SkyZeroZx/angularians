@@ -72,6 +72,12 @@ describe('ContributorsData', () => {
     expect(data.search('c', { limit: 1 }).map(item => item.username)).toEqual(['crisbeto'])
   })
 
+  it('adds the profile name to a summary when there is one', () => {
+    const items = data.leaderboard({ period: 'all', pageSize: 3 }).items
+    expect(items[0]).toMatchObject({ username: 'crisbeto', name: 'Kristiyan' })
+    expect(items[1]).not.toHaveProperty('name')
+  })
+
   it('searches only the selected country', () => {
     expect(data.search('cris', { country: 'TR' }).map(item => item.username)).toEqual(['Cristina'])
     expect(data.search('builder', { country: 'TR' }).map(item => item.username)).toEqual(['bob'])

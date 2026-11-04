@@ -88,7 +88,7 @@ export class ContributorsData {
       issues: rows.reduce((sum, row) => sum + row.issues, 0),
       comments: rows.reduce((sum, row) => sum + row.comments, 0),
       reviewComments: rows.reduce((sum, row) => sum + row.reviewComments, 0),
-      items: rows.slice(start, start + size).map(toSummary),
+      items: rows.slice(start, start + size).map(row => this.summary(row)),
       collectedAt: this.collectedAt,
     }
   }
@@ -129,7 +129,12 @@ export class ContributorsData {
       else if (username.includes(q) || this.profiles.get(row.githubId)?.name?.toLowerCase().includes(q)) other.push(row)
       if (prefix.length >= limit) break
     }
-    return [...prefix, ...other].slice(0, limit).map(toSummary)
+    return [...prefix, ...other].slice(0, limit).map(row => this.summary(row))
+  }
+
+  private summary({ githubId, username, rank, score }: Contributor): ContributorSummary {
+    const name = this.profiles.get(githubId)?.name?.trim()
+    return { githubId, username, ...(name ? { name } : {}), rank, score }
   }
 
   /** Contributors of a period by country, from the most to the fewest, each with its best ranked usernames. */
@@ -157,8 +162,4 @@ export class ContributorsData {
       countries: [...countries.values()].sort((a, b) => b.count - a.count || a.code.localeCompare(b.code)),
     }
   }
-}
-
-function toSummary({ githubId, username, rank, score }: Contributor): ContributorSummary {
-  return { githubId, username, rank, score }
 }
