@@ -7,7 +7,7 @@ const brandParts = (text: string) => text.split(/(Angularians?)/)
 @Component({
   selector: 'app-page-section',
   imports: [Container],
-  host: { class: 'block scroll-mt-20', '[attr.id]': 'sectionId()', '[attr.aria-labelledby]': 'title() ? headingId() : null' },
+  host: { class: 'block scroll-mt-20', '[attr.id]': 'sectionId()', '[attr.role]': "title() ? 'region' : null", '[attr.aria-labelledby]': 'title() ? headingId() : null' },
   template: `
     <app-container [class]="flush() ? 'pb-12 sm:pb-16' : 'py-12 sm:py-16'">
       @if (title()) {

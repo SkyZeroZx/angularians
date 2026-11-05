@@ -4,6 +4,7 @@ import { afterRenderEffect, Component, computed, effect, inject, linkedSignal, u
 import { Meta, Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { injectServerFn, type RouteMeta } from '@analogjs/router';
+import { injectResponse } from '@analogjs/router/tokens';
 import { countryCode, countryName, DEFAULT_PERIOD, isPeriod, periodPhrase, type Period } from '@angularians/shared';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { remixArrowRightUpLine, remixCalendarLine, remixChatHeartLine, remixGroupLine } from '@ng-icons/remixicon';
@@ -14,6 +15,7 @@ import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import { getContributorsMap, getLeaderboard } from '../data/contributors.server';
+import { loadedValue } from '../data/loaded';
 import { PageGrid } from '../layout/page-grid';
 import { AngularLogo } from '../layout/angular-logo';
 import { LogoMark } from '../layout/logo-mark';
@@ -75,11 +77,17 @@ export const routeMeta = {
       <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <app-period-tabs [period]="period()" [periods]="board()?.periods ?? []" (periodChange)="setPeriod($event)" />
         <div class="grid grid-cols-2 gap-3 sm:flex">
-          <app-country-select [countries]="map.value()?.countries ?? []" [value]="country()" (valueChange)="setCountry($event)" />
+          <app-country-select [countries]="mapValue()?.countries ?? []" [value]="country()" (valueChange)="setCountry($event)" />
           <app-contributor-search [period]="period()" [country]="country()" />
         </div>
       </div>
 
+      @if (leaderboard.error()) {
+        <div role="alert" class="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
+          <p>{{ board() ? 'This board could not be loaded.' : 'The leaderboard could not be loaded.' }}</p>
+          <button hlmBtn variant="outline" type="button" (click)="leaderboard.reload()">Try again</button>
+        </div>
+      }
       @if (board(); as page) {
         <ul class="mt-4 mb-6 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-sm text-muted-foreground" [attr.aria-label]="'Contributions ' + phrase(page.period)">
           <li class="flex items-center gap-1.5"><ng-icon name="remixGroupLine" aria-hidden="true" /><span><strong class="font-semibold text-foreground tabular-nums">{{ number(page.total) }}</strong> {{ page.total === 1 ? 'contributor' : 'contributors' }}{{ page.country ? ' from ' + countryLabel(page.country) : '' }}</span></li>
@@ -96,9 +104,7 @@ export const routeMeta = {
             <p class="py-12 text-center text-muted-foreground">No contributions {{ phrase(page.period) }}{{ page.country ? ' from ' + countryLabel(page.country) : '' }} yet.</p>
           }
         </div>
-      } @else if (leaderboard.error()) {
-        <p role="alert" class="py-12 text-center text-destructive">The leaderboard could not be loaded. Try again in a moment.</p>
-      } @else {
+      } @else if (!leaderboard.error()) {
         <div class="mt-10 grid grid-cols-5 gap-3 sm:grid-cols-8 sm:gap-4 md:grid-cols-10" aria-hidden="true">
           @for (cell of placeholders; track cell) {
             <div hlmSkeleton class="aspect-square rounded-lg"></div>
@@ -107,7 +113,7 @@ export const routeMeta = {
       }
     </app-page-section>
 
-    @if (map.value(); as world) {
+    @if (mapValue(); as world) {
       @if (world.countries.length) {
         <app-page-section sectionId="world" title="Angularians around the world" [viking]="true" [description]="worldDescription(world.countries.length)">
           <span sectionTitleNote>in <span class="brand text-primary">ng-halla</span></span>
@@ -154,6 +160,7 @@ export const routeMeta = {
 })
 export default class Home {
   private readonly router = inject(Router);
+  private readonly response = injectResponse();
   private readonly title = inject(Title);
   private readonly meta = inject(Meta);
   private readonly document = inject(DOCUMENT);
@@ -166,9 +173,11 @@ export default class Home {
   protected readonly leaderboard = injectServerFn(getLeaderboard, () => ({ period: this.period(), country: this.country(), page: 1 }));
   /** Countries of the same period, for the filter and the globe. */
   protected readonly map = injectServerFn(getContributorsMap, () => ({ period: this.period() }));
-  /** The last board stays on screen, dimmed, while the next one loads: no jump to skeletons. */
-  protected readonly board = linkedSignal<ReturnType<typeof this.leaderboard.value>, ReturnType<typeof this.leaderboard.value>>({
-    source: () => this.leaderboard.value(),
+  private readonly boardValue = loadedValue(this.leaderboard);
+  protected readonly mapValue = loadedValue(this.map);
+  /** The last board stays on screen, dimmed, while the next one loads, or if it fails: no jump to skeletons. */
+  protected readonly board = linkedSignal<ReturnType<typeof this.boardValue>, ReturnType<typeof this.boardValue>>({
+    source: () => this.boardValue(),
     computation: (value, previous) => value ?? previous?.value,
   });
 
@@ -204,7 +213,8 @@ export default class Home {
 
     // A shared `?period=` link gets its own title and description; the plain page keeps the generic ones.
     effect(() => {
-      const page = this.leaderboard.value();
+      const page = this.boardValue();
+      if (this.leaderboard.error() && this.response) this.response.statusCode = 503;
       const shared = this.requestedPeriod() && page?.total ? page : null;
       const title = shared ? `Top Angularians ${periodPhrase(shared.period)}` : 'Angularians';
       const description = shared

@@ -10,9 +10,9 @@ import { ThemeService } from './theme.service';
   imports: [RouterOutlet, SiteFooter, SiteHeader],
   host: { class: 'flex min-h-dvh flex-col' },
   template: `
-    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-background focus:px-3 focus:py-2 focus:ring-2 focus:ring-ring">Skip to content</a>
+    <a href="#main" (click)="skipToMain($event)" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-background focus:px-3 focus:py-2 focus:ring-2 focus:ring-ring">Skip to content</a>
     <app-site-header />
-    <main id="main" class="flex-1">
+    <main id="main" tabindex="-1" class="flex-1 outline-none">
       <router-outlet />
     </main>
     <app-site-footer />
@@ -21,6 +21,12 @@ import { ThemeService } from './theme.service';
 export class App {
   // Created with the app, so a saved light theme applies from the start.
   private readonly theme = inject(ThemeService)
+
+  /** `<base href="/">` would send a plain `#main` link to the home page. */
+  protected skipToMain(event: Event): void {
+    event.preventDefault()
+    document.getElementById('main')?.focus()
+  }
 
   constructor() {
     if (!isPlatformBrowser(inject(PLATFORM_ID))) return
@@ -34,6 +40,8 @@ export class App {
       if (event instanceof NavigationEnd) {
         const next = event.urlAfterRedirects.split(/[?#]/)[0]!
         if (next !== path && !back && !location.hash) window.scrollTo({ top: 0 })
+        // A new page: keyboard and screen reader users carry on from its start.
+        if (next !== path) document.getElementById('main')?.focus({ preventScroll: true })
         path = next
       }
     })

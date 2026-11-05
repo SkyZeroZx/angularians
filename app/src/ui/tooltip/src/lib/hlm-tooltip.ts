@@ -32,7 +32,7 @@ export const tooltipPositionVariants = cva("absolute", {
  * - any scroll closes it (any scroll container, not only the page), and cancels one still waiting for its delay;
  * - a trigger that moves while it is open (a board that swaps, a card that loads) closes it, instead of leaving it
  *   floating away from its trigger;
- * - pressing the trigger closes it (an avatar that navigates must not leave it behind);
+ * - pressing the trigger closes it (an avatar that navigates must not leave it behind), and a tap on a button opens it;
  * - focus opens it only from the keyboard (`:focus-visible`), not from a click or a dialog giving focus back.
  */
 @Directive({
@@ -79,6 +79,10 @@ export class HlmTooltip {
         [this.document, "scroll", close, { capture: true, passive: true }],
         [view ?? this.document, "resize", close, { passive: true }],
         [this.host, "pointerdown", close, {}],
+        // A tap on a button (an info icon) opens it: touch has no hover. Links navigate instead.
+        [this.host, "pointerup", ((event: PointerEvent) => {
+          if (event.pointerType === "touch" && this.host.matches("button")) brn.delay(true);
+        }) as EventListener, {}],
         // After the brain's own focus listener, which shows unconditionally.
         [this.host, "focus", () => queueMicrotask(() => {
           if (!this.host.matches(":focus-visible")) close();

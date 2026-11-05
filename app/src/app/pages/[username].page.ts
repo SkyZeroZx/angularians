@@ -20,6 +20,7 @@ import { injectQueryParams } from 'ngxtension/inject-query-params';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import { HlmTooltip } from '@spartan-ng/helm/tooltip';
+import { loadedValue } from '../data/loaded';
 import { getContributor } from '../data/contributors.server';
 import { AngularLogo } from '../layout/angular-logo';
 import { Container } from '../layout/container';
@@ -83,7 +84,7 @@ export function yearRanges(years: readonly number[]): string {
       </a>
     </app-container>
 
-    @if (profile.value(); as person) {
+    @if (loaded(); as person) {
       <app-container class="py-8 lg:py-14">
         <div class="grid grid-cols-[minmax(0,1fr)] items-start gap-8 lg:grid-cols-5 lg:gap-12">
           <div class="flex min-w-0 flex-col items-start gap-5 lg:col-span-2">
@@ -142,13 +143,13 @@ export function yearRanges(years: readonly number[]): string {
               @if (badges().length) {
                 <ul class="flex flex-wrap gap-2" aria-label="Badges">
                   @for (badge of badges(); track badge.label) {
-                    <li [class]="'inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-sm ring-1 ' + badge.style" [hlmTooltip]="badge.title">
+                    <li [class]="'inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-sm ring-1 ' + badge.style" [hlmTooltip]="badge.title" tabindex="0">
                       @if (badge.icon === 'angular') {
                         <app-angular-logo class="size-4" />
                       } @else {
                         <ng-icon [name]="badge.icon" [size]="badge.icon.startsWith('viking') ? '1.25rem' : '1em'" aria-hidden="true" />
                       }
-                      {{ badge.label }}
+                      {{ badge.label }}<span class="sr-only">: {{ badge.title }}</span>
                     </li>
                   }
                 </ul>
@@ -348,11 +349,17 @@ export function yearRanges(years: readonly number[]): string {
       </app-container>
     } @else {
       <app-container class="py-14">
-        <h1 class="text-3xl font-bold tracking-tight">No contributions from {{ username() }}</h1>
-        <p class="mt-2 max-w-xl text-muted-foreground">
-          {{ notFoundText() }}
-        </p>
-        <a hlmBtn class="mt-6" href="https://github.com/angular/angular/contribute" target="_blank" rel="noopener">Find a first issue</a>
+        @if (failedToLoad()) {
+          <h1 class="text-3xl font-bold tracking-tight">{{ username() }}</h1>
+          <p role="alert" class="mt-2 max-w-xl text-destructive">The profile could not be loaded.</p>
+          <button hlmBtn class="mt-6" type="button" (click)="profile.reload()">Try again</button>
+        } @else {
+          <h1 class="text-3xl font-bold tracking-tight">No contributions from {{ username() }}</h1>
+          <p class="mt-2 max-w-xl text-muted-foreground">
+            Nobody with this GitHub username has a merged pull request, an issue or a comment in Angular's repositories yet, or the data has not caught up: it updates every night.
+          </p>
+          <a hlmBtn class="mt-6" href="https://github.com/angular/angular/contribute" target="_blank" rel="noopener">Find a first issue</a>
+        }
       </app-container>
     }
   `,
@@ -369,13 +376,12 @@ export default class Profile {
   private readonly requested = injectQueryParams(params => (isPeriod(params['period']) ? (params['period'] as Period) : null));
   /** Every period is in the profile: switching period needs no request. */
   protected readonly profile = injectServerFn(getContributor, () => ({ username: this.username() }));
+  protected readonly loaded = loadedValue(this.profile);
   /** Signed in as this contributor (by GitHub id). */
   /** In the class, not the template: an apostrophe in a template string ends it. */
   /** GitHub's rule for a username; anything else is not found, not a failed load. */
   protected readonly validUsername = computed(() => GITHUB_USERNAME_RE.test(this.username()));
-  protected readonly notFoundText = computed(() => this.profile.error() && this.validUsername()
-    ? 'The profile could not be loaded. Try again in a moment.'
-    : "Nobody with this GitHub username has a merged pull request, an issue or a comment in Angular's repositories yet, or the data has not caught up: it updates every night.");
+  protected readonly failedToLoad = computed(() => !!this.profile.error() && this.validUsername());
   private readonly promptClosed = signal(false);
   protected closePrompt(): void {
     this.promptClosed.set(true);
@@ -385,28 +391,28 @@ export default class Profile {
     return !!state?.enabled && !state.user && !this.promptClosed();
   });
   protected readonly isAngularian = computed(() => {
-    const person = this.profile.value();
+    const person = this.loaded();
     return !!person && !!(person.pullRequests.all || person.helpfulIssues || person.helpfulComments);
   });
   protected readonly signInUrl = (username: string) => this.auth.loginUrl(`/${encodeURIComponent(username)}`);
   protected readonly isOwner = computed(() => {
     const me = this.auth.state()?.user;
-    return !!me && me.githubId === this.profile.value()?.githubId;
+    return !!me && me.githubId === this.loaded()?.githubId;
   });
 
-  protected readonly available = computed(() => this.profile.value()?.periods.map(row => row.period) ?? ['all']);
+  protected readonly available = computed(() => this.loaded()?.periods.map(row => row.period) ?? ['all']);
   /** `?period=` when the contributor contributed in it, all time otherwise. */
   protected readonly period = computed<Period>(() => {
     const requested = this.requested();
     return requested && this.available().includes(requested) ? requested : 'all';
   });
   protected readonly current = computed(() => {
-    const person = this.profile.value()!;
+    const person = this.loaded()!;
     return person.periods.find(row => row.period === this.period()) ?? { ...person, period: 'all' };
   });
   /** One card per kind of contribution; the ones GitHub can search link to that search. */
   protected readonly stats = computed(() => {
-    const person = this.profile.value()!;
+    const person = this.loaded()!;
     const n = this.current();
     const prs = n.pullRequests;
     const search = (q: string, type: 'pullrequests' | 'issues') => `https://github.com/search?${new URLSearchParams({ q: `${reposQuery()} ${q}`, type })}`;
@@ -442,7 +448,7 @@ export default class Profile {
   /** A package's fill: its PRs against the package with the most, so the tiles compare. */
   protected readonly packageShare = (count: number) => Math.max(2, count / Math.max(1, this.packages()[0]?.pullRequests ?? 1) * 100);
   /** Misspelled scopes (`platform-brower`) folded into the package they mean. */
-  protected readonly packages = computed(() => foldPackages(this.profile.value()?.packages ?? []));
+  protected readonly packages = computed(() => foldPackages(this.loaded()?.packages ?? []));
   protected readonly shownPackages = computed(() => {
     const packages = this.packages();
     return this.allPackages() ? packages : packages.slice(0, this.PACKAGES_SHOWN);
@@ -453,7 +459,7 @@ export default class Profile {
   protected readonly points = formatPoints;
   /** Earned from the data: the Angular team, the all-time top 10, #1 of a year, 100+ review comments. */
   protected readonly badges = computed(() => {
-    const person = this.profile.value();
+    const person = this.loaded();
     if (!person) return [];
     // One colour per kind, the profile's stat colours: gold for a #1, green for the all-time top 10, blue (comments)
     // for reviews. As soft tints, readable in both themes.
@@ -473,7 +479,7 @@ export default class Profile {
     return badges;
   });
   /** The contributor's rank in each period they contributed in, for the period tabs. */
-  protected readonly ranks = computed(() => Object.fromEntries((this.profile.value()?.periods ?? []).map(row => [row.period, row.rank])));
+  protected readonly ranks = computed(() => Object.fromEntries((this.loaded()?.periods ?? []).map(row => [row.period, row.rank])));
   /** Gold for the best year, solid when it is the one on screen; the others in the brand's green. */
   protected readonly yearColumn = (row: { period: string }) => {
     const picked = row.period === this.period();
@@ -484,17 +490,17 @@ export default class Profile {
   protected readonly peakYear = computed(() => this.years().reduce<ReturnType<typeof this.years>[number] | undefined>((top, row) => (!top || row.score > top.score ? row : top), undefined));
   /** A year's column, in pixels: its points against the year with the most, under room for the labels. */
   protected readonly yearBar = (score: number) => Math.max(4, score / Math.max(1, this.peakYear()?.score ?? 1) * 180);
-  protected readonly years = computed(() => (this.profile.value()?.periods ?? []).filter(row => /^\d{4}$/.test(row.period)));
+  protected readonly years = computed(() => (this.loaded()?.periods ?? []).filter(row => /^\d{4}$/.test(row.period)));
   /** Best rank; on a tie (#1 several years), the year with the most points. */
   protected readonly best = computed(() => this.years().reduce<ReturnType<typeof this.years>[number] | undefined>(
     (top, row) => (!top || row.rank < top.rank || (row.rank === top.rank && row.score > top.score) ? row : top), undefined));
-  protected readonly displayName = computed(() => this.profile.value()?.name || this.profile.value()?.username || this.username());
+  protected readonly displayName = computed(() => this.loaded()?.name || this.loaded()?.username || this.username());
   protected readonly since = computed(() => {
-    const date = this.profile.value()?.firstContributionAt;
+    const date = this.loaded()?.firstContributionAt;
     return date ? SINCE.format(new Date(date)) : null;
   });
   protected readonly links = computed(() => {
-    const person = this.profile.value();
+    const person = this.loaded();
     if (!person) return [];
     // Links set on GitHub are user input: never followed by crawlers. `me` for Mastodon verification.
     const rel = 'me nofollow noopener noreferrer';
@@ -516,7 +522,7 @@ export default class Profile {
     ...(this.fromCountry() ? { country: this.fromCountry() } : {}),
   }));
 
-  protected readonly avatar = (person: ContributorProfile) => avatarUrl(person.githubId, 320);
+  protected readonly avatar = (person: ContributorProfile) => avatarUrl(person.githubId, 160);
   protected readonly number = formatNumber;
   protected readonly phrase = periodPhrase;
   protected readonly country = countryName;
@@ -525,9 +531,11 @@ export default class Profile {
 
   constructor() {
     effect(() => {
-      const person = this.profile.value();
+      const person = this.loaded();
       // Nobody with this username, or a path that cannot be one (`/-x-`): not found.
       if ((person === null || !this.validUsername()) && this.response) this.response.statusCode = 404;
+      // A failure, not a missing person: never cached as the page.
+      else if (this.profile.error() && this.response) this.response.statusCode = 503;
       // One URL per profile: /CrisBeto → /crisbeto, keeping the period.
       if (person && person.username !== this.username()) {
         void this.router.navigate(['/', person.username], { queryParamsHandling: 'preserve', replaceUrl: true });
