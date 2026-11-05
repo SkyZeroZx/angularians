@@ -112,7 +112,8 @@ export function pullRequestScopes(title: string, repo = 'angular/angular'): stri
     if (repo === 'angular/angular' && UNSCOPED_DOCS_RE.test(title)) return [SKILL_RE.test(title) ? 'skills' : 'docs']
     return []
   }
-  const scopes = match[1]!.split(/[,\s]+/).map(scope => scope.trim().toLowerCase()).filter(Boolean)
+  // Scopes are separated by commas; a space inside one (`dependency injection`) is part of it, not a second scope.
+  const scopes = match[1]!.split(',').map(scope => scope.trim().toLowerCase()).filter(Boolean)
   return [...new Set(scopes.map(scope => repoPackage(repo, scope)).filter(name => name !== null))]
 }
 
