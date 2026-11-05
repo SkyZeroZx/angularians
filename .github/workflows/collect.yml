@@ -108,4 +108,11 @@ jobs:
           git config user.email '352303491+angularians-collector[bot]@users.noreply.github.com'
           git add data
           git diff --cached --quiet || git commit -m 'chore(data): update contributors'
-          git push
+          # A full run takes hours and main moves meanwhile: take what landed, then push. Only this job writes data/,
+          # so the rebase never conflicts. A few tries, in case another push lands in between.
+          for attempt in 1 2 3 4 5; do
+            git pull --rebase origin main && git push && exit 0
+            echo "Push rejected (attempt $attempt), retrying"
+            sleep $((attempt * 10))
+          done
+          exit 1
