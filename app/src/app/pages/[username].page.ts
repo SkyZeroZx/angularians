@@ -97,7 +97,7 @@ export function yearRanges(years: readonly number[]): string {
                 }
                 @if (isAngularian()) {
                   <p class="my-1 inline-flex h-8 w-fit items-center gap-1.5 rounded-md bg-primary/10 px-2 text-base font-medium text-primary">
-                    <app-logo-mark class="size-5" /><span class="brand leading-none">Angularian</span>
+                    <app-logo-mark class="size-5" compact /><span class="brand leading-none">Angularian</span>
                   </p>
                 }
                 <ul class="-ml-2 flex flex-wrap items-center gap-0.5" aria-label="Links">
