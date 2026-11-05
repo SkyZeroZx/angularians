@@ -470,9 +470,10 @@ export default class Profile {
     const badges: Array<{ label: string, title: string, icon: string, style: string }> = [];
     // The gradient Angular logo of the press kit, only to say "member of the Angular team" (the site's mark stays the A).
     if (person.team) badges.push({ label: 'Angular team', title: 'A public member of the Angular organization on GitHub', icon: 'angular', style: 'bg-[#dc087d]/10 text-foreground ring-[#dc087d]/40' });
-    // Recognised by Google and by GitHub (lists in profile/recognitions.ts): Google's blue, GitHub's star yellow.
-    if (ANGULAR_GDES.has(person.githubId)) badges.push({ label: 'Angular GDE', title: 'A Google Developer Expert for Angular', icon: 'simpleGoogle', style: 'bg-[#1A73E8]/10 text-[#1A73E8] ring-[#1A73E8]/30 dark:bg-[#8AB4F8]/10 dark:text-[#8AB4F8] dark:ring-[#8AB4F8]/30' });
-    if (GITHUB_STARS.has(person.githubId)) badges.push({ label: 'GitHub Star', title: 'A GitHub Star, recognised by GitHub for helping the community', icon: 'remixStarFill', style: 'bg-[#BF8700]/10 text-[#9A6700] ring-[#BF8700]/30 dark:bg-[#E3B341]/10 dark:text-[#E3B341] dark:ring-[#E3B341]/30' });
+    // Recognised by Google and by GitHub (lists in profile/recognitions.ts): Google's blue, GitHub's star yellow; their text a
+    // shade darker on white, for 4.5:1 contrast.
+    if (ANGULAR_GDES.has(person.githubId)) badges.push({ label: 'Angular GDE', title: 'A Google Developer Expert for Angular', icon: 'simpleGoogle', style: 'bg-[#1A73E8]/10 text-[#185ABC] ring-[#1A73E8]/30 dark:bg-[#8AB4F8]/10 dark:text-[#8AB4F8] dark:ring-[#8AB4F8]/30' });
+    if (GITHUB_STARS.has(person.githubId)) badges.push({ label: 'GitHub Star', title: 'A GitHub Star, recognised by GitHub for helping the community', icon: 'remixStarFill', style: 'bg-[#BF8700]/10 text-[#845A00] ring-[#BF8700]/30 dark:bg-[#E3B341]/10 dark:text-[#E3B341] dark:ring-[#E3B341]/30' });
     // Every year at #1 in one badge: "#1 in 2024–2026", "#1 in 2019, 2024".
     const firsts = this.years().filter(row => row.rank === 1).map(row => Number(row.period)).sort((x, y) => x - y);
     if (firsts.length) {
