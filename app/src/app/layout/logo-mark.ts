@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { booleanAttribute, Component, input } from '@angular/core';
 
 /**
  * The Angularians mark: the Angular shield cut in two along the right leg of a rough-cut A (the capital A of
@@ -6,10 +6,22 @@ import { Component } from '@angular/core';
  * right piece is a contribution graph, in greens and the grey of empty days. Built by `app/scripts/logo/build.py`;
  * its colours are the theme's (`--color-brand-from`, `--mark-*` in styles.css). Lifted 3.5%: the bright A half hangs
  * lower than the grid, so next to a word the eye centres on it, not on the box (0.85 of 24 units).
+ *
+ * `compact`: for small sizes (badges), where the theme's dark greens and grey would vanish into a tinted background:
+ * the graph in shades of the text's colour (`currentColor`), faint for empty days, full for the busiest.
  */
 @Component({
   selector: 'app-logo-mark',
-  host: { class: 'inline-block' },
+  host: { class: 'inline-block', '[class.compact]': 'compact()' },
+  styles: `
+    :host(.compact) {
+      --color-brand-from: currentColor;
+      --mark-empty: color-mix(in oklch, currentColor 22%, transparent);
+      --mark-1: color-mix(in oklch, currentColor 45%, transparent);
+      --mark-2: color-mix(in oklch, currentColor 70%, transparent);
+      --mark-3: currentColor;
+    }
+  `,
   template: `
     <svg viewBox="0 0 24 24" class="block size-full -translate-y-[3.5%] overflow-visible" aria-hidden="true">
       <path fill="var(--color-brand-from)" d="M10.26 3.2L10.34 3.41L10.44 3.68L11.28 7.69L11.1 8.16L11.41 8.39L12.67 14.71L12.67 15.08L13.33 17.51L13.4 17.96L13.43 17.96L14.21 21.67L15.44 20.98L11.6 2.69L11.55 2.7L10.26 3.16ZM2.34 6.01L2.28 6.06L2.22 6.12L2.18 6.19L2.15 6.27L2.13 6.35L2.14 6.43L3.51 18.32L3.53 18.4L3.56 18.47L3.61 18.54L3.67 18.6L3.73 18.64L4.51 19.07L4.71 17.96L4.69 17.96L4.76 17.64L5.02 15.99L5.31 15.7L5.28 15.18L5.81 11.96L5.88 11.46L6.04 10.91L6.04 10.44L6.83 6.93L7.3 6.37L7.01 5.98L7.19 4.93L7.35 4.21L2.42 5.98ZM11.56 22.98L11.65 23L11.74 23L11.82 22.98L11.9 22.95L12.03 22.88L11 17.96L11.04 17.96L10.94 17.28L11.15 17.02L10.92 16.86L10.71 15.99L10.65 15.78L10.29 15.84L10.26 15.84L9.74 16.2L7.98 16.62L7.75 16.73L7.22 16.94L7.06 17.96L7.09 17.96L6.71 20.3L11.48 22.95ZM9.34 13.87L10.08 13.69L9.55 10.86L9.45 9.49L9.34 9.02L8.95 6.24L8.43 9.44L8.16 9.57L8.3 9.99L7.95 12.53L7.98 12.51L7.67 14.21L7.64 14.39Z" />
@@ -20,4 +32,6 @@ import { Component } from '@angular/core';
     </svg>
   `,
 })
-export class LogoMark {}
+export class LogoMark {
+  readonly compact = input(false, { transform: booleanAttribute });
+}
