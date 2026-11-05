@@ -103,7 +103,7 @@
         <div class="flex flex-col items-start gap-2 lg:items-end">
           <app-period-tabs [period]="period()" [periods]="available()" [ranks]="ranks()" label="Profile period" (periodChange)="setPeriod($event)" />
           @if (missingPeriod(); as missing) {
-            <p class="text-sm text-muted-foreground" role="status">No contributions {{ phrase(missing) }}, so this is all time.</p>
+            <p class="text-sm text-muted-foreground">No contributions {{ phrase(missing) }}. Showing all time instead.</p>
           }
         </div>
 

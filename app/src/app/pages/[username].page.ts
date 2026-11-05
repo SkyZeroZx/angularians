@@ -22,6 +22,7 @@ import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import { HlmTooltip } from '@spartan-ng/helm/tooltip';
 import { loadedValue, markFailed } from '../data/loaded';
+import { missingPeriod, shownPeriod } from '../profile/period-choice';
 import { getContributor } from '../data/contributors.server';
 import { AngularLogo } from '../layout/angular-logo';
 import { Container } from '../layout/container';
@@ -115,15 +116,8 @@ export default class Profile {
   });
 
   protected readonly available = computed(() => this.loaded()?.periods.map(row => row.period) ?? ['all']);
-  /** `?period=` when the contributor contributed in it, all time otherwise. */
-  protected readonly missingPeriod = computed(() => {
-    const requested = this.requested();
-    return this.loaded() && requested && requested !== this.period() ? requested : null;
-  });
-  protected readonly period = computed<Period>(() => {
-    const requested = this.requested();
-    return requested && this.available().includes(requested) ? requested : 'all';
-  });
+  protected readonly period = computed<Period>(() => shownPeriod(this.requested(), this.available()));
+  protected readonly missingPeriod = computed(() => (this.loaded() ? missingPeriod(this.requested(), this.available()) : null));
   protected readonly current = computed(() => {
     const person = this.loaded()!;
     return person.periods.find(row => row.period === this.period()) ?? { ...person, period: 'all' };
