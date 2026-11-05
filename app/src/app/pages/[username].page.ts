@@ -8,13 +8,14 @@ import { injectServerFn, type RouteMeta } from '@analogjs/router';
 import { injectResponse } from '@analogjs/router/tokens';
 import { countryCode, countryName, DEFAULT_PERIOD, GITHUB_USERNAME_RE, isPeriod, periodPhrase, reposQuery, type ContributorProfile, type Period } from '@angularians/shared';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { remixArrowDownSLine, remixArrowLeftLine, remixArrowRightUpLine, remixArrowUpSLine, remixCloseLine, remixInformationLine, remixLinkM, remixLinkedinBoxLine, remixMedalLine, remixVerifiedBadgeLine } from '@ng-icons/remixicon';
+import { remixArrowDownSLine, remixArrowLeftLine, remixArrowRightUpLine, remixArrowUpSLine, remixCloseLine, remixInformationLine, remixLinkM, remixLinkedinBoxLine, remixMedalLine, remixStarFill, remixVerifiedBadgeLine } from '@ng-icons/remixicon';
 import { vikingAxes, vikingHelmet, vikingLongship, vikingShield } from '../layout/viking-icons';
 import { octComment, octGitMerge, octIssueOpened, octSmiley } from '@ng-icons/octicons';
 import {
   simpleBluesky, simpleFacebook, simpleGithub, simpleInstagram, simpleMastodon, simpleNpm, simpleReddit, simpleThreads, simpleTwitch, simpleX,
-  simpleYoutube,
+  simpleGoogle, simpleYoutube,
 } from '@ng-icons/simple-icons';
+import { ANGULAR_GDES, GITHUB_STARS } from '../profile/recognitions';
 import { injectParams } from 'ngxtension/inject-params';
 import { injectQueryParams } from 'ngxtension/inject-query-params';
 import { HlmButton } from '@spartan-ng/helm/button';
@@ -74,7 +75,7 @@ export function yearRanges(years: readonly number[]): string {
     remixVerifiedBadgeLine, remixArrowDownSLine, remixArrowUpSLine, vikingHelmet, remixLinkM, remixLinkedinBoxLine, octComment,
     octSmiley, vikingShield,
     simpleBluesky, simpleFacebook, simpleGithub, simpleInstagram, simpleMastodon, simpleNpm, simpleReddit, simpleThreads, simpleTwitch, simpleX,
-    simpleYoutube, ...PACKAGE_ICONS,
+    simpleGoogle, simpleYoutube, remixStarFill, ...PACKAGE_ICONS,
   })],
   host: { class: 'relative block isolate' },
   template: `
@@ -469,6 +470,9 @@ export default class Profile {
     const badges: Array<{ label: string, title: string, icon: string, style: string }> = [];
     // The gradient Angular logo of the press kit, only to say "member of the Angular team" (the site's mark stays the A).
     if (person.team) badges.push({ label: 'Angular team', title: 'A public member of the Angular organization on GitHub', icon: 'angular', style: 'bg-[#dc087d]/10 text-foreground ring-[#dc087d]/40' });
+    // Recognised by Google and by GitHub (lists in profile/recognitions.ts): Google's blue, GitHub's star yellow.
+    if (ANGULAR_GDES.has(person.githubId)) badges.push({ label: 'Angular GDE', title: 'A Google Developer Expert for Angular', icon: 'simpleGoogle', style: 'bg-[#1A73E8]/10 text-[#1A73E8] ring-[#1A73E8]/30 dark:bg-[#8AB4F8]/10 dark:text-[#8AB4F8] dark:ring-[#8AB4F8]/30' });
+    if (GITHUB_STARS.has(person.githubId)) badges.push({ label: 'GitHub Star', title: 'A GitHub Star, recognised by GitHub for helping the community', icon: 'remixStarFill', style: 'bg-[#BF8700]/10 text-[#9A6700] ring-[#BF8700]/30 dark:bg-[#E3B341]/10 dark:text-[#E3B341] dark:ring-[#E3B341]/30' });
     // Every year at #1 in one badge: "#1 in 2024–2026", "#1 in 2019, 2024".
     const firsts = this.years().filter(row => row.rank === 1).map(row => Number(row.period)).sort((x, y) => x - y);
     if (firsts.length) {
