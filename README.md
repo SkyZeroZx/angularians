@@ -34,7 +34,8 @@ The data is already in `data/`: you do not need a GitHub token to work on the si
 ## Features
 
 - A leaderboard of [angular/angular](https://github.com/angular/angular), [angular/components](https://github.com/angular/components),
-  [angular/angular-cli](https://github.com/angular/angular-cli) and [angular/dev-infra](https://github.com/angular/dev-infra): merged pull
+  [angular/angular-cli](https://github.com/angular/angular-cli), [angular/dev-infra](https://github.com/angular/dev-infra)
+  and [angular/domino](https://github.com/angular/domino): merged pull
   requests, issues, comments and code reviews. [How the score works](docs/SCORING.md).
 - The last 30 days, the last 12 months, all time and every year, by country, with a globe.
 - A profile for everyone: stats, badges and year by year, with the packages they contributed to, down to

@@ -34,6 +34,12 @@ tooling pushes the commits itself and closes the PR, so GitHub shows most PRs fr
 
 Bots are left out: GitHub apps, `-bot` accounts and the list in `shared/src/bots.ts`.
 
+## Packages on profiles
+
+"Contributed to" groups landed PRs by the packages their titles name. The angular/domino repository provides `@angular/domino`,
+the DOM implementation bundled with `@angular/platform-server` for server-side rendering. Every landed PR in angular/domino
+counts toward `@angular/domino`, even without a scope in its title.
+
 ## Periods
 
 All time, the last 30 days, the last 12 months, and every year from 2014. A contributor's rank is per period.
