@@ -92,8 +92,6 @@ export default class Profile {
   /** Every period is in the profile: switching period needs no request. */
   protected readonly profile = injectServerFn(getContributor, () => ({ username: this.username() }));
   protected readonly loaded = loadedValue(this.profile);
-  /** Signed in as this contributor (by GitHub id). */
-  /** In the class, not the template: an apostrophe in a template string ends it. */
   /** GitHub's rule for a username; anything else is not found, not a failed load. */
   protected readonly validUsername = computed(() => GITHUB_USERNAME_RE.test(this.username()));
   protected readonly failedToLoad = computed(() => !!this.profile.error() && this.validUsername());
