@@ -1,4 +1,5 @@
 import { useStorage } from 'nitropack/runtime'
+import { SITE_URL } from '../../app/site'
 import type { CardFonts } from './card'
 
 let fonts: Promise<CardFonts> | undefined
@@ -19,6 +20,24 @@ export function cardFonts(): Promise<CardFonts> {
     fonts = undefined
     throw error
   }))
+}
+
+const flags = new Map<string, string>()
+
+/** A country's flag as a data URL, from the site's own files, or `null`: a card still renders without it. */
+export async function flagData(code: string): Promise<string | null> {
+  const known = flags.get(code)
+  if (known) return known
+  try {
+    const response = await fetch(`${SITE_URL}/flags/${code.toLowerCase()}.svg`, { signal: AbortSignal.timeout(5000) })
+    if (!response.ok) return null
+    const data = `data:image/svg+xml;base64,${Buffer.from(await response.arrayBuffer()).toString('base64')}`
+    flags.set(code, data)
+    return data
+  }
+  catch {
+    return null
+  }
 }
 
 /** An avatar as a data URL, or `null`: a card still renders without it. `pixels`: its size on the card, ×2. */

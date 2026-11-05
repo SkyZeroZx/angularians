@@ -15,7 +15,7 @@ Angularians ranks everyone who has contributed to the Angular repositories: a co
 | `app/src/app/layout` | the header, the footer, the mark (`logo-mark.ts`), the hero, the colour picker |
 | `app/src/ui` | spartan/ui helm components, copied in and ours to change (`@spartan-ng/helm/*` in tsconfig) |
 | `app/scripts/logo` | the mark (`build.py`) and the README wordmark (`wordmark.py`), built from their construction |
-| `app/public` | the favicon, the Norse font (`fonts/`), the credited projects' logos (`credits/`) |
+| `app/public` | the favicon, the Norse font (`fonts/`) |
 | `data/` | written by the collector; never edit by hand, except to remove a bot from a run |
 | `.github/workflows/collect.yml` | the nightly collection, one job per repository |
 | `.github/labels.json` | the issue labels; `.github/workflows/labels.yml` applies them on main |

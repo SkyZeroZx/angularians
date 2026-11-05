@@ -7,6 +7,8 @@ import satori from 'satori'
 
 export const CARD_WIDTH = 1200
 export const CARD_HEIGHT = 630
+/** Drawn at twice its size: the logos and the text stay sharp on high-density screens and in a download. */
+const PIXEL_RATIO = 2
 
 /** The brand colour and the profile's stat colours (GitHub's, in its dark theme). */
 const BRAND = '#5EB572'
@@ -30,6 +32,9 @@ const NUDGE = 0.09
 const markSvg = (size: number): Node =>
   h('svg', { width: size, height: size, position: 'relative', top: -size * .035 }, MARK.map(([fill, d]) => h('path', {}, undefined, { d, fill })), { viewBox: '0 0 24 24', width: size, height: size })
 
+/** The gradient Angular icon of the press kit (https://angular.dev/press-kit), CC BY 4.0, © Google: `app-angular-logo`. */
+const ANGULAR_LOGO = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 223 236"><path fill="url(#b)" d="m222.077 39.192-8.019 125.923L137.387 0l84.69 39.192Zm-53.105 162.825-57.933 33.056-57.934-33.056 11.783-28.556h92.301l11.783 28.556ZM111.039 62.675l30.357 73.803H80.681l30.358-73.803ZM7.937 165.115 0 39.192 84.69 0 7.937 165.115Z"/><path fill="url(#c)" d="m222.077 39.192-8.019 125.923L137.387 0l84.69 39.192Zm-53.105 162.825-57.933 33.056-57.934-33.056 11.783-28.556h92.301l11.783 28.556ZM111.039 62.675l30.357 73.803H80.681l30.358-73.803ZM7.937 165.115 0 39.192 84.69 0 7.937 165.115Z"/><defs><linearGradient id="b" x1="49.009" x2="225.829" y1="213.75" y2="129.722" gradientUnits="userSpaceOnUse"><stop stop-color="#E40035"/><stop offset=".24" stop-color="#F60A48"/><stop offset=".352" stop-color="#F20755"/><stop offset=".494" stop-color="#DC087D"/><stop offset=".745" stop-color="#9717E7"/><stop offset="1" stop-color="#6C00F5"/></linearGradient><linearGradient id="c" x1="41.025" x2="156.741" y1="28.344" y2="160.344" gradientUnits="userSpaceOnUse"><stop stop-color="#FF31D9"/><stop offset="1" stop-color="#FF5BE1" stop-opacity="0"/></linearGradient></defs></svg>')}`
+
 /** The profile's stat icons (Octicons, MIT), as paths: filled, on a 16 grid. */
 const ICONS = {
   pullRequests: ['M5.45 5.154A4.25 4.25 0 0 0 9.25 7.5h1.378a2.251 2.251 0 1 1 0 1.5H9.25A5.734 5.734 0 0 1 5 7.123v3.505a2.25 2.25 0 1 1-1.5 0V5.372a2.25 2.25 0 1 1 1.95-.218ZM4.25 13.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm8.5-4.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5ZM5 3.25a.75.75 0 1 0 0 .005V3.25Z'],
@@ -37,9 +42,9 @@ const ICONS = {
   comments: ['M1 2.75C1 1.784 1.784 1 2.75 1h10.5c.966 0 1.75.784 1.75 1.75v7.5A1.75 1.75 0 0 1 13.25 12H9.06l-2.573 2.573A1.458 1.458 0 0 1 4 13.543V12H2.75A1.75 1.75 0 0 1 1 10.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h2a.75.75 0 0 1 .75.75v2.19l2.72-2.72a.749.749 0 0 1 .53-.22h4.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z'],
   reactions: ['M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm3.82 1.636a.75.75 0 0 1 1.038.175l.007.009c.103.118.22.222.35.31.264.178.683.37 1.285.37.602 0 1.02-.192 1.285-.371.13-.088.247-.192.35-.31l.007-.008a.75.75 0 0 1 1.222.87l-.022-.015c.02.013.021.015.021.015v.001l-.001.002-.002.003-.005.007-.014.019a2.066 2.066 0 0 1-.184.213c-.16.166-.338.316-.53.445-.63.418-1.37.638-2.127.629-.946 0-1.652-.308-2.126-.63a3.331 3.331 0 0 1-.715-.657l-.014-.02-.005-.006-.002-.003v-.002h-.001l.613-.432-.614.43a.75.75 0 0 1 .183-1.044ZM12 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM5 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2Zm5.25 2.25.592.416a97.71 97.71 0 0 0-.592-.416Z'],
 }
-const STAT_ICON_SIZE = 36
+const STAT_ICON_SIZE = 40
 const statIcon = (paths: string[], color: string): Node =>
-  h('svg', { position: 'absolute', top: 30, left: 32, width: STAT_ICON_SIZE, height: STAT_ICON_SIZE }, paths.map(d => h('path', {}, undefined, { d })), {
+  h('svg', { width: STAT_ICON_SIZE, height: STAT_ICON_SIZE }, paths.map(d => h('path', {}, undefined, { d })), {
     viewBox: '0 0 16 16', width: STAT_ICON_SIZE, height: STAT_ICON_SIZE, fill: color,
   })
 
@@ -65,7 +70,7 @@ export function cardPeriod(profile: ContributorProfile, requested: unknown): Per
 }
 
 /** `avatar`: a data URL, or `null` when GitHub did not send it (a grey circle instead). */
-export function cardTree(profile: ContributorProfile, period: Period, avatar: string | null): Node {
+export function cardTree(profile: ContributorProfile, period: Period, avatar: string | null, flag: { src: string, name: string } | null = null): Node {
   const stats = period === 'all' ? profile : profile.periods.find(row => row.period === period)!
   const since = profile.firstContributionAt ? new Date(profile.firstContributionAt).getUTCFullYear() : null
   const rows = [
@@ -78,27 +83,48 @@ export function cardTree(profile: ContributorProfile, period: Period, avatar: st
       { label: label(stats.reactions, 'Reaction', 'Reactions'), value: stats.reactions, color: COLORS.reactions, icon: ICONS.reactions },
     ],
   ]
-  return h('div', { width: '100%', height: '100%', flexDirection: 'row', backgroundColor: '#0a0a0a', color: '#ffffff', padding: 64, gap: 64, fontFamily: 'Manrope' }, [
-    h('div', { flexDirection: 'column', width: 380, alignItems: 'center', justifyContent: 'space-between' }, [
-      h('div', { flexDirection: 'column', alignItems: 'center' }, [
+  return h('div', { width: '100%', height: '100%', flexDirection: 'column', justifyContent: 'space-between', backgroundColor: '#0a0a0a', color: '#ffffff', paddingTop: 56, paddingRight: 64, paddingBottom: 44, paddingLeft: 64, fontFamily: 'Manrope' }, [
+    h('div', { flexDirection: 'row', gap: 64 }, [
+      h('div', { flexDirection: 'column', width: 380 }, [
         avatar
-          ? h('img', { width: 176, height: 176, borderRadius: 9999, border: '4px solid #262626' }, undefined, { src: avatar, width: 176, height: 176 })
-          : h('div', { width: 176, height: 176, borderRadius: 9999, backgroundColor: '#262626' }),
-        h('div', { fontSize: 48, fontWeight: 600, marginTop: 24, maxWidth: 380, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }, profile.username),
-        branded(period === 'all' ? `Angularian #${format(profile.rank)}` : `#${format(stats.rank)} ${periodPhrase(period)}`, { fontSize: 30, color: '#a3a3a3', marginTop: 16 }),
-        h('div', { fontSize: 36, fontWeight: 600, color: BRAND, marginTop: 16 }, `${format(stats.score)} ${stats.score === 1 ? 'pt' : 'pts'}`),
-        ...(since ? [branded(`Angularian since ${since}`, { fontSize: 24, color: '#737373', marginTop: 12 })] : []),
+          ? h('img', { width: 124, height: 124, borderRadius: 9999, border: '4px solid #262626' }, undefined, { src: avatar, width: 124, height: 124 })
+          : h('div', { width: 124, height: 124, borderRadius: 9999, backgroundColor: '#262626' }),
+        h('div', { fontSize: 44, fontWeight: 600, marginTop: 16, maxWidth: 380, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }, profile.username),
+        h('div', { fontFamily: 'Norse', fontWeight: 700, fontSize: 96, lineHeight: 1, letterSpacing: 2, color: BRAND, marginTop: 8 }, `#${format(period === 'all' ? profile.rank : stats.rank)}`),
+        h('div', { fontSize: 30, fontWeight: 600, color: BRAND, marginTop: 4 }, `${format(stats.score)} ${stats.score === 1 ? 'pt' : 'pts'}`),
+        ...(period !== 'all' ? [h('div', { fontSize: 24, color: '#a3a3a3', marginTop: 4 }, periodPhrase(period))] : []),
+        ...(flag ? [h('div', { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: period === 'all' ? 10 : 4, fontSize: 24, color: '#a3a3a3' }, [
+          h('img', { width: 30, height: 30 }, undefined, { src: flag.src, width: 30, height: 30 }),
+          h('div', {}, flag.name),
+        ])] : []),
       ]),
-      markSvg(48),
+      h('div', { flexDirection: 'column', flex: 1, gap: 24 }, rows.map(row =>
+        h('div', { flexDirection: 'row', gap: 24 }, row.map(stat =>
+          h('div', { flexDirection: 'column', justifyContent: 'space-between', flex: 1, height: 196, borderRadius: 24, padding: 24, border: `2px solid ${stat.color}`, backgroundColor: `${stat.color}12` }, [
+            statIcon(stat.icon, stat.color),
+            h('div', { flexDirection: 'column' }, [
+              h('div', { fontSize: 58, fontWeight: 600, lineHeight: 1.1 }, format(stat.value)),
+              h('div', { fontSize: 26, marginTop: 2, color: stat.color }, stat.label),
+            ]),
+          ])),
+        ))),
     ]),
-    h('div', { flexDirection: 'column', flex: 1, gap: 32, justifyContent: 'center' }, rows.map(row =>
-      h('div', { flexDirection: 'row', gap: 32 }, row.map(stat =>
-        h('div', { position: 'relative', flexDirection: 'column', justifyContent: 'flex-end', flex: 1, height: 220, borderRadius: 24, padding: 32, border: `2px solid ${stat.color}`, backgroundColor: `${stat.color}0D` }, [
-          statIcon(stat.icon, stat.color),
-          h('div', { fontSize: 60, fontWeight: 600 }, format(stat.value)),
-          h('div', { fontSize: 30, marginTop: 8, color: stat.color }, stat.label),
-        ])),
-      ))),
+    h('div', { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid #262626', paddingTop: 18 }, [
+      h('div', { flexDirection: 'row', alignItems: 'center', gap: 14 }, [
+        h('img', { width: 58, height: 62 }, undefined, { src: ANGULAR_LOGO, width: 58, height: 62 }),
+        h('div', { flexDirection: 'column' }, [
+          h('div', { fontSize: 26, fontWeight: 600, lineHeight: 1.15, whiteSpace: 'nowrap' }, 'Angular contributor'),
+          ...(since ? [h('div', { fontSize: 20, lineHeight: 1.2, color: '#a3a3a3' }, `since ${since}`)] : []),
+        ]),
+      ]),
+      h('div', { flexDirection: 'row', alignItems: 'center', gap: 12 }, [
+        markSvg(68),
+        h('div', { flexDirection: 'column' }, [
+          h('div', { fontFamily: 'Norse', fontWeight: 700, fontSize: 30, lineHeight: 1, letterSpacing: 1, color: BRAND }, 'Angularians'),
+          h('div', { fontSize: 20, lineHeight: 1.2, color: '#a3a3a3' }, 'angularians.dev'),
+        ]),
+      ]),
+    ]),
   ])
 }
 
@@ -139,5 +165,5 @@ export async function renderCard(tree: Node, fonts: CardFonts): Promise<Buffer> 
       ...(fonts.brand ? [{ name: 'Norse', data: fonts.brand, weight: 700 as const, style: 'normal' as const }] : []),
     ],
   })
-  return new Resvg(svg, { fitTo: { mode: 'width', value: CARD_WIDTH } }).render().asPng()
+  return new Resvg(svg, { fitTo: { mode: 'width', value: CARD_WIDTH * PIXEL_RATIO } }).render().asPng()
 }

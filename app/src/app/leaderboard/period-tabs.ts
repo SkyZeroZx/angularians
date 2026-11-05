@@ -13,17 +13,17 @@ const RANK = new Intl.NumberFormat('en-US')
   selector: 'app-period-tabs',
   imports: [HlmSelectImports, HlmTabsImports],
   // One pill: the tabs, then the year picker inside it (Nuxters).
-  host: { class: 'inline-flex max-w-full items-center rounded-lg bg-muted p-[3px]' },
+  host: { class: 'inline-flex max-w-full flex-wrap items-center rounded-lg bg-muted p-[3px]' },
   template: `
     @if (tabs().length) {
       <hlm-tabs [tab]="activeTab()" (tabActivated)="pickTab($event)">
         <hlm-tabs-list [attr.aria-label]="label()" class="bg-transparent p-0">
           @for (tab of tabs(); track tab.value) {
-            <button [hlmTabsTrigger]="tab.value" type="button">
+            <button [hlmTabsTrigger]="tab.value" type="button" class="px-3 hover:text-foreground data-active:border-primary/40! data-active:bg-primary/15! data-active:text-primary! data-active:shadow-none!">
               {{ tab.label }}
               <!-- No room on small screens: pages show the rank of the period on screen elsewhere -->
               @if (rankOf(tab.value); as rank) {
-                <span class="hidden text-muted-foreground tabular-nums sm:inline">{{ rank }}</span>
+                <span class="hidden rounded bg-foreground/10 px-1 text-xs font-semibold text-current tabular-nums opacity-80 sm:inline">{{ rank }}</span>
               }
             </button>
           }
@@ -39,7 +39,7 @@ const RANK = new Intl.NumberFormat('en-US')
       <hlm-select [value]="year()" (valueChange)="pickYear($event)" [itemToString]="yearLabel">
         <hlm-select-trigger
           [class]="'h-[calc(100%-1px)] border-transparent bg-transparent shadow-none hover:text-foreground dark:bg-transparent '
-            + (year() ? 'bg-background text-foreground shadow-sm dark:bg-input/30' : 'text-foreground/60 dark:text-muted-foreground')"
+            + (year() ? 'border-primary/40! bg-primary/15! text-primary! dark:bg-primary/15! *:text-primary!' : 'text-foreground/60 dark:text-muted-foreground')"
           size="sm"
           buttonAriaLabel="Year"
         >

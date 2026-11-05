@@ -4,7 +4,7 @@ let nextId = 0;
 
 /**
  * The gradient Angular icon, from the Angular press kit (https://angular.dev/press-kit), CC BY 4.0, © Google.
- * Only to say "member of the Angular team": the site's own mark is the Angularians A.
+ * For Angular itself, not this site: the site's own mark is the Angularians A.
  * Each instance gets its own gradient ids, so several on a page do not share (and break) each other's.
  */
 @Component({

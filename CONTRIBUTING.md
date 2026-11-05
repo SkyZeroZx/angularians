@@ -46,7 +46,7 @@ Small files, plain comments, few dependencies. Comments say why, not what. A new
 
 **A repository on the board.** Add it to `REPOS` in `shared/src/repos.ts` and to the matrix of `.github/workflows/collect.yml`.
 If its PR titles name packages, teach `pullRequestScopes` in `shared/src/pull-requests.ts` how, and `packageLabel` in
-`app/src/app/profile/packages.ts` what to show. Then list it in the footer's Data column (`app/src/app/layout/site-footer.ts`), the README and "How to become an
+`app/src/app/profile/packages.ts` what to show. Then list it in the README and "How to become an
 Angularian" on the home page. The next nightly run collects its full history.
 
 **The mark or the brand colour.** The mark is built by `app/scripts/logo/build.py`: change it there and regenerate its

@@ -2,6 +2,8 @@
 import { isPlatformBrowser, NgTemplateOutlet } from '@angular/common';
 import { afterNextRender, Component, computed, DestroyRef, ElementRef, inject, input, output, PLATFORM_ID, signal, viewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { PODIUM } from '../leaderboard/leaderboard-grid';
+import { RankShield } from '../leaderboard/rank-shield';
 import { countryName, type ContributorsMap, type ContributorSummary, type CountryStats } from '@angularians/shared';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { remixArrowUpLine, remixCloseLine, remixSearchLine } from '@ng-icons/remixicon';
@@ -17,7 +19,7 @@ const CARD_TILES = 12;
 
 @Component({
   selector: 'app-world',
-  imports: [Globe, HlmButton, HlmInputGroupImports, HlmSkeleton, HlmTooltip, NgIcon, NgTemplateOutlet, RouterLink],
+  imports: [Globe, RankShield, HlmButton, HlmInputGroupImports, HlmSkeleton, HlmTooltip, NgIcon, NgTemplateOutlet, RouterLink],
   providers: [provideIcons({ remixArrowUpLine, remixCloseLine, remixSearchLine })],
   host: { class: 'grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] lg:gap-12' },
   template: `
@@ -69,27 +71,34 @@ const CARD_TILES = 12;
       }
     </div>
 
-    <div class="flex min-w-0 flex-col gap-4">
+    <div class="flex min-w-0 flex-col gap-3 rounded-xl bg-muted/40 p-4 ring-1 ring-border">
       <div hlmInputGroup>
         <input hlmInputGroupInput type="search" autocomplete="off" aria-label="Search a country" placeholder="Search a country" [value]="query()" (input)="search($event)" />
         <hlm-input-group-addon><ng-icon name="remixSearchLine" aria-hidden="true" /></hlm-input-group-addon>
       </div>
-      <ol class="-mx-2 max-h-100 overflow-y-auto pr-1" [class.lg:h-100]="query().trim()" aria-label="Countries, from the most contributors">
+      <ol class="-mx-1 flex max-h-100 flex-col gap-1 overflow-y-auto p-1 pt-2" [class.lg:h-100]="query().trim()" aria-label="Countries, from the most contributors">
         @for (item of shownCountries(); track item.code) {
           <li>
             <button
               type="button"
-              class="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-left text-sm transition-colors hover:bg-muted/60 aria-pressed:bg-muted"
+              [class]="'relative flex w-full items-center gap-3 overflow-hidden rounded-md px-2 py-2 text-left ' + (medal(item.code)?.ring.replace('ring-2', 'ring-1') ?? '')"
+              class=" text-sm transition-colors hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none aria-pressed:bg-primary/15 aria-pressed:ring-1 aria-pressed:ring-primary/40"
               [attr.aria-pressed]="item.code === selected()"
               (click)="select.emit(item.code === selected() ? null : item.code)"
             >
-              <span class="w-6 shrink-0 text-right text-xs text-muted-foreground tabular-nums"><span class="sr-only">Rank </span>{{ number(rankOf(item.code)) }}</span>
-              <img [src]="flag(item.code)" alt="" width="20" height="20" loading="lazy" class="size-5 shrink-0" />
-              <span class="min-w-0 flex-1">
+              <span data-rank class="relative grid w-7 shrink-0 place-items-center"><span class="sr-only">Rank </span>
+                @if (medal(item.code); as place) {
+                  <app-rank-shield [rank]="rankOf(item.code)" metal="" [podium]="true" [class]="'h-8 w-7 text-sm ' + place.text" />
+                } @else {
+                  <span class="brand relative top-[0.09em] text-base leading-none text-muted-foreground">{{ number(rankOf(item.code)) }}</span>
+                }
+              </span>
+              <img [src]="flag(item.code)" alt="" width="24" height="24" loading="lazy" class="relative size-6 shrink-0" />
+              <span class="relative min-w-0 flex-1">
                 <span class="block truncate">{{ name(item.code) }}</span>
                 <span class="mt-1 block h-1 rounded-full bg-primary/60" [style.width.%]="barWidth(item)"></span>
               </span>
-              <span class="text-muted-foreground tabular-nums">{{ number(item.count) }}</span>
+              <span class="relative text-muted-foreground tabular-nums">{{ number(item.count) }}</span>
             </button>
           </li>
         } @empty {
@@ -143,7 +152,6 @@ export class World {
   protected readonly current = computed(() => this.map().countries.find(item => item.code === this.selected()) ?? null);
   /** One tile per person shown, known from the count: the card keeps its size while they load. */
   protected readonly tiles = computed(() => Array.from({ length: Math.min(CARD_TILES, this.current()?.count ?? 0) }, (_, index) => this.people()[index] ?? null));
-  private readonly largest = computed(() => this.map().countries[0]?.count ?? 1);
   /** Countries with the same count share a rank: 1, 2, 2, 4. */
   private readonly ranks = computed(() => {
     const firstAt = new Map<number, number>();
@@ -163,7 +171,10 @@ export class World {
   protected readonly flag = flagUrl;
   protected readonly avatar = (person: ContributorSummary) => avatarUrl(person.githubId, 56);
   protected readonly rankOf = (code: string) => this.ranks().get(code) ?? 0;
+
+  private readonly largest = computed(() => this.map().countries[0]?.count ?? 1);
   protected readonly barWidth = (item: CountryStats) => Math.max(2, item.count / this.largest() * 100);
+  protected readonly medal = (code: string) => PODIUM[this.rankOf(code)] ?? null;
 
   protected search(event: Event): void {
     this.query.set((event.target as HTMLInputElement).value);

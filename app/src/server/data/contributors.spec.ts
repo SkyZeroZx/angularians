@@ -46,6 +46,8 @@ describe('ContributorsData', () => {
   it('filters by country and keeps the overall ranks', () => {
     const page = data.leaderboard({ period: 'all', country: 'TR' })
     expect(page.items.map(item => [item.username, item.rank])).toEqual([['Cristina', 2], ['bob', 4]])
+    expect(page.items.map(item => item.countryRank)).toEqual([1, 2])
+    expect(data.leaderboard({ period: 'all' }).items[0].countryRank).toBeUndefined()
     expect(page.total).toBe(2)
   })
 

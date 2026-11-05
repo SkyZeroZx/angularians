@@ -73,12 +73,15 @@ export class ContributorsData {
     return this.profiles.get(githubId)?.country ?? null
   }
 
-  /** One page of a period, optionally of one country. Ranks stay the global ones: "#12 overall, 1st in TR". */
+  /** One page of a period, optionally of one country: `rank` stays the global one, `countryRank` is the place in it. */
   leaderboard({ period, country = null, page = 1, pageSize = DEFAULT_PAGE_SIZE }: LeaderboardQuery): LeaderboardPage {
     const all = this.byPeriod.get(period) ?? []
     const rows = country ? all.filter(row => this.countryOf(row.githubId) === country) : all
     const size = Math.min(Math.max(1, Math.floor(pageSize)), MAX_PAGE_SIZE)
     const start = (Math.max(1, Math.floor(page)) - 1) * size
+    // Ties share a place, as they share a global rank.
+    const places: number[] = []
+    rows.forEach((row, index) => places.push(index && rows[index - 1].rank === row.rank ? places[index - 1] : index + 1))
     return {
       period,
       country,
@@ -88,7 +91,10 @@ export class ContributorsData {
       issues: rows.reduce((sum, row) => sum + row.issues, 0),
       comments: rows.reduce((sum, row) => sum + row.comments, 0),
       reviewComments: rows.reduce((sum, row) => sum + row.reviewComments, 0),
-      items: rows.slice(start, start + size).map(row => this.namedSummary(row)),
+      items: rows.slice(start, start + size).map((row, index) => {
+        const item = this.namedSummary(row)
+        return country ? { ...item, countryRank: places[start + index] } : item
+      }),
       collectedAt: this.collectedAt,
     }
   }

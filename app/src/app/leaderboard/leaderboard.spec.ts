@@ -7,6 +7,7 @@ import { avatarUrl, formatDate, formatPoints, matchesCountry, plural, profileQue
 import { CountrySelect } from './country-select';
 import { LeaderboardGrid } from './leaderboard-grid';
 import { MeCard } from './me-card';
+import { untilNextCollection } from './next-update';
 import { PeriodTabs } from './period-tabs';
 
 describe('format', () => {
@@ -190,10 +191,32 @@ describe('MeCard', () => {
   }
 
   it('offers the first steps to someone with no contributions', () => {
-    expect(render(null)).toEqual(['https://github.com/erkamyaman', 'https://github.com/erkamyaman/angular-contribution-skill', 'https://www.youtube.com/watch?v=_KfE1fnZphc']);
+    expect(render(null)).toEqual(['https://github.com/angular/angular/blob/main/CONTRIBUTING.md', 'https://discord.gg/angular', 'https://github.com/erkamyaman', 'https://github.com/erkamyaman/angular-contribution-skill', 'https://www.youtube.com/watch?v=_KfE1fnZphc']);
+  });
+
+  it('links the avatar and name of a contributor to their profile', () => {
+    const state = signal({ enabled: true, user: { githubId: 1, login: 'renamed', angularian: { username: 'original', rank: 9, score: 3, periods: [], pullRequests: { all: 1 }, helpfulIssues: 0, helpfulComments: 0, packages: [], socialAccounts: [] }, badges: [] } });
+    TestBed.configureTestingModule({ providers: [provideRouter([]), { provide: AuthService, useValue: { state, wasSignedIn: () => true, loginUrl: () => '/login' } }] });
+    const fixture = TestBed.createComponent(MeCard);
+    fixture.detectChanges();
+    const element: HTMLElement = fixture.nativeElement;
+    expect(element.querySelector('a[aria-label="Profile of original"]')?.getAttribute('href')).toBe('/original');
+    expect(element.querySelector('a[aria-label="Profile of original"] img')).not.toBeNull();
+    expect([...element.querySelectorAll('a')].find(link => link.textContent?.trim() === 'renamed')?.getAttribute('href')).toBe('/original');
   });
 
   it('does not offer them to a contributor', () => {
     expect(render({ username: 'newcomer', rank: 9, score: 3, periods: [], pullRequests: { all: 1 }, helpfulIssues: 0, helpfulComments: 0, packages: [], socialAccounts: [] })).toEqual([]);
   });
+});
+
+describe('untilNextCollection', () => {
+  it.each([
+    ['2026-11-05T00:00:00Z', '3h 17m'],
+    ['2026-11-05T03:00:00Z', '17m'],
+    ['2026-11-05T03:16:30Z', 'under a minute'],
+    ['2026-11-05T03:17:00Z', '24h 0m'],
+    ['2026-11-05T22:17:00Z', '5h 0m'],
+    ['2026-12-31T23:00:00Z', '4h 17m'],
+  ])('at %s: %s', (now, expected) => expect(untilNextCollection(new Date(now))).toBe(expected));
 });
