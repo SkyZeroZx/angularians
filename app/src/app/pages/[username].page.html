@@ -66,6 +66,8 @@
                 <li [class]="'inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-sm ring-1 ' + badge.style" [hlmTooltip]="badge.title" tabindex="0">
                   @if (badge.icon === 'angular') {
                     <app-angular-logo class="size-4" />
+                  } @else if (badge.icon === 'gde') {
+                    <img src="/credits/gde.svg" alt="" class="h-[0.8em] w-auto" />
                   } @else {
                     <ng-icon [name]="badge.icon" [size]="badge.icon.startsWith('viking') ? '1.25rem' : '1em'" aria-hidden="true" />
                   }
