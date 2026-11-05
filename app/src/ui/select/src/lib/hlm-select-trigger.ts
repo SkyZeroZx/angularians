@@ -6,7 +6,7 @@ import {
   input,
 } from "@angular/core";
 import { NgIcon, provideIcons } from "@ng-icons/core";
-import { lucideChevronDown } from "@ng-icons/lucide";
+import { remixArrowDownSLine } from "@ng-icons/remixicon";
 import { BrnFieldControlDescribedBy } from "@spartan-ng/brain/field";
 import { BrnSelectTrigger } from "@spartan-ng/brain/select";
 import { hlm } from "@spartan-ng/helm/utils";
@@ -16,7 +16,7 @@ import type { ClassValue } from "clsx";
   selector: "hlm-select-trigger",
   exportAs: "hlmSelectTrigger",
   imports: [NgIcon, BrnSelectTrigger, BrnFieldControlDescribedBy],
-  providers: [provideIcons({ lucideChevronDown })],
+  providers: [provideIcons({ remixArrowDownSLine })],
   template: `
     <button
       brnSelectTrigger
@@ -31,7 +31,7 @@ import type { ClassValue } from "clsx";
     >
       <ng-content />
       <ng-icon
-        name="lucideChevronDown"
+        name="remixArrowDownSLine"
         class="text-muted-foreground text-[length:--spacing(4)] ms-auto"
       />
     </button>

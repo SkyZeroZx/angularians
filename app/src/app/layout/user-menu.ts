@@ -3,7 +3,7 @@
 import { Component, computed, inject } from '@angular/core'
 import { RouterLink } from '@angular/router'
 import { NgIcon, provideIcons } from '@ng-icons/core'
-import { lucideLogOut } from '@ng-icons/lucide'
+import { remixLogoutBoxRLine } from '@ng-icons/remixicon'
 import { HlmPopoverImports } from '@spartan-ng/helm/popover'
 import { AuthService } from '../auth/auth.service'
 import { LogoMark } from './logo-mark'
@@ -14,7 +14,7 @@ const ITEM = 'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left te
 @Component({
   selector: 'app-user-menu',
   imports: [HlmPopoverImports, LogoMark, NgIcon, RouterLink],
-  providers: [provideIcons({ lucideLogOut })],
+  providers: [provideIcons({ remixLogoutBoxRLine })],
   host: { class: 'flex' },
   template: `
     @if (user(); as me) {
@@ -33,14 +33,14 @@ const ITEM = 'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left te
             <a [class]="item" [routerLink]="['/', person.username]" (click)="ctx.close()">
               <app-logo-mark class="size-4 shrink-0" />
               <!-- One text run, so the word sits on the line with the rest, not centred as a separate box -->
-              <span>My <span class="brand">Angularian</span> profile</span>
+              <span>My <span class="brand text-primary">Angularian</span> profile</span>
             </a>
           } @else {
             <p class="px-2 py-1.5 text-sm text-muted-foreground">No contributions on record yet.</p>
           }
           <div class="my-1 h-px bg-border" role="separator"></div>
           <form method="post" action="/api/auth/logout">
-            <button type="submit" [class]="item"><ng-icon name="lucideLogOut" aria-hidden="true" /> Sign out</button>
+            <button type="submit" [class]="item"><ng-icon name="remixLogoutBoxRLine" aria-hidden="true" /> Sign out</button>
           </form>
         </div>
       </hlm-popover>

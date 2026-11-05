@@ -15,7 +15,7 @@ Angularians ranks everyone who has contributed to the Angular repositories: a co
 | `app/src/app/layout` | the header, the footer, the mark (`logo-mark.ts`), the hero, the colour picker |
 | `app/src/ui` | spartan/ui helm components, copied in and ours to change (`@spartan-ng/helm/*` in tsconfig) |
 | `app/scripts/logo` | the mark (`build.py`) and the README wordmark (`wordmark.py`), built from their construction |
-| `app/public` | the favicon, the Norse font (`fonts/`), the credited projects' logos (`credits/`) |
+| `app/public` | the favicon, the Norse font (`fonts/`) |
 | `data/` | written by the collector; never edit by hand, except to remove a bot from a run |
 | `.github/workflows/collect.yml` | the nightly collection, one job per repository |
 | `.github/labels.json` | the issue labels; `.github/workflows/labels.yml` applies them on main |
@@ -48,8 +48,9 @@ pnpm build        # the site, as Netlify builds it
 - The word "Angularian(s)" is written with the `brand` utility (the Norse font); on the cards, `branded()` does the same.
 - The mark is generated: change `app/scripts/logo/build.py` and regenerate the component, the favicon, the cards and the
   wordmark, never edit its path data by hand.
-- UI: the spartan/ui components in `app/src/ui`, and icons from ng-icons: Lucide, plus Simple Icons for brands
-  (GitHub, Nuxt). No other component or icon library.
+- UI: the spartan/ui components in `app/src/ui`, and icons from ng-icons: Remix Icon, Octicons for GitHub's own
+  (merges, issues, comments, reactions) and Simple Icons for brands, plus the Viking accents in
+  `app/src/app/layout/viking-icons.ts`. No other component or icon library.
 - Server rendering: code that needs `window`, `document`, storage or observers runs only in the browser
   (`isPlatformBrowser`, `afterNextRender`, `@defer`).
 - Accessibility: every control has a name, icons are `aria-hidden`, and nothing relies on colour alone.

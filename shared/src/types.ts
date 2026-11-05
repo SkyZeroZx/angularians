@@ -121,6 +121,8 @@ export interface ContributorSummary {
   /** The full name on the GitHub profile, on leaderboard rows when there is one. */
   name?: string
   rank: number
+  /** The place within the country, on a leaderboard filtered on one. */
+  countryRank?: number
   score: number
 }
 

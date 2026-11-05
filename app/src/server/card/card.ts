@@ -7,10 +7,12 @@ import satori from 'satori'
 
 export const CARD_WIDTH = 1200
 export const CARD_HEIGHT = 630
+/** Drawn at twice its size: the logos and the text stay sharp on high-density screens and in a download. */
+const PIXEL_RATIO = 2
 
-/** The brand colour and the profile's stat colours (Tailwind sky-400, violet-400, amber-400). */
+/** The brand colour and the profile's stat colours (GitHub's, in its dark theme). */
 const BRAND = '#5EB572'
-const COLORS = { pullRequests: BRAND, issues: '#38BDF8', comments: '#A78BFA', reactions: '#FBBF24' }
+const COLORS = { pullRequests: '#A371F7', issues: '#3FB950', comments: '#58A6FF', reactions: '#D29922' }
 /** The mark, in its dark colours: [fill, path] of each part (app/scripts/logo/build.py). */
 const MARK: Array<[string, string]> = [
   ['#5EB572', 'M10.26 3.2L10.34 3.41L10.44 3.68L11.28 7.69L11.1 8.16L11.41 8.39L12.67 14.71L12.67 15.08L13.33 17.51L13.4 17.96L13.43 17.96L14.21 21.67L15.44 20.98L11.6 2.69L11.55 2.7L10.26 3.16ZM2.34 6.01L2.28 6.06L2.22 6.12L2.18 6.19L2.15 6.27L2.13 6.35L2.14 6.43L3.51 18.32L3.53 18.4L3.56 18.47L3.61 18.54L3.67 18.6L3.73 18.64L4.51 19.07L4.71 17.96L4.69 17.96L4.76 17.64L5.02 15.99L5.31 15.7L5.28 15.18L5.81 11.96L5.88 11.46L6.04 10.91L6.04 10.44L6.83 6.93L7.3 6.37L7.01 5.98L7.19 4.93L7.35 4.21L2.42 5.98ZM11.56 22.98L11.65 23L11.74 23L11.82 22.98L11.9 22.95L12.03 22.88L11 17.96L11.04 17.96L10.94 17.28L11.15 17.02L10.92 16.86L10.71 15.99L10.65 15.78L10.29 15.84L10.26 15.84L9.74 16.2L7.98 16.62L7.75 16.73L7.22 16.94L7.06 17.96L7.09 17.96L6.71 20.3L11.48 22.95ZM9.34 13.87L10.08 13.69L9.55 10.86L9.45 9.49L9.34 9.02L8.95 6.24L8.43 9.44L8.16 9.57L8.3 9.99L7.95 12.53L7.98 12.51L7.67 14.21L7.64 14.39Z'],
@@ -30,24 +32,27 @@ const NUDGE = 0.09
 const markSvg = (size: number): Node =>
   h('svg', { width: size, height: size, position: 'relative', top: -size * .035 }, MARK.map(([fill, d]) => h('path', {}, undefined, { d, fill })), { viewBox: '0 0 24 24', width: size, height: size })
 
-/** The profile's stat icons (Lucide, ISC), as paths. */
+/** The gradient Angular icon of the press kit (https://angular.dev/press-kit), CC BY 4.0, © Google: `app-angular-logo`. */
+const ANGULAR_LOGO = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 223 236"><path fill="url(#b)" d="m222.077 39.192-8.019 125.923L137.387 0l84.69 39.192Zm-53.105 162.825-57.933 33.056-57.934-33.056 11.783-28.556h92.301l11.783 28.556ZM111.039 62.675l30.357 73.803H80.681l30.358-73.803ZM7.937 165.115 0 39.192 84.69 0 7.937 165.115Z"/><path fill="url(#c)" d="m222.077 39.192-8.019 125.923L137.387 0l84.69 39.192Zm-53.105 162.825-57.933 33.056-57.934-33.056 11.783-28.556h92.301l11.783 28.556ZM111.039 62.675l30.357 73.803H80.681l30.358-73.803ZM7.937 165.115 0 39.192 84.69 0 7.937 165.115Z"/><defs><linearGradient id="b" x1="49.009" x2="225.829" y1="213.75" y2="129.722" gradientUnits="userSpaceOnUse"><stop stop-color="#E40035"/><stop offset=".24" stop-color="#F60A48"/><stop offset=".352" stop-color="#F20755"/><stop offset=".494" stop-color="#DC087D"/><stop offset=".745" stop-color="#9717E7"/><stop offset="1" stop-color="#6C00F5"/></linearGradient><linearGradient id="c" x1="41.025" x2="156.741" y1="28.344" y2="160.344" gradientUnits="userSpaceOnUse"><stop stop-color="#FF31D9"/><stop offset="1" stop-color="#FF5BE1" stop-opacity="0"/></linearGradient></defs></svg>')}`
+
+/** The profile's stat icons (Octicons, MIT), as paths: filled, on a 16 grid. */
 const ICONS = {
-  pullRequests: ['M21 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0', 'M9 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0', 'M13 6h3a2 2 0 0 1 2 2v7', 'M6 9v12'],
-  issues: ['M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0', 'M13 12a1 1 0 1 1-2 0 1 1 0 0 1 2 0'],
-  comments: ['M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719'],
-  reactions: ['M22 11v1a10 10 0 1 1-9-10', 'M8 14s1.5 2 4 2 4-2 4-2', 'M9 9h.01', 'M15 9h.01', 'M16 5h6', 'M19 2v6'],
+  pullRequests: ['M5.45 5.154A4.25 4.25 0 0 0 9.25 7.5h1.378a2.251 2.251 0 1 1 0 1.5H9.25A5.734 5.734 0 0 1 5 7.123v3.505a2.25 2.25 0 1 1-1.5 0V5.372a2.25 2.25 0 1 1 1.95-.218ZM4.25 13.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm8.5-4.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5ZM5 3.25a.75.75 0 1 0 0 .005V3.25Z'],
+  issues: ['M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z', 'M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Z'],
+  comments: ['M1 2.75C1 1.784 1.784 1 2.75 1h10.5c.966 0 1.75.784 1.75 1.75v7.5A1.75 1.75 0 0 1 13.25 12H9.06l-2.573 2.573A1.458 1.458 0 0 1 4 13.543V12H2.75A1.75 1.75 0 0 1 1 10.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h2a.75.75 0 0 1 .75.75v2.19l2.72-2.72a.749.749 0 0 1 .53-.22h4.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z'],
+  reactions: ['M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm3.82 1.636a.75.75 0 0 1 1.038.175l.007.009c.103.118.22.222.35.31.264.178.683.37 1.285.37.602 0 1.02-.192 1.285-.371.13-.088.247-.192.35-.31l.007-.008a.75.75 0 0 1 1.222.87l-.022-.015c.02.013.021.015.021.015v.001l-.001.002-.002.003-.005.007-.014.019a2.066 2.066 0 0 1-.184.213c-.16.166-.338.316-.53.445-.63.418-1.37.638-2.127.629-.946 0-1.652-.308-2.126-.63a3.331 3.331 0 0 1-.715-.657l-.014-.02-.005-.006-.002-.003v-.002h-.001l.613-.432-.614.43a.75.75 0 0 1 .183-1.044ZM12 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM5 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2Zm5.25 2.25.592.416a97.71 97.71 0 0 0-.592-.416Z'],
 }
-const STAT_ICON_SIZE = 36
+const STAT_ICON_SIZE = 40
 const statIcon = (paths: string[], color: string): Node =>
-  h('svg', { position: 'absolute', top: 30, left: 32, width: STAT_ICON_SIZE, height: STAT_ICON_SIZE }, paths.map(d => h('path', {}, undefined, { d })), {
-    viewBox: '0 0 24 24', width: STAT_ICON_SIZE, height: STAT_ICON_SIZE, fill: 'none', stroke: color, strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round',
+  h('svg', { width: STAT_ICON_SIZE, height: STAT_ICON_SIZE }, paths.map(d => h('path', {}, undefined, { d })), {
+    viewBox: '0 0 16 16', width: STAT_ICON_SIZE, height: STAT_ICON_SIZE, fill: color,
   })
 
 const format = new Intl.NumberFormat('en-US').format
 const label = (value: number, one: string, many: string) => (value === 1 ? one : many)
 
 /**
- * Text with the word "Angularian(s)" set in the brand font (its capitals are as tall as Inter's):
+ * Text with the word "Angularian(s)" set in the brand font (its capitals are about as tall as Manrope's):
  * the pieces as flex items, so the line still wraps between them.
  */
 function branded(text: string, style: Record<string, unknown>, brandColor?: string): Node {
@@ -65,7 +70,7 @@ export function cardPeriod(profile: ContributorProfile, requested: unknown): Per
 }
 
 /** `avatar`: a data URL, or `null` when GitHub did not send it (a grey circle instead). */
-export function cardTree(profile: ContributorProfile, period: Period, avatar: string | null): Node {
+export function cardTree(profile: ContributorProfile, period: Period, avatar: string | null, flag: { src: string, name: string } | null = null): Node {
   const stats = period === 'all' ? profile : profile.periods.find(row => row.period === period)!
   const since = profile.firstContributionAt ? new Date(profile.firstContributionAt).getUTCFullYear() : null
   const rows = [
@@ -78,27 +83,48 @@ export function cardTree(profile: ContributorProfile, period: Period, avatar: st
       { label: label(stats.reactions, 'Reaction', 'Reactions'), value: stats.reactions, color: COLORS.reactions, icon: ICONS.reactions },
     ],
   ]
-  return h('div', { width: '100%', height: '100%', flexDirection: 'row', backgroundColor: '#0a0a0a', color: '#ffffff', padding: 64, gap: 64, fontFamily: 'Inter' }, [
-    h('div', { flexDirection: 'column', width: 380, alignItems: 'center', justifyContent: 'space-between' }, [
-      h('div', { flexDirection: 'column', alignItems: 'center' }, [
+  return h('div', { width: '100%', height: '100%', flexDirection: 'column', justifyContent: 'space-between', backgroundColor: '#0a0a0a', color: '#ffffff', paddingTop: 56, paddingRight: 64, paddingBottom: 44, paddingLeft: 64, fontFamily: 'Manrope' }, [
+    h('div', { flexDirection: 'row', gap: 64 }, [
+      h('div', { flexDirection: 'column', width: 380 }, [
         avatar
-          ? h('img', { width: 176, height: 176, borderRadius: 9999, border: '4px solid #262626' }, undefined, { src: avatar, width: 176, height: 176 })
-          : h('div', { width: 176, height: 176, borderRadius: 9999, backgroundColor: '#262626' }),
-        h('div', { fontSize: 48, fontWeight: 600, marginTop: 24, maxWidth: 380, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }, profile.username),
-        branded(period === 'all' ? `Angularian #${format(profile.rank)}` : `#${format(stats.rank)} ${periodPhrase(period)}`, { fontSize: 30, color: '#a3a3a3', marginTop: 16 }),
-        h('div', { fontSize: 36, fontWeight: 600, color: BRAND, marginTop: 16 }, `${format(stats.score)} ${stats.score === 1 ? 'pt' : 'pts'}`),
-        ...(since ? [branded(`Angularian since ${since}`, { fontSize: 24, color: '#737373', marginTop: 12 })] : []),
+          ? h('img', { width: 124, height: 124, borderRadius: 9999, border: '4px solid #262626' }, undefined, { src: avatar, width: 124, height: 124 })
+          : h('div', { width: 124, height: 124, borderRadius: 9999, backgroundColor: '#262626' }),
+        h('div', { fontSize: 44, fontWeight: 600, marginTop: 16, maxWidth: 380, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }, profile.username),
+        h('div', { fontFamily: 'Norse', fontWeight: 700, fontSize: 96, lineHeight: 1, letterSpacing: 2, color: BRAND, marginTop: 8 }, `#${format(period === 'all' ? profile.rank : stats.rank)}`),
+        h('div', { fontSize: 30, fontWeight: 600, color: BRAND, marginTop: 4 }, `${format(stats.score)} ${stats.score === 1 ? 'pt' : 'pts'}`),
+        ...(period !== 'all' ? [h('div', { fontSize: 24, color: '#a3a3a3', marginTop: 4 }, periodPhrase(period))] : []),
+        ...(flag ? [h('div', { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: period === 'all' ? 10 : 4, fontSize: 24, color: '#a3a3a3' }, [
+          h('img', { width: 30, height: 30 }, undefined, { src: flag.src, width: 30, height: 30 }),
+          h('div', {}, flag.name),
+        ])] : []),
       ]),
-      markSvg(48),
+      h('div', { flexDirection: 'column', flex: 1, gap: 24 }, rows.map(row =>
+        h('div', { flexDirection: 'row', gap: 24 }, row.map(stat =>
+          h('div', { flexDirection: 'column', justifyContent: 'space-between', flex: 1, height: 196, borderRadius: 24, padding: 24, border: `2px solid ${stat.color}`, backgroundColor: `${stat.color}12` }, [
+            statIcon(stat.icon, stat.color),
+            h('div', { flexDirection: 'column' }, [
+              h('div', { fontSize: 58, fontWeight: 600, lineHeight: 1.1 }, format(stat.value)),
+              h('div', { fontSize: 26, marginTop: 2, color: stat.color }, stat.label),
+            ]),
+          ])),
+        ))),
     ]),
-    h('div', { flexDirection: 'column', flex: 1, gap: 32, justifyContent: 'center' }, rows.map(row =>
-      h('div', { flexDirection: 'row', gap: 32 }, row.map(stat =>
-        h('div', { position: 'relative', flexDirection: 'column', justifyContent: 'flex-end', flex: 1, height: 220, borderRadius: 24, padding: 32, border: `2px solid ${stat.color}`, backgroundColor: `${stat.color}0D` }, [
-          statIcon(stat.icon, stat.color),
-          h('div', { fontSize: 60, fontWeight: 600 }, format(stat.value)),
-          h('div', { fontSize: 30, marginTop: 8, color: stat.color }, stat.label),
-        ])),
-      ))),
+    h('div', { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid #262626', paddingTop: 18 }, [
+      h('div', { flexDirection: 'row', alignItems: 'center', gap: 14 }, [
+        h('img', { width: 58, height: 62 }, undefined, { src: ANGULAR_LOGO, width: 58, height: 62 }),
+        h('div', { flexDirection: 'column' }, [
+          h('div', { fontSize: 26, fontWeight: 600, lineHeight: 1.15, whiteSpace: 'nowrap' }, 'Angular contributor'),
+          ...(since ? [h('div', { fontSize: 20, lineHeight: 1.2, color: '#a3a3a3' }, `since ${since}`)] : []),
+        ]),
+      ]),
+      h('div', { flexDirection: 'row', alignItems: 'center', gap: 12 }, [
+        markSvg(68),
+        h('div', { flexDirection: 'column' }, [
+          h('div', { fontFamily: 'Norse', fontWeight: 700, fontSize: 30, lineHeight: 1, letterSpacing: 1, color: BRAND }, 'Angularians'),
+          h('div', { fontSize: 20, lineHeight: 1.2, color: '#a3a3a3' }, 'angularians.dev'),
+        ]),
+      ]),
+    ]),
   ])
 }
 
@@ -108,7 +134,7 @@ export function cardTree(profile: ContributorProfile, period: Period, avatar: st
  */
 export function homeTree(input: { title: string, description: string, avatars: Array<string | null> }): Node {
   const avatars = input.avatars.slice(0, 8)
-  return h('div', { width: '100%', height: '100%', flexDirection: 'column', justifyContent: 'space-between', backgroundColor: '#0a0a0a', color: '#ffffff', padding: 72, fontFamily: 'Inter' }, [
+  return h('div', { width: '100%', height: '100%', flexDirection: 'column', justifyContent: 'space-between', backgroundColor: '#0a0a0a', color: '#ffffff', padding: 72, fontFamily: 'Manrope' }, [
     h('div', { flexDirection: 'column' }, [
       h('div', { alignItems: 'center', gap: 16 }, [
         markSvg(56),
@@ -134,10 +160,10 @@ export async function renderCard(tree: Node, fonts: CardFonts): Promise<Buffer> 
     width: CARD_WIDTH,
     height: CARD_HEIGHT,
     fonts: [
-      { name: 'Inter', data: fonts.regular, weight: 400, style: 'normal' },
-      { name: 'Inter', data: fonts.semibold, weight: 600, style: 'normal' },
+      { name: 'Manrope', data: fonts.regular, weight: 400, style: 'normal' },
+      { name: 'Manrope', data: fonts.semibold, weight: 600, style: 'normal' },
       ...(fonts.brand ? [{ name: 'Norse', data: fonts.brand, weight: 700 as const, style: 'normal' as const }] : []),
     ],
   })
-  return new Resvg(svg, { fitTo: { mode: 'width', value: CARD_WIDTH } }).render().asPng()
+  return new Resvg(svg, { fitTo: { mode: 'width', value: CARD_WIDTH * PIXEL_RATIO } }).render().asPng()
 }

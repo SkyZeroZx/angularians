@@ -51,7 +51,11 @@ The data is already in `data/`: you do not need a GitHub token to work on the si
 [spartan/ui](https://spartan.ng) for the components and [ng-icons](https://ng-icons.github.io/ng-icons) for the icons;
 [Tailwind CSS](https://tailwindcss.com) for the styles;
 [satori](https://github.com/vercel/satori) and [resvg](https://github.com/thx/resvg-js) for the share cards;
+[cobe](https://github.com/shuding/cobe) for the globe;
 GitHub Actions for the nightly collection, and [Netlify](https://www.netlify.com) to host it all.
+
+The Viking icons are by Lorc and Delapouite from [Game Icons](https://game-icons.net), the flags from
+[circle-flags](https://github.com/HatScripts/circle-flags). All credits: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 <p>
   <img src="https://img.shields.io/badge/Angular-0F0F11?logo=angular&logoColor=white" alt="Angular">

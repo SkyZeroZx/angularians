@@ -67,7 +67,7 @@ describe('World', () => {
       countries: [{ code: 'US', count: 4, top: [] }, { code: 'TR', count: 1, top: [] }, { code: 'BG', count: 1, top: [] }, { code: 'FR', count: 1, top: [] }],
     });
     fixture.detectChanges();
-    const ranks = [...fixture.nativeElement.querySelectorAll('ol li button')].map((button: HTMLElement) => button.querySelector('.tabular-nums')!.textContent!.replace('Rank', '').trim());
+    const ranks = [...fixture.nativeElement.querySelectorAll('ol li button')].map((button: HTMLElement) => button.querySelector('[data-rank]')!.textContent!.replace('Rank', '').trim());
     expect(ranks).toEqual(['1', '2', '2', '2']);
   });
 
@@ -81,7 +81,7 @@ describe('World', () => {
       countries: [{ code: 'US', count: 3, top: [] }, { code: 'TR', count: 1, top: [] }, { code: 'BG', count: 1, top: [] }, { code: 'FR', count: 1, top: [] }, { code: 'DE', count: 0, top: [] }],
     });
     fixture.detectChanges();
-    const ranks = [...fixture.nativeElement.querySelectorAll('ol li button')].map((button: HTMLElement) => button.querySelector('.tabular-nums')!.textContent!.replace('Rank', '').trim());
+    const ranks = [...fixture.nativeElement.querySelectorAll('ol li button')].map((button: HTMLElement) => button.querySelector('[data-rank]')!.textContent!.replace('Rank', '').trim());
     expect(ranks).toEqual(['1', '2', '2', '2', '5']);
   });
 

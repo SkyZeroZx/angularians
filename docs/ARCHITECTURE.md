@@ -22,6 +22,7 @@ Root services use `@Service()` (available since Angular 22.1), which preserves t
 
 Every page is server-rendered on Netlify by one function (Nitro's `netlify` preset, configured in [`netlify.toml`](../netlify.toml));
 static assets go to the CDN. Pages and API responses are cached by the CDN for an hour, and each deploy clears that cache.
+Browsers keep `/assets/*` and `/fonts/*` for a year and `/flags/*` for 30 days (`netlify.toml`).
 
 The data is read once per server instance from a JSON file next to the server (`app/scripts/bundle-data.ts` writes it,
 `app/scripts/copy-data.ts` copies it there): at ~25 MB it is too big to compile into the server.
@@ -52,9 +53,9 @@ Signing in from the home page ends on your profile, or back on the home page if 
 
 | Route | |
 | --- | --- |
-| `GET /api/contributors?period=12m&country=TR&page=1` | One page (100) of the leaderboard, with each profile's name when it has one |
+| `GET /api/contributors?period=12m&country=TR&page=1` | One page (100) of the leaderboard, with each profile's name when it has one; filtered on a country, also each row's `countryRank` |
 | `GET /api/contributors/:username` | A profile: all-time stats, rank in each period, links |
 | `GET /api/search/contributors?q=cris&country=TR` | Up to 8 contributors, of that country if given |
 | `GET /api/map/contributors?period=all` | Contributors by country |
-| `GET /:username/card.png?period=2025` | The Angularian card, 1200×630: the README card and the profile's link preview |
-| `GET /og.png?period=2025` | The home page's link preview, 1200×630: all time, or the top of a period |
+| `GET /:username/card.png?period=2025&flag=TR` | The Angularian card, 2400×1260: the README card and the profile's link preview. Its flag is the GitHub location's country, or `flag` when the owner picked another |
+| `GET /og.png?period=2025` | The home page's link preview, 2400×1260: all time, or the top of a period |

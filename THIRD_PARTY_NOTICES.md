@@ -70,9 +70,10 @@ the tooltip closing on any scroll, a press of its trigger or a move of its trigg
 
 ## The Angular logo
 
-The gradient Angular icon on the Angular team badge (`app/src/app/layout/angular-logo.ts`) comes from the Angular press
-kit, https://angular.dev/press-kit: © Google, CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). It is used
-unchanged and only to show membership of the Angular team; the Angularians mark is our own.
+The gradient Angular icon (`app/src/app/layout/angular-logo.ts`, and on the shared card, `app/src/server/card/card.ts`)
+comes from the Angular press kit, https://angular.dev/press-kit: © Google, CC BY 4.0
+(https://creativecommons.org/licenses/by/4.0/). It is used unchanged, to name Angular: the Angular team badge, the home
+page's text and "Angular contributor" on the card. The Angularians mark is our own.
 
 ## Norse
 
@@ -81,11 +82,32 @@ and the A of the Angularians mark is its capital A; the README's wordmark draws 
 is `app/public/fonts/Norse-Bold.otf`, unmodified. Its licence (free font EULA v1.0, March 2014) does not allow selling the
 font or modifying the files; to use it anywhere else, get it from https://www.joelcarrouche.net.
 
-## Credited logos
+## Icons
 
-The footer credits AnalogJS, spartan/ui and ng-icons with their own logos, unchanged
-(`app/public/credits/`): AnalogJS (https://github.com/analogjs/analog, MIT), spartan/ui (https://spartan.ng, MIT) and
-ng-icons (https://github.com/ng-icons/ng-icons, MIT). They are their projects' marks, used only to credit them.
+The Viking icons in `app/src/app/layout/viking-icons.ts` are from [Game Icons](https://game-icons.net), under CC BY 3.0
+(https://creativecommons.org/licenses/by/3.0/), unmodified:
+
+- by [Delapouite](https://delapouite.com): "Viking helmet", "Viking head", "Viking shield", "Thor hammer", "Broom" and "Drakkar";
+- by [Lorc](https://lorcblog.blogspot.com): "Crossed axes", "Scroll unfurled", "Broadsword" and "Anvil".
+
+The other icons come through [ng-icons](https://github.com/ng-icons/ng-icons): [Remix Icon](https://remixicon.com)
+(`@ng-icons/remixicon`, declared Apache), [Octicons](https://github.com/primer/octicons) (`@ng-icons/octicons`, MIT) and
+[Simple Icons](https://simpleicons.org) (`@ng-icons/simple-icons`, CC0 1.0; the brand marks belong to their owners).
+
+## Flags
+
+The round flags in `public/flags/` are copied at build time from [circle-flags](https://github.com/HatScripts/circle-flags),
+MIT, Copyright (c) 2026 HatScripts. The full licence ships with the package.
+
+## Other software in the site
+
+- [Manrope](https://github.com/sharanda/manrope), the site's font: SIL Open Font License 1.1, Copyright 2019 The Manrope
+  Project Authors, through `@fontsource-variable/manrope` (and, for the cards, `app/src/server/card/fonts`).
+- [cobe](https://github.com/shuding/cobe), the globe: MIT, Copyright (c) 2021 Shu Ding.
+- [satori](https://github.com/vercel/satori) and [resvg-js](https://github.com/yisibl/resvg-js), which draw the cards:
+  MPL 2.0, unmodified.
+
+Every other npm dependency keeps its own licence, listed in its package.
 
 ## Data
 

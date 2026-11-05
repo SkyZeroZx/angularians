@@ -5,7 +5,7 @@ import {
   input,
 } from "@angular/core";
 import { NgIcon, provideIcons } from "@ng-icons/core";
-import { lucideSearch, lucideX } from "@ng-icons/lucide";
+import { remixCloseLine, remixSearchLine } from "@ng-icons/remixicon";
 import {
   BrnAutocompleteAnchor,
   BrnAutocompleteClear,
@@ -26,7 +26,7 @@ import { classes } from "@spartan-ng/helm/utils";
     BrnAutocompleteClear,
     BrnAutocompleteInput,
   ],
-  providers: [provideIcons({ lucideSearch, lucideX })],
+  providers: [provideIcons({ remixSearchLine, remixCloseLine })],
   hostDirectives: [BrnAutocompleteAnchor, HlmInputGroup],
   template: `
     <input
@@ -43,7 +43,7 @@ import { classes } from "@spartan-ng/helm/utils";
     @if (showSearch()) {
       <hlm-input-group-addon>
         <ng-icon
-          name="lucideSearch"
+          name="remixSearchLine"
           [class.opacity-50]="autocompleteInput.disabled()"
         />
       </hlm-input-group-addon>
@@ -59,7 +59,7 @@ import { classes } from "@spartan-ng/helm/utils";
           size="icon-xs"
           variant="ghost"
         >
-          <ng-icon name="lucideX" />
+          <ng-icon name="remixCloseLine" />
         </button>
       </hlm-input-group-addon>
     }

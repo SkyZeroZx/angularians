@@ -1,6 +1,6 @@
 import { Component } from "@angular/core";
 import { NgIcon, provideIcons } from "@ng-icons/core";
-import { lucideChevronDown } from "@ng-icons/lucide";
+import { remixArrowDownSLine } from "@ng-icons/remixicon";
 import { BrnSelectScrollDown } from "@spartan-ng/brain/select";
 import { classes } from "@spartan-ng/helm/utils";
 
@@ -8,9 +8,9 @@ import { classes } from "@spartan-ng/helm/utils";
   selector: "hlm-select-scroll-down",
   exportAs: "hlmSelectScrollDown",
   imports: [NgIcon],
-  providers: [provideIcons({ lucideChevronDown })],
+  providers: [provideIcons({ remixArrowDownSLine })],
   hostDirectives: [BrnSelectScrollDown],
-  template: ` <ng-icon name="lucideChevronDown" /> `,
+  template: ` <ng-icon name="remixArrowDownSLine" /> `,
 })
 export class HlmSelectScrollDown {
   constructor() {

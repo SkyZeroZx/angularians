@@ -5,26 +5,43 @@ import {
 } from '@angular/core';
 import { COUNTRIES, type CountryStats } from '@angularians/shared';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideMinus, lucidePause, lucidePlay, lucidePlus, lucideRotateCcw } from '@ng-icons/lucide';
+import { remixAddLine, remixPauseLine, remixPlayLine, remixRestartLine, remixSubtractLine } from '@ng-icons/remixicon';
 import { HlmButton } from '@spartan-ng/helm/button';
 import type { Globe as CobeGlobe } from 'cobe';
 import createGlobe from 'cobe';
-import { formatNumber } from '../leaderboard/format';
+import { flagUrl, formatNumber } from '../leaderboard/format';
 import { ThemeService } from '../theme.service';
+import { vikingLongship } from '../layout/viking-icons';
 import { faceOnGlobe, projectOnGlobe } from './globe-math';
 
-const DEFAULT_CAMERA = { phi: 0, theta: 0.2, zoom: 1 };
+/** Opens on the Atlantic: Europe and the Americas, where most contributors are. */
+const DEFAULT_CAMERA = { ...faceOnGlobe([20, -30]), zoom: 1 };
 const MAX_ZOOM = 3;
 /** Zoomed in, countries show their best ranked contributors instead of a count. */
 const AVATAR_ZOOM = 1.6;
 /** Zoomed in, the globe outgrows the canvas and fades out from 82% of the radius: markers stay inside. */
 const FRAME = 0.88;
+/** Longships on open water, latitude and longitude: the Atlantic, the Pacific and the Indian Ocean. */
+const SHIPS: ReadonlyArray<readonly [number, number]> = [[42, -40], [8, -32], [-32, -18], [20, -145], [-22, -120], [32, 165], [-25, 78], [8, 65]];
+const SAIL_MS = 36000;
+const SAIL_DEGREES = 11;
+const MARKER_WIDTH: Record<string, number> = { base: 20, mid: 22, top: 26 };
 const KEY_MOVES: Record<string, [number, number]> = { ArrowLeft: [-0.15, 0], ArrowRight: [0.15, 0], ArrowUp: [0, -0.15], ArrowDown: [0, 0.15] };
 
 const clamp = (value: number, low: number, high: number) => Math.min(high, Math.max(low, value));
 const angleDelta = (from: number, to: number) => ((to - from + Math.PI) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2) - Math.PI;
+/** The theme's green as WebGL wants it: the colour picker and both themes recolour the land through it. */
+const primaryColor = (fallback: [number, number, number]): [number, number, number] => {
+  const context = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
+  const value = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
+  if (!context || !value) return fallback;
+  context.fillStyle = value;
+  context.fillRect(0, 0, 1, 1);
+  const [red, green, blue] = context.getImageData(0, 0, 1, 1).data;
+  return [red / 255, green / 255, blue / 255];
+};
 const palette = (dark: boolean) => dark
-  ? { dark: 1, diffuse: 1.2, mapBrightness: 4, mapBaseBrightness: 0.03, baseColor: [0.32, 0.36, 0.4] as [number, number, number], glowColor: [0.06, 0.08, 0.1] as [number, number, number] }
+  ? { dark: 1, diffuse: 1.2, mapBrightness: 4, mapBaseBrightness: 0.03, baseColor: primaryColor([0.44, 0.69, 0.48]).map(channel => channel * 0.6) as [number, number, number], glowColor: [0.06, 0.08, 0.1] as [number, number, number] }
   : { dark: 0, diffuse: 1.4, mapBrightness: 8, mapBaseBrightness: 0, baseColor: [0.94, 0.95, 0.96] as [number, number, number], glowColor: [0.92, 0.93, 0.95] as [number, number, number] };
 
 interface GlobeMarker extends CountryStats {
@@ -35,12 +52,22 @@ interface GlobeMarker extends CountryStats {
 @Component({
   selector: 'app-globe',
   imports: [HlmButton, NgIcon],
-  providers: [provideIcons({ lucideMinus, lucidePause, lucidePlay, lucidePlus, lucideRotateCcw })],
+  providers: [provideIcons({ vikingLongship, remixSubtractLine, remixPauseLine, remixPlayLine, remixAddLine, remixRestartLine })],
   host: { class: 'globe relative block size-full isolate overflow-hidden', '[attr.data-ready]': 'ready() || null' },
   template: `
     <!-- Clipped: a hidden marker keeps its last position, out of the frame it would widen the page -->
+    <svg class="absolute size-0" aria-hidden="true">
+      <filter id="globe-land" color-interpolation-filters="sRGB">
+        <feComponentTransfer>
+          <feFuncR type="table" [attr.tableValues]="land()[0] + ' 1'" />
+          <feFuncG type="table" [attr.tableValues]="land()[1] + ' 1'" />
+          <feFuncB type="table" [attr.tableValues]="land()[2] + ' 1'" />
+        </feComponentTransfer>
+      </filter>
+    </svg>
     <canvas
       #canvas
+      [class.is-light]="!theme.dark()"
       [hidden]="failed()"
       tabindex="0"
       role="img"
@@ -56,6 +83,9 @@ interface GlobeMarker extends CountryStats {
     ></canvas>
 
     @if (ready() && !failed()) {
+      @for (ship of SHIPS; track $index) {
+        <span class="globe__ship" [attr.data-ship]="$index" data-visible="false" aria-hidden="true"><ng-icon name="vikingLongship" size="1.75rem" /></span>
+      }
       @for (marker of markers(); track marker.code) {
         <button
           type="button"
@@ -65,10 +95,20 @@ interface GlobeMarker extends CountryStats {
           inert
           [class.is-selected]="selected() === marker.code"
           [class.is-avatars]="avatars()"
+          [attr.data-tier]="tier(marker.count)"
           [attr.aria-label]="marker.name + ', ' + count(marker.count)"
           [attr.aria-pressed]="selected() === marker.code"
           (click)="select.emit(selected() === marker.code ? null : marker.code)"
+          (pointerenter)="hovered.set(marker.code)"
+          (pointerleave)="hovered.set(null)"
+          (focus)="hovered.set(marker.code)"
+          (blur)="hovered.set(null)"
         >
+          @if (hovered() === marker.code) {
+            <span class="globe__label" aria-hidden="true">
+              <img [src]="flag(marker.code)" alt="" width="16" height="16" class="size-4 shrink-0" />{{ marker.name }}
+            </span>
+          }
           @if (avatars()) {
             <span class="flex pl-2" aria-hidden="true">
               @for (username of (marker.code === selected() ? marker.top : marker.top.slice(0, 1)); track username) {
@@ -76,7 +116,7 @@ interface GlobeMarker extends CountryStats {
               }
             </span>
           } @else {
-            <span>{{ number(marker.count) }}</span>
+            <span [class]="tier(marker.count) === 'top' ? 'brand relative top-[0.06em] text-lg leading-none' : ''">{{ number(marker.count) }}</span>
           }
         </button>
       }
@@ -87,18 +127,18 @@ interface GlobeMarker extends CountryStats {
     }
 
     @if (ready() && !failed()) {
-      <div class="absolute bottom-1 left-1 flex gap-0.5 rounded-lg bg-background/80 p-1 ring-1 ring-border backdrop-blur" role="group" aria-label="Globe controls">
+      <div class="absolute bottom-1 left-1/2 flex -translate-x-1/2 gap-0.5 rounded-lg bg-background/80 p-1 ring-1 ring-border backdrop-blur" role="group" aria-label="Globe controls">
         <button hlmBtn variant="ghost" size="icon-sm" type="button" [attr.aria-label]="paused() ? 'Resume rotation' : 'Pause rotation'" [attr.aria-pressed]="paused()" (click)="togglePause()">
-          <ng-icon [name]="paused() ? 'lucidePlay' : 'lucidePause'" aria-hidden="true" />
+          <ng-icon [name]="paused() ? 'remixPlayLine' : 'remixPauseLine'" aria-hidden="true" />
         </button>
         <button hlmBtn variant="ghost" size="icon-sm" type="button" aria-label="Zoom in" [disabled]="zoom() >= MAX_ZOOM" (click)="setZoom(zoom() + 0.25)">
-          <ng-icon name="lucidePlus" aria-hidden="true" />
+          <ng-icon name="remixAddLine" aria-hidden="true" />
         </button>
         <button hlmBtn variant="ghost" size="icon-sm" type="button" aria-label="Zoom out" [disabled]="zoom() <= 1" (click)="setZoom(zoom() - 0.25)">
-          <ng-icon name="lucideMinus" aria-hidden="true" />
+          <ng-icon name="remixSubtractLine" aria-hidden="true" />
         </button>
         <button hlmBtn variant="ghost" size="icon-sm" type="button" aria-label="Reset the globe" (click)="reset()">
-          <ng-icon name="lucideRotateCcw" aria-hidden="true" />
+          <ng-icon name="remixRestartLine" aria-hidden="true" />
         </button>
       </div>
     }
@@ -110,6 +150,15 @@ interface GlobeMarker extends CountryStats {
     :host:has(.globe__canvas:focus-visible)::after {
       content: ""; position: absolute; inset: 4px; border-radius: 999px; outline: 2px solid var(--ring); pointer-events: none;
     }
+    /* In light mode the library draws land black: the filter maps black to the theme's green, and keeps white */
+    .globe__canvas.is-light { filter: url(#globe-land); }
+    .globe__ship {
+      position: absolute; inset: 0 auto auto 0; will-change: transform; pointer-events: none; color: var(--primary);
+      opacity: 0; transition: opacity 240ms ease-out;
+    }
+    .globe__ship[data-visible="true"] { opacity: 0.9; }
+    .globe__ship ng-icon { display: block; animation: globe-sail 3.2s ease-in-out infinite; }
+    @keyframes globe-sail { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-2px) rotate(3deg); } }
     .globe__marker {
       position: absolute; inset: 0 auto auto 0; will-change: transform;
       display: flex; align-items: center; height: 28px; padding: 0 9px;
@@ -122,8 +171,22 @@ interface GlobeMarker extends CountryStats {
     .globe__marker:hover, .globe__marker:focus-visible, .globe__marker.is-selected {
       z-index: 2; border-color: var(--primary); outline: 2px solid color-mix(in oklab, var(--primary) 35%, transparent); outline-offset: 2px;
     }
+    .globe__marker[data-tier="mid"] { height: 30px; padding: 0 10px; border-color: color-mix(in oklab, var(--primary) 60%, transparent); font-size: 12px; }
+    .globe__marker[data-tier="top"] { height: 34px; padding: 0 12px; border-color: var(--primary); background: var(--primary); color: var(--primary-foreground); font-size: 13px; }
+    .globe__marker[data-tier="top"]:not(.is-avatars)::after {
+      content: ""; position: absolute; inset: -1px; border: 2px solid var(--primary); border-radius: 999px; pointer-events: none;
+      animation: globe-pulse 2.4s ease-out infinite;
+    }
+    @keyframes globe-pulse { from { transform: scale(1); opacity: 0.7; } to { transform: scale(1.35); opacity: 0; } }
+    .globe__label {
+      position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); pointer-events: none;
+      display: flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border: 1px solid var(--border); border-radius: 8px;
+      background: var(--popover); color: var(--popover-foreground); font-size: 12px; font-weight: 500;
+    }
     .globe__marker.is-avatars { height: 32px; padding: 0; border: 0; background: transparent; }
     @media (prefers-reduced-motion: reduce) {
+      .globe__marker[data-tier="top"]::after { animation: none; opacity: 0; }
+      .globe__ship ng-icon { animation: none; }
       .globe__marker { transition-duration: 80ms, 0s; transition-delay: 0s, 80ms; }
     }
   `,
@@ -136,9 +199,11 @@ export class Globe {
 
   private readonly host = inject(ElementRef<HTMLElement>);
   private readonly canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
-  private readonly theme = inject(ThemeService);
+  protected readonly theme = inject(ThemeService);
+  protected readonly land = signal<[number, number, number]>([0.44, 0.69, 0.48]);
 
   protected readonly MAX_ZOOM = MAX_ZOOM;
+  protected readonly SHIPS = SHIPS;
   protected readonly failed = signal(false);
   protected readonly ready = signal(false);
   protected readonly paused = signal(false);
@@ -152,6 +217,10 @@ export class Globe {
     // The selected country first: it keeps its marker when others overlap it.
     .sort((a, b) => Number(b.code === this.selected()) - Number(a.code === this.selected()) || b.count - a.count));
 
+  protected readonly hovered = signal<string | null>(null);
+  private readonly topCount = computed(() => Math.max(1, ...this.countries().map(country => country.count)));
+  protected readonly tier = (count: number) => count >= this.topCount() * 0.25 ? 'top' : count >= this.topCount() * 0.05 ? 'mid' : 'base';
+  protected readonly flag = flagUrl;
   protected readonly number = formatNumber;
   protected readonly count = (value: number) => `${formatNumber(value)} ${value === 1 ? 'Angularian' : 'Angularians'}`;
   protected readonly avatar = (username: string) => `https://avatars.githubusercontent.com/${encodeURIComponent(username)}?s=64`;
@@ -159,6 +228,8 @@ export class Globe {
   // WebGL and the frame-by-frame camera stay local: none of it is state to share or render.
   private globe: CobeGlobe | undefined;
   private frame = 0;
+  private sailTime = 0;
+  private readonly reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
   private lastTime = 0;
   private running = false;
   private resized = true;
@@ -263,16 +334,26 @@ export class Globe {
       this.markers();
       this.paused();
       this.avatars();
+      this.hovered();
       // After the markers render: positions are written to the new elements.
       untracked(() => queueMicrotask(() => this.schedule()));
     });
     effect(() => {
       const colors = palette(this.theme.dark());
       untracked(() => {
+        this.land.set(primaryColor(this.land()));
         this.globe?.update(colors);
         this.schedule();
       });
     });
+    // The colour picker writes --primary on the root element.
+    const recolour = new MutationObserver(() => {
+      this.land.set(primaryColor(this.land()));
+      this.globe?.update(palette(this.theme.dark()));
+      this.schedule();
+    });
+    recolour.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'style'] });
+    inject(DestroyRef).onDestroy(() => recolour.disconnect());
   }
 
   private schedule(): void {
@@ -296,7 +377,7 @@ export class Globe {
 
   private render(elapsed: number): void {
     const { width, height } = this;
-    const rotating = !this.paused() && !this.pointers.size && !this.still;
+    const rotating = !this.paused() && !this.pointers.size && !this.still && !this.hovered();
     if (rotating) this.camera.phi += elapsed * 0.00006;
     const progress = this.still || this.pointers.size ? 1 : 1 - Math.exp(-elapsed / 110);
     this.phi += angleDelta(this.phi, this.camera.phi) * progress;
@@ -320,7 +401,7 @@ export class Globe {
       const y = height / 2 + this.projection.y * height / 2;
       const markerWidth = avatars
         ? (country.code === this.selected() ? 32 + (country.top.length - 1) * 24 : 32)
-        : 20 + formatNumber(country.count).length * 7;
+        : MARKER_WIDTH[this.tier(country.count)] + formatNumber(country.count).length * (this.tier(country.count) === 'base' ? 7 : 8);
       const wasVisible = marker.dataset['visible'] === 'true';
       const front = this.projection.depth > (wasVisible ? 0.1 : 0.14);
       const fits = Math.hypot(x - width / 2, y - height / 2) < frame - Math.max(markerWidth, markerHeight) / 2;
@@ -338,6 +419,19 @@ export class Globe {
       }
       if (show) occupied.push({ x, y, width: markerWidth });
     }
+    if (rotating && !this.reducedMotion) this.sailTime += elapsed;
+    SHIPS.forEach(([latitude, longitude], index) => {
+      const ship = element.querySelector<HTMLElement>(`.globe__ship[data-ship="${index}"]`);
+      if (!ship) return;
+      // Back and forth on open water, each on its own course. It turns around at the ends.
+      const course = this.sailTime / SAIL_MS * Math.PI * 2 + index * 1.7;
+      projectOnGlobe(this.projection, [latitude + Math.cos(course) * 3, longitude + Math.sin(course) * SAIL_DEGREES], this.phi, this.theta, scale);
+      const x = width / 2 + this.projection.x * height / 2;
+      const y = height / 2 + this.projection.y * height / 2;
+      const show = this.projection.depth > 0.14 && Math.hypot(x - width / 2, y - height / 2) < frame - 14;
+      ship.dataset['visible'] = String(show);
+      if (show) ship.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) translate(-50%, -50%) scaleX(${Math.cos(course) < 0 ? -1 : 1})`;
+    });
     const moving = Math.abs(angleDelta(this.phi, this.camera.phi)) > 0.0001 || Math.abs(this.theta - this.camera.theta) > 0.0001 || Math.abs(this.currentZoom - this.camera.zoom) > 0.0001;
     // Paused and settled: no more frames until something moves.
     if (!rotating && !moving) this.pause();

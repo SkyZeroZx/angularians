@@ -2,14 +2,16 @@
 import { isPlatformBrowser, NgTemplateOutlet } from '@angular/common';
 import { afterNextRender, Component, computed, DestroyRef, ElementRef, inject, input, output, PLATFORM_ID, signal, viewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { PODIUM } from '../leaderboard/leaderboard-grid';
+import { RankShield } from '../leaderboard/rank-shield';
 import { countryName, type ContributorsMap, type ContributorSummary, type CountryStats } from '@angularians/shared';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideArrowUp, lucideX, lucideSearch } from '@ng-icons/lucide';
+import { remixArrowUpLine, remixCloseLine, remixSearchLine } from '@ng-icons/remixicon';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmInputGroupImports } from '@spartan-ng/helm/input-group';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import { HlmTooltip } from '@spartan-ng/helm/tooltip';
-import { avatarUrl, flagUrl, formatNumber, matchesName } from '../leaderboard/format';
+import { avatarUrl, flagUrl, formatNumber, matchesCountry } from '../leaderboard/format';
 import { Globe } from './globe';
 
 /** People shown on the card of a country. */
@@ -17,8 +19,8 @@ const CARD_TILES = 12;
 
 @Component({
   selector: 'app-world',
-  imports: [Globe, HlmButton, HlmInputGroupImports, HlmSkeleton, HlmTooltip, NgIcon, NgTemplateOutlet, RouterLink],
-  providers: [provideIcons({ lucideArrowUp, lucideX, lucideSearch })],
+  imports: [Globe, RankShield, HlmButton, HlmInputGroupImports, HlmSkeleton, HlmTooltip, NgIcon, NgTemplateOutlet, RouterLink],
+  providers: [provideIcons({ remixArrowUpLine, remixCloseLine, remixSearchLine })],
   host: { class: 'grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] lg:gap-12' },
   template: `
     <ng-template #card let-shown>
@@ -27,10 +29,10 @@ const CARD_TILES = 12;
           <img [src]="flag(shown.code)" alt="" width="40" height="40" class="size-10 shrink-0" />
           <div class="min-w-0 flex-1">
             <p class="truncate font-semibold">{{ name(shown.code) }}</p>
-            <p class="text-sm text-muted-foreground">{{ number(shown.count) }} <span class="brand">{{ shown.count === 1 ? 'Angularian' : 'Angularians' }}</span> · #{{ rankOf(shown.code) }} country</p>
+            <p class="text-sm text-muted-foreground">{{ number(shown.count) }} <span class="brand text-primary">{{ shown.count === 1 ? 'Angularian' : 'Angularians' }}</span> · #{{ rankOf(shown.code) }} country</p>
           </div>
           <button hlmBtn variant="ghost" size="icon-sm" type="button" aria-label="Show all countries" (click)="select.emit(null)">
-            <ng-icon name="lucideX" aria-hidden="true" />
+            <ng-icon name="remixCloseLine" aria-hidden="true" />
           </button>
         </div>
         <ul class="mt-4 grid grid-cols-6 gap-2" [attr.aria-busy]="!people().length || null" [attr.aria-label]="'Best ranked from ' + name(shown.code)">
@@ -47,8 +49,8 @@ const CARD_TILES = 12;
           }
         </ul>
         <button hlmBtn variant="link" class="mt-3 px-0 text-muted-foreground hover:text-foreground" type="button" (click)="leaderboard.emit()">
-          <span>See the {{ shown.count === 1 ? '' : number(shown.count) + ' ' }}<span class="brand">{{ shown.count === 1 ? 'Angularian' : 'Angularians' }}</span> from {{ name(shown.code) }}</span>
-          <ng-icon name="lucideArrowUp" aria-hidden="true" />
+          <span>See the {{ shown.count === 1 ? '' : number(shown.count) + ' ' }}<span class="brand text-primary">{{ shown.count === 1 ? 'Angularian' : 'Angularians' }}</span> from {{ name(shown.code) }}</span>
+          <ng-icon name="remixArrowUpLine" aria-hidden="true" />
         </button>
       </div>
     </ng-template>
@@ -69,27 +71,34 @@ const CARD_TILES = 12;
       }
     </div>
 
-    <div class="flex min-w-0 flex-col gap-4">
+    <div class="flex min-w-0 flex-col gap-3 rounded-xl bg-muted/40 p-4 ring-1 ring-border">
       <div hlmInputGroup>
         <input hlmInputGroupInput type="search" autocomplete="off" aria-label="Search a country" placeholder="Search a country" [value]="query()" (input)="search($event)" />
-        <hlm-input-group-addon><ng-icon name="lucideSearch" aria-hidden="true" /></hlm-input-group-addon>
+        <hlm-input-group-addon><ng-icon name="remixSearchLine" aria-hidden="true" /></hlm-input-group-addon>
       </div>
-      <ol class="-mx-2 max-h-100 overflow-y-auto pr-1" [class.h-100]="query().trim()" aria-label="Countries, from the most contributors">
+      <ol class="-mx-1 flex max-h-100 flex-col gap-1 overflow-y-auto p-1 pt-2" [class.lg:h-100]="query().trim()" aria-label="Countries, from the most contributors">
         @for (item of shownCountries(); track item.code) {
           <li>
             <button
               type="button"
-              class="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-left text-sm transition-colors hover:bg-muted/60 aria-pressed:bg-muted"
+              [class]="'relative flex w-full items-center gap-3 overflow-hidden rounded-md px-2 py-2 text-left ' + (medal(item.code)?.ring.replace('ring-2', 'ring-1') ?? '')"
+              class=" text-sm transition-colors hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none aria-pressed:bg-primary/15 aria-pressed:ring-1 aria-pressed:ring-primary/40"
               [attr.aria-pressed]="item.code === selected()"
               (click)="select.emit(item.code === selected() ? null : item.code)"
             >
-              <span class="w-6 shrink-0 text-right text-xs text-muted-foreground tabular-nums"><span class="sr-only">Rank </span>{{ number(rankOf(item.code)) }}</span>
-              <img [src]="flag(item.code)" alt="" width="20" height="20" loading="lazy" class="size-5 shrink-0" />
-              <span class="min-w-0 flex-1">
+              <span data-rank class="relative grid w-7 shrink-0 place-items-center"><span class="sr-only">Rank </span>
+                @if (medal(item.code); as place) {
+                  <app-rank-shield [rank]="rankOf(item.code)" metal="" [podium]="true" [class]="'h-8 w-7 text-sm ' + place.text" />
+                } @else {
+                  <span class="brand relative top-[0.09em] text-base leading-none text-muted-foreground">{{ number(rankOf(item.code)) }}</span>
+                }
+              </span>
+              <img [src]="flag(item.code)" alt="" width="24" height="24" loading="lazy" class="relative size-6 shrink-0" />
+              <span class="relative min-w-0 flex-1">
                 <span class="block truncate">{{ name(item.code) }}</span>
                 <span class="mt-1 block h-1 rounded-full bg-primary/60" [style.width.%]="barWidth(item)"></span>
               </span>
-              <span class="text-muted-foreground tabular-nums">{{ number(item.count) }}</span>
+              <span class="relative text-muted-foreground tabular-nums">{{ number(item.count) }}</span>
             </button>
           </li>
         } @empty {
@@ -97,7 +106,7 @@ const CARD_TILES = 12;
         }
       </ol>
       <p class="text-xs text-muted-foreground">
-        From the location on each GitHub profile, matched to a country: {{ number(map().located) }} of {{ number(map().total) }} <span class="brand">Angularians</span> set one.
+        From the location on each GitHub profile, matched to a country: {{ number(map().located) }} of {{ number(map().total) }} <span class="brand text-primary">Angularians</span> set one.
       </p>
     </div>
 
@@ -143,7 +152,6 @@ export class World {
   protected readonly current = computed(() => this.map().countries.find(item => item.code === this.selected()) ?? null);
   /** One tile per person shown, known from the count: the card keeps its size while they load. */
   protected readonly tiles = computed(() => Array.from({ length: Math.min(CARD_TILES, this.current()?.count ?? 0) }, (_, index) => this.people()[index] ?? null));
-  private readonly largest = computed(() => this.map().countries[0]?.count ?? 1);
   /** Countries with the same count share a rank: 1, 2, 2, 4. */
   private readonly ranks = computed(() => {
     const firstAt = new Map<number, number>();
@@ -155,7 +163,7 @@ export class World {
 
   protected readonly query = signal('');
   protected readonly shownCountries = computed(() => {
-    return this.map().countries.filter(item => matchesName(countryName(item.code), this.query()));
+    return this.map().countries.filter(item => matchesCountry(item.code, this.query()));
   });
 
   protected readonly name = countryName;
@@ -163,7 +171,10 @@ export class World {
   protected readonly flag = flagUrl;
   protected readonly avatar = (person: ContributorSummary) => avatarUrl(person.githubId, 56);
   protected readonly rankOf = (code: string) => this.ranks().get(code) ?? 0;
+
+  private readonly largest = computed(() => this.map().countries[0]?.count ?? 1);
   protected readonly barWidth = (item: CountryStats) => Math.max(2, item.count / this.largest() * 100);
+  protected readonly medal = (code: string) => PODIUM[this.rankOf(code)] ?? null;
 
   protected search(event: Event): void {
     this.query.set((event.target as HTMLInputElement).value);
