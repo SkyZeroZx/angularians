@@ -2,7 +2,8 @@ import { Component } from '@angular/core'
 import { NgIcon, provideIcons } from '@ng-icons/core'
 import { remixSparklingLine } from '@ng-icons/remixicon'
 
-export const GUIDE = 'flex items-center gap-3 rounded-lg bg-background p-3 shadow-xs ring-1 transition hover:shadow-sm dark:bg-background/60 dark:shadow-none dark:hover:bg-muted dark:hover:shadow-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none'
+/** One guide: a neutral outline, its colour on hover (on the icon always); every guide the same height. */
+export const GUIDE = 'flex min-h-16 items-center gap-3 rounded-lg bg-background p-3 shadow-xs ring-1 ring-border transition hover:shadow-sm dark:bg-background/60 dark:shadow-none dark:hover:bg-muted dark:hover:shadow-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none'
 
 @Component({
   selector: 'app-first-pr-guides',
@@ -11,14 +12,14 @@ export const GUIDE = 'flex items-center gap-3 rounded-lg bg-background p-3 shado
   host: { class: 'block' },
   template: `
     <div class="grid gap-2 @min-[460px]:grid-cols-2">
-      <a [class]="guide + ' ring-[#9A6700]/60 hover:ring-[#9A6700] dark:ring-[#D29922]/60 dark:hover:ring-[#D29922]'" href="https://github.com/erkamyaman/angular-contribution-skill" target="_blank" rel="noopener">
+      <a [class]="guide + ' hover:ring-[#9A6700] dark:hover:ring-[#D29922]'" href="https://github.com/erkamyaman/angular-contribution-skill" target="_blank" rel="noopener">
         <span class="grid size-10 shrink-0 place-items-center rounded-md bg-[#9A6700]/10 text-[#9A6700] dark:bg-muted dark:text-[#D29922]"><ng-icon name="remixSparklingLine" size="1.25rem" aria-hidden="true" /></span>
         <span class="min-w-0">
           <span class="block font-medium">Agent skill</span>
           <span class="block text-sm text-muted-foreground">Contribute by Angular's rules</span>
         </span>
       </a>
-      <a [class]="guide + ' ring-[#FF0000]/60 hover:ring-[#FF0000]'" href="https://www.youtube.com/watch?v=_KfE1fnZphc" target="_blank" rel="noopener">
+      <a [class]="guide + ' hover:ring-[#FF0000]'" href="https://www.youtube.com/watch?v=_KfE1fnZphc" target="_blank" rel="noopener">
         <span class="grid size-10 shrink-0 place-items-center rounded-md bg-[#FF0000]/10 dark:bg-muted">
           <svg viewBox="0 0 24 24" class="size-6" aria-hidden="true">
             <path fill="#FF0000" d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814z" />
@@ -26,8 +27,8 @@ export const GUIDE = 'flex items-center gap-3 rounded-lg bg-background p-3 shado
           </svg>
         </span>
         <span class="min-w-0">
-          <span class="block font-medium">Open Source 101 with Angular</span>
-          <span class="block text-sm text-muted-foreground">The talk, at Ng Asia</span>
+          <span class="block font-medium">Open Source 101</span>
+          <span class="block text-sm text-muted-foreground">An Angular talk at Ng Asia</span>
         </span>
       </a>
     </div>
