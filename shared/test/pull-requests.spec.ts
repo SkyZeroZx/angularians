@@ -114,6 +114,8 @@ describe('pullRequestScopes', () => {
   it.each([
     ['fix(router): keep the query params', ['router']],
     ['feat(core, compiler): input signals', ['core', 'compiler']],
+    ['docs(dependency injection): a new guide', []],
+    ['fix(core,compiler): no space', ['core', 'compiler']],
     ['feat(Core)!: drop zone.js', ['core']],
     ['docs(docs-infra): new sidebar', ['docs-infra']],
     ['refactor(zone.js): clean up', ['zone.js']],
