@@ -28,7 +28,7 @@ export function untilNextCollection(now: Date): string {
   host: { class: 'inline-flex items-center gap-1' },
   template: `
     <span class="tabular-nums">{{ label() }}</span>
-    <ng-icon name="remixInformationLine" class="shrink-0" [hlmTooltip]="hint()" [attr.aria-label]="hint()" tabindex="0" />
+    <button type="button" class="grid shrink-0 place-items-center rounded-full focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none" [hlmTooltip]="hint()" [attr.aria-label]="hint()"><ng-icon name="remixInformationLine" aria-hidden="true" /></button>
   `,
 })
 export class NextUpdate {

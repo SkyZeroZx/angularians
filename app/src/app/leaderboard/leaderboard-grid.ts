@@ -12,10 +12,10 @@ import { getLeaderboard } from '../data/contributors.server'
 import { RankShield } from './rank-shield'
 import { avatarSrcset, avatarUrl, formatNumber, formatPoints, profileQuery } from './format'
 
-/** Avatar cells are 112px at most (10 columns of the container). */
-const AVATAR_SIZE = 112
+/** The fallback for browsers without srcset: the cells are drawn at 124px at most. */
+const AVATAR_SIZE = 56
 /** Gold, silver and bronze for the top three of a period. */
-export const PODIUM: Record<number, { icon: string, ring: string, badge: string, text: string }> = {
+export const PODIUM: Record<number, { icon: string, ring: string, badge: string, text: string } | undefined> = {
   1: { icon: 'vikingHelmet', ring: 'ring-2 ring-[#D29922]', badge: 'ring-[#D29922] text-[#9A6700] dark:text-[#D29922]', text: 'text-[#9A6700] dark:text-[#D29922]' },
   2: { icon: 'vikingShield', ring: 'ring-2 ring-[#A8B3BD]', badge: 'ring-[#A8B3BD] text-[#59636E] dark:text-[#A8B3BD]', text: 'text-[#59636E] dark:text-[#A8B3BD]' },
   3: { icon: 'vikingAxes', ring: 'ring-2 ring-[#B5561C]', badge: 'ring-[#B5561C] text-[#9A4510] dark:text-[#D2691E]', text: 'text-[#9A4510] dark:text-[#D2691E]' },
@@ -60,7 +60,7 @@ export class LeaderboardMemory {
               } @else {
                 <app-rank-shield [rank]="place(item)" class="h-8 w-7 shrink-0 text-sm text-foreground" />
               }
-              <img [src]="avatar(item)" alt="" width="40" height="40" loading="lazy" decoding="async" class="size-10 shrink-0 rounded-md bg-muted object-cover" />
+              <img [src]="listAvatar(item)" alt="" width="40" height="40" loading="lazy" decoding="async" class="size-10 shrink-0 rounded-md bg-muted object-cover" />
               <span class="min-w-0 flex-1">
                 <span class="block font-medium wrap-anywhere">{{ item.name || item.username }}</span>
                 @if (item.name) { <span class="block text-xs wrap-anywhere text-muted-foreground">{{ item.username }}</span> }
@@ -83,7 +83,7 @@ export class LeaderboardMemory {
             [attr.aria-label]="label(item)"
             [class]="'relative block aspect-square overflow-hidden rounded-xl bg-muted transition focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ' + podiumRing(item)"
           >
-            <img [src]="avatar(item)" [srcset]="avatars(item)" alt="" [width]="AVATAR_SIZE" [height]="AVATAR_SIZE" loading="lazy" decoding="async" class="size-full object-cover" />
+            <img [src]="avatar(item)" [srcset]="avatars(item)" sizes="(min-width: 1280px) 124px, (min-width: 768px) 9vw, (min-width: 640px) 11vw, 17vw" alt="" [width]="AVATAR_SIZE" [height]="AVATAR_SIZE" loading="lazy" decoding="async" class="size-full object-cover" />
             @if (podium(item)) {
               <span class="absolute inset-x-0 bottom-0 hidden bg-black/75 px-1.5 py-1 text-center text-[0.6875rem] leading-tight font-medium wrap-anywhere text-white xl:block">{{ item.name || item.username }}</span>
             }
@@ -127,14 +127,16 @@ export class LeaderboardGrid {
    * the same list (and the browser's scroll position lands where it was). Another period or country: its own.
    */
   private readonly more = linkedSignal<LeaderboardPage, ContributorSummary[]>({ source: () => this.page(), computation: page => this.memory.get(page) })
-  protected readonly loading = signal(false)
-  protected readonly failed = signal(false)
+  /** Both belong to one board: a failure or a request of the last one must not show on the next. */
+  protected readonly loading = linkedSignal({ source: () => this.page(), computation: () => false })
+  protected readonly failed = linkedSignal({ source: () => this.page(), computation: () => false })
   protected readonly items = computed(() => [...this.page().items, ...this.more()])
   protected readonly query = computed(() => profileQuery(this.page().period, this.page().country))
   protected readonly listLabel = computed(() => `Contributors, ranked: ${formatNumber(this.items().length)} of ${formatNumber(this.page().total)} shown`)
   protected readonly AVATAR_SIZE = AVATAR_SIZE
   protected readonly avatar = (item: ContributorSummary) => avatarUrl(item.githubId, AVATAR_SIZE)
-  protected readonly avatars = (item: ContributorSummary) => avatarSrcset(item.githubId, AVATAR_SIZE)
+  protected readonly avatars = (item: ContributorSummary) => avatarSrcset(item.githubId)
+  protected readonly listAvatar = (item: ContributorSummary) => avatarUrl(item.githubId, 40)
   protected readonly podiumRing = (item: ContributorSummary) => PODIUM[this.place(item)]?.ring ?? 'ring-1 ring-border hover:ring-2 hover:ring-primary'
   protected readonly podium = (item: ContributorSummary) => PODIUM[this.place(item)] ?? null
   protected readonly who = (item: ContributorSummary) =>
@@ -163,7 +165,7 @@ export class LeaderboardGrid {
       if (first === this.page()) this.failed.set(true)
     }
     finally {
-      this.loading.set(false)
+      if (first === this.page()) this.loading.set(false)
     }
   }
 }

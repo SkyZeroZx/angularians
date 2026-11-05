@@ -17,10 +17,9 @@ export function avatarUrl(githubId: number, size: number): string {
   return `https://avatars.githubusercontent.com/u/${githubId}?s=${size * 2}&v=4`
 }
 
-/** The avatar at 1× and 2×: a screen of 1 device pixel per CSS pixel downloads a quarter of the 2× pixels. */
-export function avatarSrcset(githubId: number, size: number): string {
-  const url = (pixels: number) => `https://avatars.githubusercontent.com/u/${githubId}?s=${pixels}&v=4`
-  return `${url(size)} 1x, ${url(size * 2)} 2x`
+/** The avatar at several widths: with `sizes`, the browser takes the smallest that fills its tile on that screen. */
+export function avatarSrcset(githubId: number): string {
+  return [64, 112, 160, 224].map(pixels => `https://avatars.githubusercontent.com/u/${githubId}?s=${pixels}&v=4 ${pixels}w`).join(', ')
 }
 
 /** The profile opens on the period of the board it was picked from (all time is its default). */

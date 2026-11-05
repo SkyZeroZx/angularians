@@ -119,7 +119,7 @@ const SIGNED_OUT = 'max-sm:p-4 sm:min-h-64 lg:min-h-80'
                 <span class="flex items-center gap-1 text-xs text-muted-foreground">
                   {{ item.value === 1 ? item.one : item.label }}
                   @if (item.hint) {
-                    <ng-icon name="remixInformationLine" class="shrink-0" [hlmTooltip]="item.hint" [attr.aria-label]="item.hint" tabindex="0" />
+                    <button type="button" class="grid shrink-0 place-items-center rounded-full focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none" [hlmTooltip]="item.hint" [attr.aria-label]="item.hint"><ng-icon name="remixInformationLine" aria-hidden="true" /></button>
                   }
                 </span>
               </li>

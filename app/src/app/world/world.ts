@@ -86,11 +86,11 @@ const CARD_TILES = 12;
               [attr.aria-pressed]="item.code === selected()"
               (click)="select.emit(item.code === selected() ? null : item.code)"
             >
-              <span data-rank class="relative grid w-7 shrink-0 place-items-center"><span class="sr-only">Rank </span>
+              <span data-rank class="relative grid w-7 shrink-0 place-items-center"><span class="sr-only">Rank {{ number(rankOf(item.code)) }}</span>
                 @if (medal(item.code); as place) {
                   <app-rank-shield [rank]="rankOf(item.code)" metal="" [podium]="true" [class]="'h-8 w-7 text-sm ' + place.text" />
                 } @else {
-                  <span class="brand relative top-[0.09em] text-base leading-none text-muted-foreground">{{ number(rankOf(item.code)) }}</span>
+                  <span class="brand relative top-[0.09em] text-base leading-none text-muted-foreground" aria-hidden="true">{{ number(rankOf(item.code)) }}</span>
                 }
               </span>
               <img [src]="flag(item.code)" alt="" width="24" height="24" loading="lazy" class="relative size-6 shrink-0" />
