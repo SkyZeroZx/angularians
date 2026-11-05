@@ -2,15 +2,17 @@ import { Component, computed, input } from '@angular/core'
 
 @Component({
   selector: 'app-rank-shield',
-  host: { class: 'relative inline-grid place-items-center', 'aria-hidden': 'true' },
+  host: { class: 'relative inline-grid place-items-center', 'aria-hidden': 'true', '[style.width.em]': 'wide() ? 2.17 : null' },
   template: `
-    <svg viewBox="0 0 223 236" [class]="'absolute inset-0 size-full overflow-visible ' + metal()" fill="none" stroke-linejoin="round">
+    <svg viewBox="0 0 223 236" [class]="'absolute inset-0 size-full overflow-visible ' + metal()" [attr.preserveAspectRatio]="wide() ? 'none' : null" fill="none" stroke-linejoin="round">
       @if (podium()) {
         <path d="M20 52C-8 30-6-4 12-26 12 0 26 22 58 30Z M203 52C231 30 229-4 211-26 211 0 197 22 165 30Z" fill="currentColor" />
       }
       <path d="M111.5 8 214 44 197 170 111.5 228 26 170 9 44Z" [class]="podium() ? 'fill-current' : 'fill-background'" stroke="currentColor" stroke-width="16" />
       <path d="M111.5 8 214 44 197 170 111.5 228Z" [attr.fill]="podium() ? '#000' : 'currentColor'" [attr.fill-opacity]="podium() ? 0.18 : 0.14" />
-      <path d="M111.5 36 188 63 175 156 111.5 198 48 156 35 63Z" [class]="podium() ? 'stroke-background' : 'stroke-current'" stroke-opacity="0.45" stroke-width="5" />
+      @if (!wide()) {
+        <path d="M111.5 36 188 63 175 156 111.5 198 48 156 35 63Z" [class]="podium() ? 'stroke-background' : 'stroke-current'" stroke-opacity="0.45" stroke-width="5" />
+      }
     </svg>
     <span [class]="'brand relative top-[0.04em] leading-none ' + (podium() ? 'text-background' : '')" [style.font-size]="scale()">{{ rank() }}</span>
   `,
@@ -22,6 +24,8 @@ export class RankShield {
 
   protected readonly scale = computed(() => {
     const digits = String(this.rank()).length
-    return digits <= 2 ? '1em' : digits === 3 ? '0.85em' : '0.7em'
+    return digits <= 2 ? '1em' : digits === 3 ? '0.85em' : digits === 4 ? '0.7em' : '0.8em'
   })
+  /** 10,000 and up: no inner line, and a wider shield for a number that stays readable. */
+  protected readonly wide = computed(() => this.rank() >= 10000)
 }
