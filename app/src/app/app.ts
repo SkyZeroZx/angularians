@@ -9,14 +9,7 @@ import { ThemeService } from './theme.service';
   selector: 'app-root',
   imports: [RouterOutlet, SiteFooter, SiteHeader],
   host: { class: 'flex min-h-dvh flex-col' },
-  template: `
-    <a [href]="skipHref()" (click)="skipToMain($event)" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-background focus:px-3 focus:py-2 focus:ring-2 focus:ring-ring">Skip to content</a>
-    <app-site-header />
-    <main id="main" tabindex="-1" class="flex-1 outline-none">
-      <router-outlet />
-    </main>
-    <app-site-footer />
-  `,
+  templateUrl: './app.html',
 })
 export class App {
   // Created with the app, so a saved light theme applies from the start.
