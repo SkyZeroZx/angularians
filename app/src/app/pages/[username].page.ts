@@ -13,7 +13,7 @@ import { vikingAxes, vikingHelmet, vikingLongship, vikingShield } from '../layou
 import { octComment, octGitMerge, octIssueOpened, octSmiley } from '@ng-icons/octicons';
 import {
   simpleBluesky, simpleFacebook, simpleGithub, simpleInstagram, simpleMastodon, simpleNpm, simpleReddit, simpleThreads, simpleTwitch, simpleX,
-  simpleGoogle, simpleYoutube,
+  simpleYoutube,
 } from '@ng-icons/simple-icons';
 import { ANGULAR_GDES, GITHUB_STARS } from '../profile/recognitions';
 import { injectParams } from 'ngxtension/inject-params';
@@ -75,7 +75,7 @@ export function yearRanges(years: readonly number[]): string {
     remixVerifiedBadgeLine, remixArrowDownSLine, remixArrowUpSLine, vikingHelmet, remixLinkM, remixLinkedinBoxLine, octComment,
     octSmiley, vikingShield,
     simpleBluesky, simpleFacebook, simpleGithub, simpleInstagram, simpleMastodon, simpleNpm, simpleReddit, simpleThreads, simpleTwitch, simpleX,
-    simpleGoogle, simpleYoutube, remixStarFill, ...PACKAGE_ICONS,
+    simpleYoutube, remixStarFill, ...PACKAGE_ICONS,
   })],
   host: { class: 'relative block isolate' },
   template: `
@@ -147,6 +147,8 @@ export function yearRanges(years: readonly number[]): string {
                     <li [class]="'inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-sm ring-1 ' + badge.style" [hlmTooltip]="badge.title" tabindex="0">
                       @if (badge.icon === 'angular') {
                         <app-angular-logo class="size-4" />
+                      } @else if (badge.icon === 'gde') {
+                        <img src="/credits/gde.svg" alt="" class="h-[0.8em] w-auto" />
                       } @else {
                         <ng-icon [name]="badge.icon" [size]="badge.icon.startsWith('viking') ? '1.25rem' : '1em'" aria-hidden="true" />
                       }
@@ -472,7 +474,7 @@ export default class Profile {
     if (person.team) badges.push({ label: 'Angular team', title: 'A public member of the Angular organization on GitHub', icon: 'angular', style: 'bg-[#dc087d]/10 text-foreground ring-[#dc087d]/40' });
     // Recognised by Google and by GitHub (lists in profile/recognitions.ts): Google's blue, GitHub's star yellow; their text a
     // shade darker on white, for 4.5:1 contrast.
-    if (ANGULAR_GDES.has(person.githubId)) badges.push({ label: 'Angular GDE', title: 'A Google Developer Expert for Angular', icon: 'simpleGoogle', style: 'bg-[#1A73E8]/10 text-[#185ABC] ring-[#1A73E8]/30 dark:bg-[#8AB4F8]/10 dark:text-[#8AB4F8] dark:ring-[#8AB4F8]/30' });
+    if (ANGULAR_GDES.has(person.githubId)) badges.push({ label: 'Angular GDE', title: 'A Google Developer Expert for Angular', icon: 'gde', style: 'bg-[#1A73E8]/10 text-[#185ABC] ring-[#1A73E8]/30 dark:bg-[#8AB4F8]/10 dark:text-[#8AB4F8] dark:ring-[#8AB4F8]/30' });
     if (GITHUB_STARS.has(person.githubId)) badges.push({ label: 'GitHub Star', title: 'A GitHub Star, recognised by GitHub for helping the community', icon: 'remixStarFill', style: 'bg-[#BF8700]/10 text-[#845A00] ring-[#BF8700]/30 dark:bg-[#E3B341]/10 dark:text-[#E3B341] dark:ring-[#E3B341]/30' });
     // Every year at #1 in one badge: "#1 in 2024–2026", "#1 in 2019, 2024".
     const firsts = this.years().filter(row => row.rank === 1).map(row => Number(row.period)).sort((x, y) => x - y);
