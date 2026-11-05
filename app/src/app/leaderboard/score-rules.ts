@@ -1,5 +1,5 @@
 import { Component } from '@angular/core'
-import { ACTIVITY_POINTS, PULL_REQUEST_POINTS } from '@angularians/shared'
+import { ACTIVITY_POINTS, PULL_REQUEST_POINTS, REPOS } from '@angularians/shared'
 import { NgIcon, provideIcons } from '@ng-icons/core'
 import { octComment, octIssueOpened, octSmiley } from '@ng-icons/octicons'
 import { remixChatHeartLine, remixFileCodeLine, remixLightbulbLine } from '@ng-icons/remixicon'
@@ -87,7 +87,7 @@ const ORANGE = 'text-[#BC4C00] dark:text-[#F0883E]'
   `,
 })
 export class ScoreRules {
-  protected readonly repos = ['angular/angular', 'angular/components', 'angular/angular-cli', 'angular/dev-infra']
+  protected readonly repos = REPOS
   protected readonly types = [
     { title: 'Features', description: 'New APIs, capabilities and speed.', icon: 'vikingSword', color: PURPLE, points: PULL_REQUEST_POINTS.feat },
     { title: 'Fixes', description: 'Bugs found and fixed.', icon: 'vikingAnvil', color: RED, points: PULL_REQUEST_POINTS.fix },

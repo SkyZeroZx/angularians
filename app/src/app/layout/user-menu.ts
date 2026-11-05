@@ -31,7 +31,7 @@ const ITEM = 'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left te
           <div class="my-1 h-px bg-border" role="separator"></div>
           @if (me.angularian; as person) {
             <a [class]="item" [routerLink]="['/', person.username]" (click)="ctx.close()">
-              <app-logo-mark class="size-4 shrink-0" />
+              <app-logo-mark class="size-4 shrink-0 text-primary" compact />
               <!-- One text run, so the word sits on the line with the rest, not centred as a separate box -->
               <span>My <span class="brand text-primary">Angularian</span> profile</span>
             </a>

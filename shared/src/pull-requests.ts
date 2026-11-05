@@ -94,6 +94,7 @@ function repoPackage(repo: string, scope: string): string | null {
 
 /** The repository of a package of `packages.json`: npm names come from the other repositories, scopes from angular/angular. */
 export function packageRepo(name: string): string {
+  if (name === '@angular/domino') return 'angular/domino'
   if (!name.startsWith('@')) return 'angular/angular'
   return name.startsWith('@angular/') && COMPONENTS_PACKAGES.has(name.slice('@angular/'.length)) ? 'angular/components' : 'angular/angular-cli'
 }
@@ -105,8 +106,10 @@ const SKILL_RE = /\bskills?\b/i
 /**
  * The packages a PR title names, lowercased: `fix(router): …` → `['router']`. Empty without a scope, except for
  * angular/angular's docs PRs without one: `skills` when the title is about a skill, else `docs` (angular.dev).
+ * Every angular/domino PR belongs to its single package, regardless of the title's scope.
  */
 export function pullRequestScopes(title: string, repo = 'angular/angular'): string[] {
+  if (repo === 'angular/domino') return ['@angular/domino']
   const match = SCOPE_RE.exec(title)
   if (!match) {
     if (repo === 'angular/angular' && UNSCOPED_DOCS_RE.test(title)) return [SKILL_RE.test(title) ? 'skills' : 'docs']

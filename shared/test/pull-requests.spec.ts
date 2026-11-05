@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { canonicalPackage, inferPullRequestType, landedPullRequests, packageRepo, prCloseNumbers, pullRequestScopes, type PullRequestInput } from '../src/pull-requests.ts'
 import { isBotAccount } from '../src/bots.ts'
+import { ContributorsAccumulator } from '../src/scoring.ts'
 
 describe('inferPullRequestType', () => {
   it.each([
@@ -61,6 +62,21 @@ const pull = (number: number, title: string, author: PullRequestInput['user'], m
   ({ number, title, user: author, labels: [], merged_at: mergedAt })
 
 describe('landedPullRequests', () => {
+  it('credits Domino merged PRs to its single package, with or without a title scope', () => {
+    const author = user('alice', 1)
+    const landed = landedPullRequests([
+      pull(1, 'fix: preserve element IDs', author, '2025-03-01T10:00:00Z'),
+      pull(2, 'test(parser): cover nested HTML', author, '2025-03-02T10:00:00Z'),
+      pull(3, 'fix: closed without landing', author),
+    ], [], 'angular/domino')
+    const accumulator = new ContributorsAccumulator(new Date('2025-03-03T00:00:00Z'))
+    for (const pr of landed) accumulator.addLandedPullRequest(pr)
+    expect(accumulator.packages()).toEqual([
+      { githubId: 1, packages: [{ name: '@angular/domino', pullRequests: 2 }] },
+    ])
+    expect(accumulator.records().get('all')?.[0]).toMatchObject({ score: 8, pullRequests: { all: 2, fix: 1, chore: 1 } })
+  })
+
   it('counts PRs GitHub marks merged, on their merge date', () => {
     expect(landedPullRequests([pull(1, 'feat: a', user('alice', 1), '2025-03-01T10:00:00Z')], [])).toEqual([
       { number: 1, author: user('alice', 1), type: 'feat', scopes: [], landedAt: '2025-03-01T10:00:00Z' },
@@ -158,6 +174,7 @@ describe('packageRepo', () => {
     ['@angular/cdk', 'angular/components'],
     ['@angular/build', 'angular/angular-cli'],
     ['@schematics/angular', 'angular/angular-cli'],
+    ['@angular/domino', 'angular/domino'],
   ])('%s → %s', (name, repo) => expect(packageRepo(name)).toBe(repo))
 })
 
