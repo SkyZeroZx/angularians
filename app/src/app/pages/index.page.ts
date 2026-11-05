@@ -82,10 +82,10 @@ export const routeMeta = {
         </div>
       </div>
 
-      @if (leaderboard.error()) {
+      @if (leaderboard.error() || map.error()) {
         <div role="alert" class="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
-          <p>{{ board() ? 'This board could not be loaded.' : 'The leaderboard could not be loaded.' }}</p>
-          <button hlmBtn variant="outline" type="button" (click)="leaderboard.reload()">Try again</button>
+          <p>{{ !leaderboard.error() ? 'The countries could not be loaded.' : board() ? 'This board could not be loaded.' : 'The leaderboard could not be loaded.' }}</p>
+          <button hlmBtn variant="outline" type="button" (click)="retry()">Try again</button>
         </div>
       }
       @if (board(); as page) {
@@ -256,6 +256,11 @@ export default class Home {
     this.keepWorldAt = null;
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     document.getElementById('leaderboard')?.scrollIntoView({ behavior: reduce ? 'instant' : 'smooth' });
+  }
+
+  protected retry(): void {
+    if (this.leaderboard.error()) this.leaderboard.reload();
+    if (this.map.error()) this.map.reload();
   }
 
   protected setCountry(country: string | null): void {

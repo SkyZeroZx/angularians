@@ -1,5 +1,5 @@
 import { isPlatformBrowser } from '@angular/common';
-import { Component, DestroyRef, inject, PLATFORM_ID } from '@angular/core';
+import { afterNextRender, Component, DestroyRef, inject, Injector, PLATFORM_ID } from '@angular/core';
 import { NavigationEnd, NavigationStart, Router, RouterOutlet } from '@angular/router';
 import { SiteFooter } from './layout/site-footer';
 import { SiteHeader } from './layout/site-header';
@@ -33,6 +33,7 @@ export class App {
     // A new page starts at the top. Only when the page itself changes: a period or a country on the same page
     // (query parameters) keeps the place, and back and forward keep the browser's own.
     const router = inject(Router)
+    const injector = inject(Injector)
     let path = location.pathname
     let back = false
     const subscription = router.events.subscribe(event => {
@@ -40,8 +41,15 @@ export class App {
       if (event instanceof NavigationEnd) {
         const next = event.urlAfterRedirects.split(/[?#]/)[0]!
         if (next !== path && !back && !location.hash) window.scrollTo({ top: 0 })
-        // A new page: keyboard and screen reader users carry on from its start.
-        if (next !== path) document.getElementById('main')?.focus({ preventScroll: true })
+        // A new page: keyboard and screen reader users carry on from its start, or from the section the link names.
+        if (next !== path) {
+          const section = event.urlAfterRedirects.split('#')[1]
+          afterNextRender(() => {
+            const target = section ? document.getElementById(decodeURIComponent(section)) : null
+            if (target) target.focus()
+            else document.getElementById('main')?.focus({ preventScroll: true })
+          }, { injector })
+        }
         path = next
       }
     })
