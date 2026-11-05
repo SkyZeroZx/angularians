@@ -83,7 +83,7 @@ const SIGNED_OUT = 'max-sm:p-4 sm:min-h-64 lg:min-h-80'
                   } @else if (badge === 'Angularian') {
                     <!-- Our own badge: the mark, and the word in the brand font -->
                     <span class="inline-flex h-8 items-center gap-1.5 rounded-md bg-primary/10 px-2 text-base font-medium text-primary">
-                      <app-logo-mark class="size-5" compact /><span class="brand leading-none">{{ badge }}</span>
+                      <app-logo-mark class="size-6" compact /><span class="brand leading-none">{{ badge }}</span>
                     </span>
                   } @else {
                     <span class="inline-flex h-8 items-center gap-1.5 rounded-md bg-primary/10 px-2 text-sm font-medium text-primary">

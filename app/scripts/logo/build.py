@@ -6,8 +6,7 @@
 The mark: the Angular shield cut in two along the right leg of the capital A of Norse Bold. The left piece holds
 the A, which cuts through the shield from its tip out through its bottom. The right piece is a contribution graph:
 a grid of squares tilted to the shield's top edge, cut by its outline, in three greens and the grey of empty days.
-The parts: `solid` (the left piece), `wing` (the right piece whole, for the compact mark), `empty`, `l1`, `l2`, `l3`
-(the squares, darkest to brightest).
+The parts: `solid` (the left piece), `empty`, `l1`, `l2`, `l3` (the squares, darkest to brightest).
 """
 import json, math, random
 from shapely.geometry import Polygon, box
@@ -81,5 +80,4 @@ def path(g):
     polys = list(g.geoms) if hasattr(g, 'geoms') else ([g] if not g.is_empty else [])
     return ''.join(ring(p.exterior.coords) + ''.join(ring(h.coords) for h in p.interiors) for p in polys)
 
-# `wing`: the right piece whole, for the compact mark (badges, under 24px), where the squares would be a blur.
-print(json.dumps({'solid': path(fit(piece)), 'wing': path(fit(wing)), **{k: path(fit(unary_union(v))) for k, v in cells.items()}}))
+print(json.dumps({'solid': path(fit(piece)), **{k: path(fit(unary_union(v))) for k, v in cells.items()}}))
