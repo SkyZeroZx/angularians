@@ -8,29 +8,7 @@ const brandParts = (text: string) => text.split(/(Angularians?)/)
   selector: 'app-page-section',
   imports: [Container],
   host: { class: 'block scroll-mt-20 outline-none', '[attr.id]': 'sectionId()', '[attr.tabindex]': 'sectionId() ? -1 : null', '[attr.role]': "title() ? 'region' : null", '[attr.aria-labelledby]': 'title() ? headingId() : null' },
-  template: `
-    <app-container [class]="flush() ? 'pb-12 sm:pb-16' : 'py-12 sm:py-16'">
-      @if (title()) {
-        <header class="mb-8">
-          <h2 [id]="headingId()" [class]="viking() ? 'brand text-3xl sm:text-4xl' : 'text-2xl font-medium tracking-tight sm:text-3xl'">
-            @for (part of titleParts(); track $index) {
-              @if ($odd) { <span class="brand text-primary">{{ part }}</span> } @else { {{ part }} }
-            }
-            <ng-content select="[sectionTitleNote]" />
-          </h2>
-          @if (description()) {
-            <p class="mt-2 max-w-2xl text-pretty text-muted-foreground">
-              <ng-content select="[sectionDescriptionLead]" />
-              @for (part of descriptionParts(); track $index) {
-                @if ($odd) { <span class="brand text-primary">{{ part }}</span> } @else { {{ part }} }
-              }
-            </p>
-          }
-        </header>
-      }
-      <ng-content />
-    </app-container>
-  `,
+  templateUrl: './page-section.html',
 })
 export class PageSection {
   readonly title = input('')
