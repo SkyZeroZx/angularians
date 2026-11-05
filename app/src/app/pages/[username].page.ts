@@ -20,7 +20,7 @@ import { injectQueryParams } from 'ngxtension/inject-query-params';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import { HlmTooltip } from '@spartan-ng/helm/tooltip';
-import { loadedValue } from '../data/loaded';
+import { loadedValue, markFailed } from '../data/loaded';
 import { getContributor } from '../data/contributors.server';
 import { AngularLogo } from '../layout/angular-logo';
 import { Container } from '../layout/container';
@@ -534,8 +534,7 @@ export default class Profile {
       const person = this.loaded();
       // Nobody with this username, or a path that cannot be one (`/-x-`): not found.
       if ((person === null || !this.validUsername()) && this.response) this.response.statusCode = 404;
-      // A failure, not a missing person: never cached as the page.
-      else if (this.profile.error() && this.response) this.response.statusCode = 503;
+      else if (this.profile.error() && this.response) markFailed(this.response);
       // One URL per profile: /CrisBeto → /crisbeto, keeping the period.
       if (person && person.username !== this.username()) {
         void this.router.navigate(['/', person.username], { queryParamsHandling: 'preserve', replaceUrl: true });

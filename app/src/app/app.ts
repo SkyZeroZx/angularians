@@ -1,5 +1,5 @@
-import { isPlatformBrowser } from '@angular/common';
-import { afterNextRender, Component, DestroyRef, inject, Injector, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser, Location } from '@angular/common';
+import { afterNextRender, Component, DestroyRef, inject, Injector, PLATFORM_ID, signal } from '@angular/core';
 import { NavigationEnd, NavigationStart, Router, RouterOutlet } from '@angular/router';
 import { SiteFooter } from './layout/site-footer';
 import { SiteHeader } from './layout/site-header';
@@ -10,7 +10,7 @@ import { ThemeService } from './theme.service';
   imports: [RouterOutlet, SiteFooter, SiteHeader],
   host: { class: 'flex min-h-dvh flex-col' },
   template: `
-    <a href="#main" (click)="skipToMain($event)" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-background focus:px-3 focus:py-2 focus:ring-2 focus:ring-ring">Skip to content</a>
+    <a [href]="skipHref()" (click)="skipToMain($event)" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-background focus:px-3 focus:py-2 focus:ring-2 focus:ring-ring">Skip to content</a>
     <app-site-header />
     <main id="main" tabindex="-1" class="flex-1 outline-none">
       <router-outlet />
@@ -22,7 +22,9 @@ export class App {
   // Created with the app, so a saved light theme applies from the start.
   private readonly theme = inject(ThemeService)
 
-  /** `<base href="/">` would send a plain `#main` link to the home page. */
+  /** `<base href="/">` would send a plain `#main` link to the home page, before hydration too. */
+  protected readonly skipHref = signal(`${inject(Location).path()}#main`)
+
   protected skipToMain(event: Event): void {
     event.preventDefault()
     document.getElementById('main')?.focus()
@@ -35,22 +37,26 @@ export class App {
     const router = inject(Router)
     const injector = inject(Injector)
     let path = location.pathname
+    let section: string | null = null
     let back = false
     const subscription = router.events.subscribe(event => {
       if (event instanceof NavigationStart) back = event.navigationTrigger === 'popstate'
       if (event instanceof NavigationEnd) {
         const next = event.urlAfterRedirects.split(/[?#]/)[0]!
         if (next !== path && !back && !location.hash) window.scrollTo({ top: 0 })
-        // A new page: keyboard and screen reader users carry on from its start, or from the section the link names.
-        if (next !== path) {
-          const section = event.urlAfterRedirects.split('#')[1]
+        this.skipHref.set(`${event.urlAfterRedirects.split('#')[0]}#main`)
+        // A new page or section: keyboard and screen reader users carry on from its start.
+        const fragment = router.parseUrl(event.urlAfterRedirects).fragment
+        const newPage = next !== path
+        if (newPage || (fragment && fragment !== section)) {
           afterNextRender(() => {
-            const target = section ? document.getElementById(decodeURIComponent(section)) : null
+            const target = fragment ? document.getElementById(fragment) : null
             if (target) target.focus()
-            else document.getElementById('main')?.focus({ preventScroll: true })
+            else if (newPage) document.getElementById('main')?.focus({ preventScroll: true })
           }, { injector })
         }
         path = next
+        section = fragment
       }
     })
     inject(DestroyRef).onDestroy(() => subscription.unsubscribe())

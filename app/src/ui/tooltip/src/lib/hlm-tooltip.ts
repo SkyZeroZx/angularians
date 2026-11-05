@@ -74,15 +74,21 @@ export class HlmTooltip {
       // show still waiting for its delay. It has no public close; check this on an upgrade (tooltip spec).
       const brn = this.brn as unknown as { delay(isShow: boolean, delay?: number): void };
       const close = () => brn.delay(false, -1);
+      let tapped = false;
       const view = this.document.defaultView;
       const listeners: Array<[EventTarget, string, EventListener, AddEventListenerOptions]> = [
         [this.document, "scroll", close, { capture: true, passive: true }],
         [view ?? this.document, "resize", close, { passive: true }],
-        [this.host, "pointerdown", close, {}],
-        // A tap on a button (an info icon) opens it: touch has no hover. Links navigate instead.
-        [this.host, "pointerup", ((event: PointerEvent) => {
-          if (event.pointerType === "touch" && this.host.matches("button")) brn.delay(true);
+        [this.host, "pointerdown", ((event: PointerEvent) => {
+          tapped = event.pointerType === "touch";
+          close();
         }) as EventListener, {}],
+        // A tap on a button (an info icon) opens it: touch has no hover. After focus, which closes it. Links navigate instead.
+        [this.host, "click", () => {
+          if (!tapped || !this.host.matches("button")) return;
+          brn.delay(true);
+          this.document.addEventListener("pointerdown", close, { capture: true, once: true });
+        }, {}],
         // After the brain's own focus listener, which shows unconditionally.
         [this.host, "focus", () => queueMicrotask(() => {
           if (!this.host.matches(":focus-visible")) close();

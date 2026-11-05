@@ -15,7 +15,7 @@ import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import { getContributorsMap, getLeaderboard } from '../data/contributors.server';
-import { loadedValue } from '../data/loaded';
+import { loadedValue, markFailed } from '../data/loaded';
 import { PageGrid } from '../layout/page-grid';
 import { AngularLogo } from '../layout/angular-logo';
 import { LogoMark } from '../layout/logo-mark';
@@ -214,7 +214,7 @@ export default class Home {
     // A shared `?period=` link gets its own title and description; the plain page keeps the generic ones.
     effect(() => {
       const page = this.boardValue();
-      if (this.leaderboard.error() && this.response) this.response.statusCode = 503;
+      if ((this.leaderboard.error() || this.map.error()) && this.response) markFailed(this.response);
       const shared = this.requestedPeriod() && page?.total ? page : null;
       const title = shared ? `Top Angularians ${periodPhrase(shared.period)}` : 'Angularians';
       const description = shared
