@@ -75,10 +75,11 @@ export class LeaderboardMemory {
     <ol [class]="'grid-cols-5 gap-3 sm:grid sm:grid-cols-8 sm:gap-4 md:grid-cols-10 ' + (view() === 'list' ? 'hidden' : 'grid')" [attr.aria-label]="listLabel()">
       @for (item of items(); track item.githubId) {
         <li class="relative">
+          <ng-template #tip><span class="brand mr-1.5 text-sm leading-none">#{{ rank(item) }}</span>{{ who(item) }} · {{ points(item) }}@if (item.countryRank) { · #{{ overall(item) }} overall }</ng-template>
           <a
             [routerLink]="['/', item.username]"
             [queryParams]="query()"
-            [hlmTooltip]="tooltip(item)"
+            [hlmTooltip]="tip"
             [attr.aria-label]="label(item)"
             [class]="'relative block aspect-square overflow-hidden rounded-xl bg-muted transition focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ' + podiumRing(item)"
           >
@@ -138,10 +139,9 @@ export class LeaderboardGrid {
   protected readonly podium = (item: ContributorSummary) => PODIUM[this.place(item)] ?? null
   protected readonly who = (item: ContributorSummary) =>
     item.name && item.name.toLowerCase() !== item.username.toLowerCase() ? `${item.name} (${item.username})` : item.username
+  protected readonly overall = (item: ContributorSummary) => formatNumber(item.rank)
   protected readonly place = (item: ContributorSummary) => item.countryRank ?? item.rank
   protected readonly rank = (item: ContributorSummary) => formatNumber(this.place(item))
-  protected readonly tooltip = (item: ContributorSummary) =>
-    `${this.who(item)} · ${this.points(item)}${item.countryRank ? ` · #${formatNumber(item.rank)} overall` : ''}`
   protected readonly label = (item: ContributorSummary) =>
     `${this.who(item)}, #${this.rank(item)}${item.countryRank ? ` in the country, #${formatNumber(item.rank)} overall` : ''}, ${this.points(item)}`
   protected readonly points = (item: ContributorSummary) => formatPoints(item.score)
