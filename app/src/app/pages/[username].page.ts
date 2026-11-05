@@ -466,8 +466,8 @@ export default class Profile {
     if (!person) return [];
     // One colour per kind, the profile's stat colours: gold for a #1, green for the all-time top 10, blue (comments)
     // for reviews. As soft tints, readable in both themes.
-    const gold = 'bg-[#9A6700]/10 text-[#9A6700] ring-[#9A6700]/30 dark:bg-[#D29922]/10 dark:text-[#D29922] dark:ring-[#D29922]/30';
-    const green = 'bg-[#1A7F37]/10 text-[#1A7F37] ring-[#1A7F37]/30 dark:bg-[#3FB950]/10 dark:text-[#3FB950] dark:ring-[#3FB950]/30';
+    const gold = 'bg-[#9A6700]/10 text-[#7D4E00] ring-[#9A6700]/30 dark:bg-[#D29922]/10 dark:text-[#D29922] dark:ring-[#D29922]/30';
+    const green = 'bg-[#1A7F37]/10 text-[#116329] ring-[#1A7F37]/30 dark:bg-[#3FB950]/10 dark:text-[#3FB950] dark:ring-[#3FB950]/30';
     const blue = 'bg-[#0969DA]/10 text-[#0969DA] ring-[#0969DA]/30 dark:bg-[#58A6FF]/10 dark:text-[#58A6FF] dark:ring-[#58A6FF]/30';
     const badges: Array<{ label: string, title: string, icon: string, style: string }> = [];
     // The gradient Angular logo of the press kit, only to say "member of the Angular team" (the site's mark stays the A).
