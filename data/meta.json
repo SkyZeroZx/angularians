@@ -1,5 +1,5 @@
 {
-  "collectedAt": "2026-11-04T06:36:31.736Z",
+  "collectedAt": "2026-11-05T08:21:11.671Z",
   "repos": [
     "angular/angular",
     "angular/components",
@@ -9,18 +9,18 @@
   "partial": false,
   "since": null,
   "activity": true,
-  "contributors": 59358,
-  "profiles": 45118,
+  "contributors": 59360,
+  "profiles": 45121,
   "team": 30,
-  "pulls": 76911,
-  "commits": 78290,
+  "pulls": 76947,
+  "commits": 78320,
   "prCloseCommits": 26789,
   "multiPrCommits": 46,
-  "landedMerged": 32349,
+  "landedMerged": 32369,
   "landedByPrClose": 17436,
-  "landedPullRequests": 49785,
-  "issues": 64472,
-  "comments": 575351,
-  "reviewComments": 145464,
-  "activityPages": 9598
+  "landedPullRequests": 49805,
+  "issues": 64479,
+  "comments": 575427,
+  "reviewComments": 145493,
+  "activityPages": 9600
 }
