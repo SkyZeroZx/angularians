@@ -55,7 +55,8 @@ uses (see the script). Colours live in `app/src/styles.css`; signed in, the colo
 **A bot.** When a run's `Possible bots:` line shows an account that is a bot, add it to `KNOWN_BOT_ACCOUNTS` in
 `shared/src/bots.ts`. Check its profile first: a few people have "bot" in their username.
 
-**A badge.** Profile badges are in `badges()` of `app/src/app/pages/[username].page.ts`.
+**A badge.** Profile badges are in `badges()` of `app/src/app/pages/[username].page.ts`. The Angular GDE and GitHub Star badges
+come from hand-kept lists of GitHub ids in `app/src/app/profile/recognitions.ts`: add someone there when they become one.
 
 **A change to the score.** The weights are in `shared/src/scoring.ts`; update [docs/SCORING.md](docs/SCORING.md) and the
 "How the score works" section of the home page with them.
