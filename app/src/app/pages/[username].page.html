@@ -100,8 +100,11 @@
       </div>
 
       <div class="flex flex-col gap-6 lg:col-span-3">
-        <div class="flex lg:justify-end">
+        <div class="flex flex-col items-start gap-2 lg:items-end">
           <app-period-tabs [period]="period()" [periods]="available()" [ranks]="ranks()" label="Profile period" (periodChange)="setPeriod($event)" />
+          @if (missingPeriod(); as missing) {
+            <p class="text-sm text-muted-foreground" role="status">No contributions {{ phrase(missing) }}, so this is all time.</p>
+          }
         </div>
 
         <ul class="grid grid-cols-2 gap-4" [attr.aria-label]="'Contributions ' + phrase(period())">

@@ -116,6 +116,10 @@ export default class Profile {
 
   protected readonly available = computed(() => this.loaded()?.periods.map(row => row.period) ?? ['all']);
   /** `?period=` when the contributor contributed in it, all time otherwise. */
+  protected readonly missingPeriod = computed(() => {
+    const requested = this.requested();
+    return this.loaded() && requested && requested !== this.period() ? requested : null;
+  });
   protected readonly period = computed<Period>(() => {
     const requested = this.requested();
     return requested && this.available().includes(requested) ? requested : 'all';
