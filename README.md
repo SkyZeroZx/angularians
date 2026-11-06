@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <img alt="The Angularians home page: the hero, sign in with GitHub, and the leaderboard" src="docs/assets/screenshot.png" width="800">
+  <img alt="The Angularians home page: the hero, sign in with GitHub, and the leaderboard" src="docs/assets/home.png" width="800">
 </p>
 
 ## Quick start
