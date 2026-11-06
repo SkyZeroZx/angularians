@@ -3,7 +3,7 @@ import { DOCUMENT } from '@angular/common';
 import { afterRenderEffect, Component, computed, effect, inject, linkedSignal, untracked } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
-import { injectServerFn, type RouteMeta } from '@analogjs/router';
+import { type RouteMeta } from '@analogjs/router';
 import { injectResponse } from '@analogjs/router/tokens';
 import { countryCode, countryName, DEFAULT_PERIOD, isPeriod, periodPhrase, type Period } from '@angularians/shared';
 import { NgIcon, provideIcons } from '@ng-icons/core';
@@ -15,6 +15,7 @@ import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import { getContributorsMap, getLeaderboard } from '../data/contributors.server';
+import { injectSeededServerFn } from '../data/seeded-server-fn';
 import { loadedValue, markFailed } from '../data/loaded';
 import { PageGrid } from '../layout/page-grid';
 import { AngularLogo } from '../layout/angular-logo';
@@ -62,9 +63,9 @@ export default class Home {
   protected readonly country = injectQueryParams(params => countryCode(params['country']));
   protected readonly period = computed(() => this.requestedPeriod() ?? DEFAULT_PERIOD);
 
-  protected readonly leaderboard = injectServerFn(getLeaderboard, () => ({ period: this.period(), country: this.country(), page: 1 }));
+  protected readonly leaderboard = injectSeededServerFn(getLeaderboard, () => ({ period: this.period(), country: this.country(), page: 1 }));
   /** Countries of the same period, for the filter and the globe. */
-  protected readonly map = injectServerFn(getContributorsMap, () => ({ period: this.period() }));
+  protected readonly map = injectSeededServerFn(getContributorsMap, () => ({ period: this.period() }));
   private readonly boardValue = loadedValue(this.leaderboard);
   protected readonly mapValue = loadedValue(this.map);
   /** The last board stays on screen, dimmed, while the next one loads, or if it fails: no jump to skeletons. */

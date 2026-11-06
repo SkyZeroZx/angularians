@@ -4,7 +4,7 @@ import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { Router, RouterLink } from '@angular/router';
-import { injectServerFn, type RouteMeta } from '@analogjs/router';
+import { type RouteMeta } from '@analogjs/router';
 import { injectResponse } from '@analogjs/router/tokens';
 import { countryCode, countryName, DEFAULT_PERIOD, GITHUB_USERNAME_RE, isPeriod, periodPhrase, reposQuery, type ContributorProfile, type Period } from '@angularians/shared';
 import { NgIcon, provideIcons } from '@ng-icons/core';
@@ -21,6 +21,7 @@ import { injectQueryParams } from 'ngxtension/inject-query-params';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton';
 import { HlmTooltip } from '@spartan-ng/helm/tooltip';
+import { injectSeededServerFn } from '../data/seeded-server-fn';
 import { loadedValue, markFailed } from '../data/loaded';
 import { missingPeriod, shownPeriod } from '../profile/period-choice';
 import { getContributor } from '../data/contributors.server';
@@ -92,7 +93,7 @@ export default class Profile {
   protected readonly username = injectParams(params => String(params['username'] ?? ''));
   private readonly requested = injectQueryParams(params => (isPeriod(params['period']) ? (params['period'] as Period) : null));
   /** Every period is in the profile: switching period needs no request. */
-  protected readonly profile = injectServerFn(getContributor, () => ({ username: this.username() }));
+  protected readonly profile = injectSeededServerFn(getContributor, () => ({ username: this.username() }));
   protected readonly loaded = loadedValue(this.profile);
   /** GitHub's rule for a username; anything else is not found, not a failed load. */
   protected readonly validUsername = computed(() => GITHUB_USERNAME_RE.test(this.username()));
