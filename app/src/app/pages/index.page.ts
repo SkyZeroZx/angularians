@@ -29,6 +29,8 @@ import { MeCard } from '../leaderboard/me-card';
 import { ScoreRules } from '../leaderboard/score-rules';
 import { breadcrumbs, setJsonLd, setShareMeta, SITE_SCHEMA, SITE_URL } from '../site';
 import { boardDescription, formatDate, formatNumber, plural } from '../leaderboard/format';
+import { ClaimBadge } from '../leaderboard/claim-badge';
+import { EarnBadges } from '../leaderboard/earn-badges';
 import { JoinLinks } from '../leaderboard/join-links';
 import { LeaderboardGrid } from '../leaderboard/leaderboard-grid';
 import { PeriodTabs } from '../leaderboard/period-tabs';
@@ -48,7 +50,7 @@ export const routeMeta = {
 @Component({
   selector: 'app-home',
   imports: [
-    JoinLinks,
+    ClaimBadge, EarnBadges, JoinLinks,
     AngularLogo, ContributorSearch, CountrySelect, HlmButton, HlmCardImports, HlmSkeleton, LeaderboardGrid, LogoMark, MeCard, NextUpdate, NgIcon, ScoreRules,
     PageGrid, PageHero, PageSection, PeriodTabs, World,
   ],

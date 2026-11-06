@@ -1,5 +1,4 @@
 import { useStorage } from 'nitropack/runtime'
-import { SITE_URL } from '../../app/site'
 import type { CardFonts } from './card'
 import { avatarUrl, flagUrl } from '../../app/leaderboard/format'
 
@@ -23,23 +22,21 @@ export function cardFonts(): Promise<CardFonts> {
   }))
 }
 
-const flags = new Map<string, string>()
+const images = new Map<string, string>()
 
-/** A country's flag as a data URL, from the site's own files, or `null`: a card still renders without it. */
-export async function flagData(code: string): Promise<string | null> {
-  const known = flags.get(code)
+/** One of the site's own images (`/logo.svg`, `/credits/…`, `/flags/…`, from the server assets) as a data URL, or `null`: a card still renders without it. */
+export async function siteImage(path: string): Promise<string | null> {
+  const known = images.get(path)
   if (known) return known
-  try {
-    const response = await fetch(`${SITE_URL}${flagUrl(code)}`, { signal: AbortSignal.timeout(5000) })
-    if (!response.ok) return null
-    const data = `data:image/svg+xml;base64,${Buffer.from(await response.arrayBuffer()).toString('base64')}`
-    flags.set(code, data)
-    return data
-  }
-  catch {
-    return null
-  }
+  const raw = await useStorage('assets:site-images').getItemRaw<Buffer>(path.slice(1).replaceAll('/', ':')).catch(() => null)
+  if (!raw) return null
+  const data = `data:${path.endsWith('.svg') ? 'image/svg+xml' : 'image/png'};base64,${Buffer.from(raw).toString('base64')}`
+  images.set(path, data)
+  return data
 }
+
+/** A country's flag as a data URL, or `null`. */
+export const flagData = (code: string) => siteImage(flagUrl(code))
 
 /** An avatar as a data URL, or `null`: a card still renders without it. `pixels`: its size on the card, ×2. */
 export async function avatarData(githubId: number, pixels = 352): Promise<string | null> {

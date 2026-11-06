@@ -69,18 +69,7 @@
           @if (badges().length) {
             <ul class="flex flex-wrap gap-2" aria-label="Badges">
               @for (badge of badges(); track badge.label) {
-                <li>
-                  <button type="button" [class]="'inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-sm ring-1 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ' + badge.style" [hlmTooltip]="badge.title">
-                  @if (badge.icon === 'angular') {
-                    <app-angular-logo class="size-4" />
-                  } @else if (badge.icon === 'gde') {
-                    <img src="/credits/gde.svg" alt="" class="h-[0.8em] w-auto" />
-                  } @else {
-                    <ng-icon [name]="badge.icon" [size]="badge.icon.startsWith('viking') ? '1.25rem' : '1em'" aria-hidden="true" />
-                  }
-                  {{ badge.label }}
-                  </button>
-                </li>
+                <li><app-badge-pill [badge]="badge" /></li>
               }
             </ul>
           }

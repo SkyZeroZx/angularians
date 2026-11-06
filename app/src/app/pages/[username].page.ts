@@ -15,7 +15,9 @@ import {
   simpleBluesky, simpleFacebook, simpleGithub, simpleInstagram, simpleMastodon, simpleNpm, simpleReddit, simpleThreads, simpleTwitch, simpleX,
   simpleYoutube,
 } from '@ng-icons/simple-icons';
-import { ANGULAR_GDES, GITHUB_STARS } from '../profile/recognitions';
+import { BADGE_ICONS, earnedBadges } from '../profile/earned-badges';
+import { BadgePill } from '../profile/badge-pill';
+import { EMBLEMS } from '../profile/special-badges';
 import { injectParams } from 'ngxtension/inject-params';
 import { injectQueryParams } from 'ngxtension/inject-query-params';
 import { HlmButton } from '@spartan-ng/helm/button';
@@ -58,26 +60,16 @@ const SOCIAL_ICONS: Record<string, string> = {
 };
 const SINCE = new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' });
 
-/** Years as ranges: [2019, 2024, 2025, 2026] → "2019, 2024–2026". */
-export function yearRanges(years: readonly number[]): string {
-  const parts: string[] = [];
-  for (let i = 0; i < years.length; i++) {
-    let j = i;
-    while (j + 1 < years.length && years[j + 1] === years[j]! + 1) j++;
-    parts.push(j > i ? `${years[i]}–${years[j]}` : `${years[i]}`);
-    i = j;
-  }
-  return parts.join(', ');
-}
-
 function githubSearch(q: string, type: 'pullrequests' | 'issues'): string {
   return `https://github.com/search?${new URLSearchParams({ q: `${reposQuery()} ${q}`, type })}`;
 }
 
 @Component({
   selector: 'app-profile',
-  imports: [AngularLogo, CardPreview, Container, HlmButton, HlmSkeleton, HlmTooltip, AngularianPill, NgIcon, NgTemplateOutlet, PeriodTabs, RouterLink, ScoreDialog, Share],
+  imports: [AngularLogo, BadgePill, CardPreview, Container, HlmButton, HlmSkeleton, HlmTooltip, AngularianPill, NgIcon, NgTemplateOutlet, PeriodTabs, RouterLink, ScoreDialog, Share],
   providers: [provideIcons({
+    ...EMBLEMS,
+    ...BADGE_ICONS,
     vikingAxes, vikingLongship, remixCloseLine, remixArrowLeftLine, remixArrowRightSLine, remixArrowRightUpLine, remixMedalLine, octIssueOpened, octGitMerge, remixInformationLine,
     remixVerifiedBadgeLine, remixArrowDownSLine, remixArrowUpSLine, vikingHelmet, remixLinkM, remixLinkedinBoxLine, octComment,
     octSmiley, vikingShield,
@@ -174,30 +166,10 @@ export default class Profile {
   protected readonly icon = packageIcon;
   protected readonly plural = plural;
   protected readonly points = formatPoints;
-  /** Earned from the data: the Angular team, the all-time top 10, #1 of a year, 100+ review comments. */
+  /** Earned from the data and from the lists in `profile/`: `earnedBadges`, shared with the card. */
   protected readonly badges = computed(() => {
     const person = this.loaded();
-    if (!person) return [];
-    // One colour per kind, the profile's stat colours: gold for a #1, green for the all-time top 10, purple (review
-    // comments, as in the score rules) for reviews. As soft tints, readable in both themes.
-    const gold = 'bg-[#9A6700]/10 text-[#7D4E00] ring-[#9A6700]/30 dark:bg-[#D29922]/10 dark:text-[#D29922] dark:ring-[#D29922]/30';
-    const green = 'bg-[#1A7F37]/10 text-[#116329] ring-[#1A7F37]/30 dark:bg-[#3FB950]/10 dark:text-[#3FB950] dark:ring-[#3FB950]/30';
-    const purple = 'bg-[#8250DF]/10 text-[#8250DF] ring-[#8250DF]/30 dark:bg-[#A371F7]/10 dark:text-[#A371F7] dark:ring-[#A371F7]/30';
-    const badges: Array<{ label: string, title: string, icon: string, style: string }> = [];
-    // The gradient Angular logo of the press kit, only to say "member of the Angular team" (the site's mark stays the A).
-    if (person.team) badges.push({ label: 'Angular team', title: 'Public member of the Angular organization on GitHub', icon: 'angular', style: 'bg-[#dc087d]/10 text-foreground ring-[#dc087d]/40' });
-    // Recognised by Google and by GitHub (lists in profile/recognitions.ts): Google's blue, GitHub's star yellow; their text a
-    // shade darker on white, for 4.5:1 contrast.
-    if (ANGULAR_GDES.has(person.githubId)) badges.push({ label: 'Angular GDE', title: 'Google Developer Expert for Angular', icon: 'gde', style: 'bg-[#1A73E8]/10 text-[#185ABC] ring-[#1A73E8]/30 dark:bg-[#8AB4F8]/10 dark:text-[#8AB4F8] dark:ring-[#8AB4F8]/30' });
-    if (GITHUB_STARS.has(person.githubId)) badges.push({ label: 'GitHub Star', title: 'GitHub Star, recognised by GitHub for helping the community', icon: 'remixStarFill', style: 'bg-[#BF8700]/10 text-[#845A00] ring-[#BF8700]/30 dark:bg-[#E3B341]/10 dark:text-[#E3B341] dark:ring-[#E3B341]/30' });
-    // Every year at #1 in one badge: "#1 in 2024–2026", "#1 in 2019, 2024".
-    const firsts = this.years().filter(row => row.rank === 1).map(row => Number(row.period)).sort((x, y) => x - y);
-    if (firsts.length) {
-      badges.push({ label: `#1 in ${yearRanges(firsts)}`, title: `The top Angularian of ${plural(firsts.length, 'year', 'years')}`, icon: 'vikingHelmet', style: gold });
-    }
-    if (person.rank <= 10) badges.push({ label: 'Top 10 all time', title: `#${formatNumber(person.rank)} of all time`, icon: 'vikingShield', style: green });
-    if (person.reviewComments >= 100) badges.push({ label: 'Reviewer', title: `${formatNumber(person.reviewComments)} review comments on code`, icon: 'vikingAxes', style: purple });
-    return badges;
+    return person ? earnedBadges(person) : [];
   });
   /** The contributor's rank in each period they contributed in, for the period tabs. */
   protected readonly ranks = computed(() => Object.fromEntries((this.loaded()?.periods ?? []).map(row => [row.period, row.rank])));

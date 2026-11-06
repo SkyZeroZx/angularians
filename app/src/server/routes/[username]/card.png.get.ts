@@ -3,6 +3,7 @@ import { createError, defineEventHandler, getQuery, getRouterParam } from 'h3'
 import * as v from 'valibot'
 import { countryCode, countryName } from '@angularians/shared'
 import { avatarData, cardFonts, flagData } from '../../card/assets'
+import { cardBadgeImages } from '../../card/badges'
 import { cardPeriod, cardTree, renderCard } from '../../card/card'
 import { UsernameSchema } from '../../data/schemas'
 import { contributorsData } from '../../data/store'
@@ -20,8 +21,8 @@ export default defineEventHandler(async (event) => {
   const period = cardPeriod(profile, getQuery(event)['period'])
   // `?flag=TR`: the country the owner picked for this card. Otherwise their GitHub location.
   const code = countryCode(getQuery(event)['flag']) ?? profile.country ?? null
-  const [avatar, flagSrc, fonts] = await Promise.all([avatarData(profile.githubId), code ? flagData(code) : null, cardFonts()])
-  const png = await renderCard(cardTree(profile, period, avatar, code && flagSrc ? { src: flagSrc, name: countryName(code) } : null), fonts)
+  const [avatar, flagSrc, fonts, badges] = await Promise.all([avatarData(profile.githubId), code ? flagData(code) : null, cardFonts(), cardBadgeImages(profile)])
+  const png = await renderCard(cardTree(profile, period, avatar, code && flagSrc ? { src: flagSrc, name: countryName(code) } : null, badges), fonts)
   // A day in shared caches (GitHub's image proxy too): each night's deploy clears the CDN.
   return sendPng(event, png)
 })
