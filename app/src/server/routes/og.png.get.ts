@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
   const title = period ? `Top Angularians ${periodPhrase(period)}` : 'Meet the Angularians'
   const description = period
     ? boardDescription(board, period)
-    : `The ${formatNumber(board.total)} people behind Angular, its CLI and its components, ranked by their contributions since 2014.`
+    : `Every Angular contributor since 2014, ranked: the ${formatNumber(board.total)} people behind Angular, its CLI and its components.`
   const avatars = await Promise.all(board.items.slice(0, 8).map(item => avatarData(item.githubId, 176)))
   const png = await renderCard(homeTree({ title, description, avatars }), await cardFonts())
   return sendPng(event, png)

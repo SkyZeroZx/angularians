@@ -63,6 +63,18 @@ function branded(text: string, style: Record<string, unknown>, brandColor?: stri
     : h('span', {}, piece.trim())))
 }
 
+/** Text where "Angular contributor(s)" gets the Angular logo and white, as on the site's hero; word by word, so it wraps. */
+function withAngular(text: string, style: Record<string, unknown>): Node {
+  const size = Number(style.fontSize ?? 16)
+  const pieces = text.split(/(Angular contributors?)/).filter(Boolean)
+  return h('div', { flexWrap: 'wrap', alignItems: 'center', columnGap: size * .22, ...style }, pieces.flatMap(piece => /^Angular contributors?$/.test(piece)
+    ? [h('div', { alignItems: 'center', gap: size * .3, color: '#ffffff', fontWeight: 600 }, [
+        h('img', { width: size * 1.05, height: size * 1.1 }, undefined, { src: ANGULAR_LOGO, width: size * 1.05, height: size * 1.1 }),
+        h('span', {}, piece),
+      ])]
+    : piece.trim().split(/\s+/).filter(Boolean).map(word => h('span', {}, word))))
+}
+
 /** `?period=`: a period with contributions, else all time (like the profile page). */
 export function cardPeriod(profile: ContributorProfile, requested: unknown): Period {
   const period = periodOrNull(requested) ?? 'all'
@@ -142,7 +154,7 @@ export function homeTree(input: { title: string, description: string, avatars: A
         h('div', { fontFamily: 'Norse', fontWeight: 700, fontSize: 48, letterSpacing: 1, color: BRAND, lineHeight: 1, marginTop: 13 }, 'Angularians'),
       ]),
       branded(input.title, { fontSize: 76, fontWeight: 600, marginTop: 48, lineHeight: 1.1 }, BRAND),
-      h('div', { fontSize: 32, color: '#a3a3a3', marginTop: 24, maxWidth: 980, lineHeight: 1.35 }, input.description),
+      withAngular(input.description, { fontSize: 32, color: '#a3a3a3', marginTop: 24, maxWidth: 1040, lineHeight: 1.35 }),
     ]),
     h('div', { alignItems: 'center', justifyContent: 'space-between' }, [
       h('div', { alignItems: 'center' }, avatars.map((avatar, index) => avatar
