@@ -1,9 +1,9 @@
 <app-page-hero>
   <span heroTitle class="flex items-center gap-3">
-    <app-logo-mark intro class="size-16 shrink-0 translate-y-[3.5%] min-[360px]:size-22 sm:size-32 lg:size-27 xl:size-36 2xl:size-38" />
+    <app-logo-mark intro class="size-16 shrink-0 translate-y-[3.5%] min-[360px]:size-22 min-[400px]:size-24 sm:size-32 lg:size-27 xl:size-36 2xl:size-38" />
     <span class="flex min-w-0 flex-col gap-1 sm:gap-2">
-      <span class="brand text-5xl leading-none whitespace-nowrap text-brand-from sm:text-7xl lg:text-6xl xl:text-[5.5rem] 2xl:text-8xl">Angularians </span>
-      <span class="brand text-xl text-muted-foreground sm:text-3xl lg:text-2xl xl:text-3xl">Carve your name in <span class="whitespace-nowrap text-primary">ng-halla</span></span>
+      <span class="brand text-5xl leading-none whitespace-nowrap text-brand-from min-[375px]:text-[3.25rem] min-[400px]:text-[3.5rem] sm:text-7xl lg:text-6xl xl:text-[5.5rem] 2xl:text-8xl">Angularians </span>
+      <span class="brand text-xl text-muted-foreground min-[375px]:text-[1.35rem] min-[400px]:text-2xl sm:text-3xl lg:text-2xl xl:text-3xl">Carve your name in <span class="whitespace-nowrap text-primary">ng-halla</span></span>
     </span>
   </span>
   <!-- @container: the card's height follows its own width -->
@@ -25,7 +25,8 @@
   <!-- One row from lg: tabs, the country select and search do not fit side by side on a tablet -->
   <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
     <app-period-tabs [period]="period()" [periods]="board()?.periods ?? []" (periodChange)="setPeriod($event)" />
-    <div class="grid grid-cols-2 gap-3 sm:flex">
+    <!-- Phones: one under the other, the search's placeholder does not fit in half the width -->
+    <div class="grid gap-3 sm:flex">
       <app-country-select [countries]="mapValue()?.countries ?? []" [value]="country()" (valueChange)="setCountry($event)" />
       <app-contributor-search [period]="period()" [country]="country()" />
     </div>
@@ -38,12 +39,12 @@
     </div>
   }
   @if (board(); as page) {
-    <ul class="mt-4 mb-6 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-sm text-muted-foreground" [attr.aria-label]="'Contributions ' + phrase(page.period)">
+    <ul class="mx-auto mt-4 mb-6 grid w-fit grid-cols-[auto_auto] gap-x-8 gap-y-1.5 text-sm text-muted-foreground sm:mx-0 sm:flex sm:w-auto sm:flex-wrap sm:items-center sm:gap-x-5" [attr.aria-label]="'Contributions ' + phrase(page.period)">
       <li class="flex items-center gap-1.5"><ng-icon name="remixGroupLine" aria-hidden="true" /><span><strong class="font-semibold text-foreground tabular-nums">{{ number(page.total) }}</strong> {{ page.total === 1 ? 'contributor' : 'contributors' }}{{ page.country ? ' from ' + countryLabel(page.country) : '' }}</span></li>
       <li class="flex items-center gap-1.5"><ng-icon name="octGitMerge" [class]="colors.purple" aria-hidden="true" /><span><strong class="font-semibold text-foreground tabular-nums">{{ number(page.landedPullRequests) }}</strong> merged {{ page.landedPullRequests === 1 ? 'PR' : 'PRs' }}</span></li>
       <li class="flex items-center gap-1.5"><ng-icon name="octIssueOpened" [class]="colors.green" aria-hidden="true" /><span><strong class="font-semibold text-foreground tabular-nums">{{ number(page.issues) }}</strong> {{ page.issues === 1 ? 'issue' : 'issues' }}</span></li>
       <li class="flex items-center gap-1.5"><ng-icon name="octComment" [class]="colors.blue" aria-hidden="true" /><span><strong class="font-semibold text-foreground tabular-nums">{{ number(page.comments + page.reviewComments) }}</strong> {{ page.comments + page.reviewComments === 1 ? 'comment' : 'comments' }}</span></li>
-      <li class="text-xs sm:ml-auto"><app-next-update [collectedAt]="page.collectedAt" /></li>
+      <li class="col-span-2 justify-self-center text-xs sm:ml-auto"><app-next-update [collectedAt]="page.collectedAt" /></li>
     </ul>
 
     <div [class.opacity-60]="leaderboard.isLoading()" class="transition-opacity" [attr.aria-busy]="leaderboard.isLoading()">
@@ -85,13 +86,16 @@
   </header>
   <app-page-grid>
     @for (way of becomeWays; track way.title) {
-      <a [href]="way.url" target="_blank" rel="noopener" hlmCard class="transition hover:bg-muted/40">
-        <div hlmCardHeader>
+      <a [href]="way.url" target="_blank" rel="noopener" hlmCard class="transition hover:bg-muted/40 max-sm:py-4">
+        <!-- Phones: the icon beside the text, the link's arrow on the title -->
+        <div hlmCardHeader class="max-sm:flex max-sm:items-start max-sm:gap-3 max-sm:px-4">
           <!-- The profile's stat colours: pink PRs, sky issues, violet comments -->
-          <span [class]="'grid size-11 place-items-center rounded-lg bg-current/10 ' + way.color"><ng-icon [name]="way.icon" size="24" aria-hidden="true" /></span>
-          <h3 hlmCardTitle class="mt-3 text-lg">{{ way.title }}</h3>
-          <p hlmCardDescription>{{ way.description }}</p>
-          <p class="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary">{{ way.action }} <ng-icon name="remixArrowRightUpLine" aria-hidden="true" /></p>
+          <span [class]="'grid size-11 shrink-0 place-items-center rounded-lg bg-current/10 max-sm:size-9 ' + way.color"><ng-icon [name]="way.icon" size="24" aria-hidden="true" /></span>
+          <div class="grid min-w-0 gap-1.5 max-sm:flex-1 max-sm:gap-1">
+            <h3 hlmCardTitle class="mt-3 flex items-center justify-between gap-2 text-lg max-sm:mt-0 max-sm:text-base">{{ way.title }}<ng-icon name="remixArrowRightUpLine" class="text-muted-foreground sm:hidden" aria-hidden="true" /></h3>
+            <p hlmCardDescription class="max-sm:text-sm">{{ way.description }}</p>
+            <p class="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary max-sm:hidden">{{ way.action }} <ng-icon name="remixArrowRightUpLine" aria-hidden="true" /></p>
+          </div>
         </div>
       </a>
     }
@@ -106,10 +110,10 @@
   </section>
 </app-page-section>
 
-<app-page-section>
+<app-page-section sectionId="built-on">
   <app-earn-badges />
 </app-page-section>
 
-<app-page-section>
+<app-page-section sectionId="claim-a-badge">
   <app-claim-badge />
 </app-page-section>
