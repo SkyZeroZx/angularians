@@ -14,7 +14,11 @@
 </p>
 
 <p align="center">
-  <img alt="The Angularians home page: the hero, sign in with GitHub, and the leaderboard" src="docs/assets/home.png" width="800">
+  <img alt="A demo of the home page, signed in as Angie, the Angularians mascot: her rank, her stats and the leaderboard" src="docs/assets/home-angie.png" width="800">
+</p>
+
+<p align="center">
+  <img alt="A demo profile for Angie, the Angularians mascot: her rank, her stats, her badges and her share buttons" src="docs/assets/profile-angie.png" width="800">
 </p>
 
 ## Quick start
