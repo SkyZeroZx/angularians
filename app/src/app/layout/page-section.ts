@@ -7,11 +7,12 @@ const brandParts = (text: string) => text.split(/(Angularians?)/)
 @Component({
   selector: 'app-page-section',
   imports: [Container],
-  host: { class: 'block scroll-mt-20 outline-none', '[attr.id]': 'sectionId()', '[attr.tabindex]': 'sectionId() ? -1 : null', '[attr.role]': "title() ? 'region' : null", '[attr.aria-labelledby]': 'title() ? headingId() : null' },
+  host: { class: 'block scroll-mt-20 outline-none', '[attr.id]': 'sectionId()', '[attr.tabindex]': 'sectionId() ? -1 : null', '[attr.role]': "title() || ownHeading() ? 'region' : null", '[attr.aria-labelledby]': 'title() || ownHeading() ? headingId() : null' },
   templateUrl: './page-section.html',
 })
 export class PageSection {
   readonly title = input('')
+  readonly ownHeading = input(false)
   /** The whole title in the brand font. */
   readonly viking = input(false)
   /** Every other part is the word "Angularian(s)", in the brand font. */
