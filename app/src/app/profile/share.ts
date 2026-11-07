@@ -11,16 +11,14 @@ import { CountrySelect } from '../leaderboard/country-select'
 import { PeriodTabs } from '../leaderboard/period-tabs'
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton'
 import { SITE_URL } from '../site'
-import { shareQuery } from '../leaderboard/format'
+import { shareQuery } from './share-query'
+import { CARD_DESIGN } from './card-design'
 
 /** The skeleton shows at least this long, so a fast card does not flicker it. */
 const MIN_LOADING_MS = 500
 
 /** " in 2025" after a sentence about a period; nothing for all time. */
 const periodSuffix = (period: Period) => (period === 'all' ? '' : ` ${periodPhrase(period)}`)
-
-/** Raise it when the card's design changes, so the preview does not show a copy the browser kept. */
-export const CARD_DESIGN = 15
 
 /** Copy the profile link, or the Markdown of the Angularian card for a GitHub profile README. */
 @Component({
@@ -40,6 +38,11 @@ export class Share {
   readonly country = input<string | null | undefined>(null)
 
   protected readonly copied = signal<'link' | 'markdown' | null>(null)
+  /** Each copy button says so for a moment after it copied. */
+  protected readonly linkIcon = computed(() => (this.copied() === 'link' ? 'remixCheckLine' : 'remixLinkM'))
+  protected readonly linkLabel = computed(() => (this.copied() === 'link' ? 'Link copied' : 'Copy profile link'))
+  protected readonly markdownIcon = computed(() => (this.copied() === 'markdown' ? 'remixCheckLine' : 'remixFileCopyLine'))
+  protected readonly markdownLabel = computed(() => (this.copied() === 'markdown' ? 'Markdown copied' : 'Copy Markdown'))
   /** The card renders on demand: its background and a loader meanwhile. */
   /** The card's four stat tiles, for the skeleton (`share.css` places each). */
   protected readonly tiles = [1, 2, 3, 4] as const
@@ -60,7 +63,7 @@ export class Share {
   private readonly profileUrl = computed(() => `${SITE_URL}/${this.username()}${shareQuery(this.period())}`)
   /** The profile with the card's period and flag: what a post links to, and the README card's link. */
   private readonly cardProfileUrl = computed(() => `${SITE_URL}/${this.username()}${shareQuery(this.cardPeriod(), this.flag())}`)
-  protected readonly cardUrl = computed(() => `${SITE_URL}/${this.username()}/card.png${shareQuery(this.cardPeriod(), this.flag())}`)
+  private readonly cardUrl = computed(() => `${SITE_URL}/${this.username()}/card.png${shareQuery(this.cardPeriod(), this.flag())}`)
   /** The same card from this site: right on a preview deploy or locally too. The Markdown keeps the public address. */
   protected readonly previewUrl = computed(() => `/${this.username()}/card.png${shareQuery(this.cardPeriod(), this.flag(), { v: String(CARD_DESIGN) })}`)
   protected readonly fileName = computed(() => `${this.username()}-angularian${this.cardPeriod() === 'all' ? '' : `-${this.cardPeriod()}`}.png`)
@@ -79,9 +82,12 @@ export class Share {
     return `[![${alt}](${this.cardUrl()})](${this.cardProfileUrl()})`
   })
 
-  private timer: ReturnType<typeof setTimeout> | undefined
+  private copiedTimer: ReturnType<typeof setTimeout> | undefined
+  private loadingSince = 0
+  private loadedTimer: ReturnType<typeof setTimeout> | undefined
 
-  protected opened(state: string): void {
+  /** Each opening starts from the period on screen and the GitHub location's flag. */
+  protected resetOnOpen(state: string): void {
     if (state !== 'open') return
     this.cardPeriod.set(this.period())
     this.flag.set(null)
@@ -89,7 +95,7 @@ export class Share {
     this.startLoading()
   }
 
-  protected pick(value: Period | null | undefined): void {
+  protected pickPeriod(value: Period | null | undefined): void {
     if (!value || value === this.cardPeriod()) return
     this.cardPeriod.set(value)
     this.startLoading()
@@ -101,16 +107,7 @@ export class Share {
     this.startLoading()
   }
 
-  private loadingSince = 0
-  private loadedTimer: ReturnType<typeof setTimeout> | undefined
-
-  private startLoading(): void {
-    clearTimeout(this.loadedTimer)
-    this.loadingSince = Date.now()
-    this.cardState.set('loading')
-  }
-
-  protected loaded(url: string): void {
+  protected showLoadedCard(url: string): void {
     clearTimeout(this.loadedTimer)
     this.loadedTimer = setTimeout(() => {
       // A later pick may have started another card meanwhile: only the one on screen counts.
@@ -120,8 +117,11 @@ export class Share {
     }, Math.max(0, MIN_LOADING_MS - (Date.now() - this.loadingSince)))
   }
 
+  protected showCardError(): void {
+    this.cardState.set('error')
+  }
 
-  protected select(event: Event): void {
+  protected selectAll(event: Event): void {
     (event.target as HTMLTextAreaElement).select()
   }
 
@@ -133,6 +133,12 @@ export class Share {
     void this.copy(this.markdown(), 'markdown')
   }
 
+  private startLoading(): void {
+    clearTimeout(this.loadedTimer)
+    this.loadingSince = Date.now()
+    this.cardState.set('loading')
+  }
+
   private async copy(text: string, what: 'link' | 'markdown'): Promise<void> {
     try {
       await navigator.clipboard.writeText(text)
@@ -141,7 +147,7 @@ export class Share {
       return
     }
     this.copied.set(what)
-    clearTimeout(this.timer)
-    this.timer = setTimeout(() => this.copied.set(null), 2000)
+    clearTimeout(this.copiedTimer)
+    this.copiedTimer = setTimeout(() => this.copied.set(null), 2000)
   }
 }

@@ -13,6 +13,8 @@ Angularians ranks everyone who has contributed to the Angular repositories: a co
 | `app/src/app` | the pages, the leaderboard, profiles, the signed-in card and sharing |
 | `app/src/server` | the API, sign-in (`auth/`), the Angularian card (`card/`), the data store |
 | `app/src/app/layout` | the header, the footer, the mark (`logo-mark.ts`, its paths in `logo-mark.html`), the hero |
+| `app/src/app/contributors` | what every feature shows of a contributor: avatar and flag URLs, the country search |
+| `app/src/app/text` | how numbers, dates, plurals and stat names are written, the same on the page, the server and the card |
 | `app/src/ui` | spartan/ui helm components, copied in and ours to change (`@spartan-ng/helm/*` in tsconfig) |
 | `app/scripts/logo` | the mark (`build.py`) and the README wordmark (`wordmark.py`), built from their construction |
 | `app/public` | the favicon, the Norse font (`fonts/`) |
@@ -37,6 +39,16 @@ pnpm build        # the site, as Netlify builds it
 ## Rules
 
 - Small files, short plain comments, few dependencies.
+- The app follows the Angular style guide (https://angular.dev/style-guide): hyphenated file names named after what
+  they hold (no `utils.ts`/`format.ts` grab bags), one component, service or concept per file, folders by feature,
+  tests as `<source>.spec.ts` next to their source (except tests of `app/src/server/routes`, whose folder is the routes
+  themselves). `inject()`, not constructor parameters; inputs, outputs, injected services and queries first, `readonly`;
+  members only the template uses are `protected`; handlers named for what they do; logic in `computed` or functions,
+  not in templates; constructors delegate to named methods; host listeners in `host`, not `@HostListener` or
+  `addEventListener`, except where `host` cannot express one: a listener that needs options (the globe's Ctrl+wheel
+  zoom calls `preventDefault`, so it is added with `{ passive: false }`) or one on a target that is not the element,
+  `window` or `document` (a `matchMedia` list); those are added in a named setup method and removed on destroy. Standalone, signals and `@if`/`@for`; no `ChangeDetectionStrategy` (the app is zoneless and
+  OnPush is Angular 22's default).
 - A component in `app/src/app` keeps its template in its own `.html` and its styles, if any, in its own `.css`, next to its `.ts`: never inline. No styling in TypeScript: no class lists or styling values in `host`, in constants or in bound `[style.*]`; TypeScript picks a name (a tone, a medal) and the `.css` styles it, in plain CSS with the theme's variables. A `host` or template binding that toggles one named class styled in the component's `.css` (`'[class.wide]': 'wide()'`) is fine. Classes several components share are in `app/src/styles/`. `app/src/ui` is copied from spartan/ui and keeps its form.
 - Commit messages are `type(scope): summary`, with no trailer lines.
 - Run `pnpm test`, `pnpm typecheck` and `pnpm build` before you commit; look at a change to the site in both themes and at phone width.

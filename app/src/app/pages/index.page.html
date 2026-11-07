@@ -34,7 +34,7 @@
 
   @if (leaderboard.error() || map.error()) {
     <div role="alert" class="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
-      <p>{{ !leaderboard.error() ? 'The countries could not be loaded.' : board() ? 'This board could not be loaded.' : 'The leaderboard could not be loaded.' }}</p>
+      <p>{{ errorMessage() }}</p>
       <button hlmBtn variant="outline" type="button" (click)="retry()">Try again</button>
     </div>
   }
@@ -50,7 +50,7 @@
       @if (page.total) {
         <app-leaderboard-grid [page]="page" />
       } @else {
-        <p class="py-12 text-center text-muted-foreground">No contributions {{ phrase(page.period) }}{{ page.country ? ' from ' + countryLabel(page.country) : '' }} yet.</p>
+        <p class="py-12 text-center text-muted-foreground">{{ emptyBoardText(page) }}</p>
       }
     </div>
   } @else if (!leaderboard.error()) {
@@ -70,7 +70,7 @@
       <app-world
         [map]="world"
         [selected]="country()"
-        [people]="board()?.country === country() ? board()?.items ?? [] : []"
+        [people]="countryPeople()"
         (select)="pickInWorld($event)"
         (leaderboard)="showLeaderboard()"
       />

@@ -9,14 +9,19 @@ import { remixAddLine, remixPauseLine, remixPlayLine, remixRestartLine, remixSub
 import { HlmButton } from '@spartan-ng/helm/button';
 import type { Globe as CobeGlobe } from 'cobe';
 import createGlobe from 'cobe';
-import { flagUrl, formatNumber, plural } from '../leaderboard/format';
+import { flagUrl } from '../contributors/flag-url';
+import { formatNumber } from '../text/number-format';
+import { plural } from '../text/plural';
 import { ThemeService } from '../theme.service';
 import { vikingLongship } from '../layout/viking-icons';
 import { faceOnGlobe, projectOnGlobe } from './globe-math';
+import { palette, themeColor } from './globe-palette';
 
 /** Opens on the Atlantic: Europe and the Americas, where most contributors are. */
 const DEFAULT_CAMERA = { ...faceOnGlobe([20, -30]), zoom: 1 };
 const MAX_ZOOM = 3;
+/** One press of a zoom button or of + and −. */
+const ZOOM_STEP = 0.25;
 /** Zoomed in, countries show their best ranked contributors instead of a count. */
 const AVATAR_ZOOM = 1.6;
 /** Zoomed in, the globe outgrows the canvas and fades out from 82% of the radius: markers stay inside. */
@@ -30,29 +35,6 @@ const KEY_MOVES: Record<string, [number, number]> = { ArrowLeft: [-0.15, 0], Arr
 
 const clamp = (value: number, low: number, high: number) => Math.min(high, Math.max(low, value));
 const angleDelta = (from: number, to: number) => ((to - from + Math.PI) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2) - Math.PI;
-/**
- * A theme colour as WebGL wants it: both themes recolour the globe through `--globe-*` and `--primary` (styles.css).
- * Percentages are read as they are; any other colour through a canvas, to 8 bits a channel.
- */
-const themeColor = (name: string, fallback: [number, number, number]): [number, number, number] => {
-  const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-  const percents = /^rgb\(([\d.]+)% ([\d.]+)% ([\d.]+)%\)$/.exec(value);
-  if (percents) return [Number(percents[1]) / 100, Number(percents[2]) / 100, Number(percents[3]) / 100];
-  const context = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
-  if (!context || !value) return fallback;
-  context.fillStyle = value;
-  context.fillRect(0, 0, 1, 1);
-  const [red, green, blue] = context.getImageData(0, 0, 1, 1).data;
-  return [red / 255, green / 255, blue / 255];
-};
-/** The library's lighting for each theme, and the theme's colours (its base dimmed on dark). */
-const palette = (dark: boolean) => ({
-  ...(dark
-    ? { dark: 1, diffuse: 1.2, mapBrightness: 4, mapBaseBrightness: 0.03 }
-    : { dark: 0, diffuse: 1.4, mapBrightness: 8, mapBaseBrightness: 0 }),
-  baseColor: themeColor('--globe-base', [0.94, 0.95, 0.96]).map(channel => dark ? channel * 0.6 : channel) as [number, number, number],
-  glowColor: themeColor('--globe-glow', [0.92, 0.93, 0.95]),
-});
 
 interface GlobeMarker extends CountryStats {
   name: string
@@ -63,7 +45,7 @@ interface GlobeMarker extends CountryStats {
   selector: 'app-globe',
   imports: [HlmButton, NgIcon],
   providers: [provideIcons({ vikingLongship, remixSubtractLine, remixPauseLine, remixPlayLine, remixAddLine, remixRestartLine })],
-  host: { '[attr.data-ready]': 'ready() || null' },
+  host: { '[attr.data-ready]': 'ready() || null', '(document:visibilitychange)': 'followTabVisibility()' },
   templateUrl: './globe.html',
   styleUrl: './globe.css',
 })
@@ -73,18 +55,21 @@ export class Globe {
   readonly selected = input<string | null>(null);
   readonly select = output<string | null>();
 
-  private readonly host = inject(ElementRef<HTMLElement>);
-  private readonly canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
   protected readonly theme = inject(ThemeService);
+  private readonly host = inject(ElementRef<HTMLElement>);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
+
   protected readonly land = signal<[number, number, number]>([0.44, 0.69, 0.48]);
 
-  protected readonly MAX_ZOOM = MAX_ZOOM;
   protected readonly SHIPS = SHIPS;
   protected readonly failed = signal(false);
   protected readonly ready = signal(false);
   protected readonly paused = signal(false);
   protected readonly zoom = signal(1);
   protected readonly avatars = computed(() => this.zoom() >= AVATAR_ZOOM);
+  protected readonly canZoomIn = computed(() => this.zoom() < MAX_ZOOM);
+  protected readonly canZoomOut = computed(() => this.zoom() > 1);
   protected readonly markers = computed<GlobeMarker[]>(() => this.countries()
     .flatMap((country) => {
       const known = COUNTRIES[country.code];
@@ -96,6 +81,7 @@ export class Globe {
   protected readonly hovered = signal<string | null>(null);
   private readonly topCount = computed(() => Math.max(1, ...this.countries().map(country => country.count)));
   protected readonly tier = (count: number) => count >= this.topCount() * 0.25 ? 'top' : count >= this.topCount() * 0.05 ? 'mid' : 'base';
+  protected readonly isTopTier = (count: number) => this.tier(count) === 'top';
   protected readonly flag = flagUrl;
   protected readonly number = formatNumber;
   protected readonly count = (value: number) => plural(value, 'Angularian', 'Angularians');
@@ -123,85 +109,83 @@ export class Globe {
   private readonly projection = { depth: 0, x: 0, y: 0 };
 
   constructor() {
-    const destroyRef = inject(DestroyRef);
+    afterNextRender(() => this.start());
+    this.redrawOnChanges();
+  }
 
-    afterNextRender(() => {
-      const element = this.host.nativeElement as HTMLElement;
-      const canvas = this.canvas().nativeElement;
-      try {
-        if (!canvas.getContext('webgl2') && !canvas.getContext('webgl')) throw new Error('WebGL unavailable');
-        this.globe = createGlobe(canvas, {
-          width: 1,
-          height: 1,
-          devicePixelRatio: Math.min(devicePixelRatio || 1, innerWidth < 768 ? 1.5 : 2),
-          phi: this.phi,
-          theta: this.theta,
-          scale: 0.98,
-          mapSamples: 32000,
-          // Required, but unused: the markers are HTML over the canvas, none of the library's.
-          markerColor: this.land(),
-          markers: [],
-          ...palette(this.theme.dark()),
-        });
-      }
-      catch {
-        this.failed.set(true);
-        return;
-      }
-
-      // Frames run only while the globe is on screen, in a visible tab, and moving.
-      const resize = new ResizeObserver(([entry]) => {
-        this.width = Math.max(1, Math.round(entry!.contentRect.width));
-        this.height = Math.max(1, Math.round(entry!.contentRect.height));
-        this.resized = true;
-        this.schedule();
+  /** Draws the globe with WebGL, and runs its frames while it is on screen. */
+  private start(): void {
+    const element = this.host.nativeElement as HTMLElement;
+    const canvas = this.canvas().nativeElement;
+    try {
+      if (!canvas.getContext('webgl2') && !canvas.getContext('webgl')) throw new Error('WebGL unavailable');
+      this.globe = createGlobe(canvas, {
+        width: 1,
+        height: 1,
+        devicePixelRatio: Math.min(devicePixelRatio || 1, innerWidth < 768 ? 1.5 : 2),
+        phi: this.phi,
+        theta: this.theta,
+        scale: 0.98,
+        mapSamples: 32000,
+        // Required, but unused: the markers are HTML over the canvas, none of the library's.
+        markerColor: this.land(),
+        markers: [],
+        ...palette(this.theme.dark()),
       });
-      resize.observe(element);
-      const visibility = new IntersectionObserver(([entry]) => {
-        this.onScreen = !!entry?.isIntersecting;
-        if (this.onScreen) this.schedule();
-        else this.pause();
-      });
-      visibility.observe(element);
-      const onVisibility = () => {
-        this.tabVisible = document.visibilityState === 'visible';
-        if (!this.tabVisible) this.pointers.clear();
-        if (this.tabVisible) this.schedule();
-        else this.pause();
-      };
-      document.addEventListener('visibilitychange', onVisibility);
-      const motion = matchMedia('(prefers-reduced-motion: reduce)');
-      const onMotion = () => {
-        this.still = motion.matches;
-        this.schedule();
-      };
-      onMotion();
-      motion.addEventListener('change', onMotion);
-      // Trackpad pinch is a Ctrl+wheel: a plain wheel keeps scrolling the page.
-      const onWheel = (event: WheelEvent) => {
-        if (!event.ctrlKey) return;
-        event.preventDefault();
-        const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? this.height : 1);
-        this.setZoom(this.camera.zoom * Math.exp(-delta * 0.01));
-      };
-      element.addEventListener('wheel', onWheel, { passive: false });
+    }
+    catch {
+      this.failed.set(true);
+      return;
+    }
 
-      destroyRef.onDestroy(() => {
-        this.pause();
-        resize.disconnect();
-        visibility.disconnect();
-        document.removeEventListener('visibilitychange', onVisibility);
-        motion.removeEventListener('change', onMotion);
-        element.removeEventListener('wheel', onWheel);
-        this.globe?.destroy();
-        this.globe = undefined;
-      });
-
-      this.ready.set(true);
-      this.focusSelected();
+    // Frames run only while the globe is on screen, in a visible tab, and moving.
+    const resize = new ResizeObserver(([entry]) => {
+      this.width = Math.max(1, Math.round(entry!.contentRect.width));
+      this.height = Math.max(1, Math.round(entry!.contentRect.height));
+      this.resized = true;
       this.schedule();
     });
+    resize.observe(element);
+    const visibility = new IntersectionObserver(([entry]) => {
+      this.onScreen = !!entry?.isIntersecting;
+      if (this.onScreen) this.schedule();
+      else this.pause();
+    });
+    visibility.observe(element);
+    const motion = matchMedia('(prefers-reduced-motion: reduce)');
+    const onMotion = () => {
+      this.still = motion.matches;
+      this.schedule();
+    };
+    onMotion();
+    motion.addEventListener('change', onMotion);
+    // Trackpad pinch is a Ctrl+wheel: a plain wheel keeps scrolling the page. Not in `host`: preventDefault needs a
+    // listener added with { passive: false }, which `host` cannot ask for.
+    const onWheel = (event: WheelEvent) => {
+      if (!event.ctrlKey) return;
+      event.preventDefault();
+      const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? this.height : 1);
+      this.setZoom(this.camera.zoom * Math.exp(-delta * 0.01));
+    };
+    element.addEventListener('wheel', onWheel, { passive: false });
 
+    this.destroyRef.onDestroy(() => {
+      this.pause();
+      resize.disconnect();
+      visibility.disconnect();
+      motion.removeEventListener('change', onMotion);
+      element.removeEventListener('wheel', onWheel);
+      this.globe?.destroy();
+      this.globe = undefined;
+    });
+
+    this.ready.set(true);
+    this.focusSelected();
+    this.schedule();
+  }
+
+  /** A new selection, new markers, zoom, pause or theme: the globe turns or redraws. */
+  private redrawOnChanges(): void {
     // A new selection turns the globe to it; new markers, zoom or pause need a frame.
     effect(() => {
       this.selected();
@@ -230,7 +214,7 @@ export class Globe {
       this.schedule();
     });
     recolour.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-    inject(DestroyRef).onDestroy(() => recolour.disconnect());
+    this.destroyRef.onDestroy(() => recolour.disconnect());
   }
 
   private schedule(): void {
@@ -314,11 +298,46 @@ export class Globe {
     if (!rotating && !moving) this.pause();
   }
 
+  /** A marker's country becomes the selection, or stops being it. */
+  protected toggleCountry(code: string): void {
+    this.select.emit(this.selected() === code ? null : code);
+  }
+
+  /** Zoomed in, the selected country shows all its best ranked contributors; the others their first. */
+  protected markerPeople(marker: GlobeMarker): readonly string[] {
+    return marker.code === this.selected() ? marker.top : marker.top.slice(0, 1);
+  }
+
+  /** A marker's name shows while it is hovered or focused, and the globe stops turning under it. */
+  protected showLabel(code: string): void {
+    this.hovered.set(code);
+  }
+
+  protected hideLabel(): void {
+    this.hovered.set(null);
+  }
+
+  /** The tab hidden: no frames, and drags in progress end. */
+  protected followTabVisibility(): void {
+    this.tabVisible = document.visibilityState === 'visible';
+    if (!this.tabVisible) this.pointers.clear();
+    if (this.tabVisible) this.schedule();
+    else this.pause();
+  }
+
+  protected zoomIn(): void {
+    this.setZoom(this.zoom() + ZOOM_STEP);
+  }
+
+  protected zoomOut(): void {
+    this.setZoom(this.zoom() - ZOOM_STEP);
+  }
+
   protected togglePause(): void {
     this.paused.update(value => !value);
   }
 
-  protected setZoom(value: number): void {
+  private setZoom(value: number): void {
     this.paused.set(true);
     this.zoom.set(clamp(value, 1, MAX_ZOOM));
     this.camera.zoom = this.zoom();
@@ -348,14 +367,14 @@ export class Globe {
     return first && second ? Math.hypot(first.x - second.x, first.y - second.y) : 0;
   }
 
-  protected pointerDown(event: PointerEvent): void {
+  protected startDrag(event: PointerEvent): void {
     this.paused.set(true);
     this.canvas().nativeElement.setPointerCapture(event.pointerId);
     this.pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
     this.pinchDistance = this.pinch();
   }
 
-  protected pointerMove(event: PointerEvent): void {
+  protected drag(event: PointerEvent): void {
     const previous = this.pointers.get(event.pointerId);
     if (!previous) return;
     this.pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
@@ -371,14 +390,14 @@ export class Globe {
     this.schedule();
   }
 
-  protected pointerEnd(event: PointerEvent): void {
+  protected endDrag(event: PointerEvent): void {
     this.pointers.delete(event.pointerId);
     const canvas = this.canvas().nativeElement;
     if (canvas.hasPointerCapture(event.pointerId)) canvas.releasePointerCapture(event.pointerId);
     this.pinchDistance = this.pinch();
   }
 
-  protected keydown(event: KeyboardEvent): void {
+  protected moveWithKeys(event: KeyboardEvent): void {
     const move = KEY_MOVES[event.key];
     if (move) {
       event.preventDefault();
@@ -390,11 +409,11 @@ export class Globe {
     else if (['+', '=', '-', '0'].includes(event.key)) {
       event.preventDefault();
       if (event.key === '0') this.reset();
-      else this.setZoom(this.zoom() + (event.key === '-' ? -0.25 : 0.25));
+      else this.setZoom(this.zoom() + (event.key === '-' ? -ZOOM_STEP : ZOOM_STEP));
     }
   }
 
-  protected contextLost(event: Event): void {
+  protected showWebGlFailure(event: Event): void {
     event.preventDefault();
     this.failed.set(true);
     this.pause();

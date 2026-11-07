@@ -7,7 +7,7 @@ import { remixLogoutBoxRLine } from '@ng-icons/remixicon'
 import { HlmPopoverImports } from '@spartan-ng/helm/popover'
 import { AuthService } from '../auth/auth.service'
 import { LogoMark } from './logo-mark'
-import { avatarUrl } from '../leaderboard/format'
+import { avatarUrl } from '../contributors/avatar-url'
 
 @Component({
   selector: 'app-user-menu',
@@ -20,4 +20,9 @@ export class UserMenu {
   private readonly auth = inject(AuthService)
   protected readonly user = computed(() => this.auth.state()?.user ?? null)
   protected readonly avatar = (githubId: number) => avatarUrl(githubId, 28)
+
+  /** Following the profile link closes the menu, which would stay open over the new page. */
+  protected closeMenu(menu: { close(): void }): void {
+    menu.close()
+  }
 }

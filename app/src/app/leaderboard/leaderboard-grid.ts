@@ -1,5 +1,5 @@
 // Ported from nuxt.com `app/components/nuxters/NuxtersLeaderboard.vue` (MIT, Copyright (c) 2022-2023 NuxtLabs).
-import { afterRenderEffect, Component, computed, ElementRef, inject, input, linkedSignal, signal, Service, viewChild } from '@angular/core'
+import { afterRenderEffect, Component, computed, ElementRef, inject, input, linkedSignal, signal, viewChild } from '@angular/core'
 import { RouterLink } from '@angular/router'
 import { injectServerFnMutation } from '@analogjs/router'
 import type { ContributorSummary, LeaderboardPage } from '@angularians/shared'
@@ -9,44 +9,20 @@ import { HlmButton } from '@spartan-ng/helm/button'
 import { vikingAxes, vikingHelmet, vikingShield } from '../layout/viking-icons'
 import { getLeaderboard } from '../data/contributors.server'
 import { RankShield } from './rank-shield'
-import { avatarSrcset, avatarUrl, formatNumber, formatPoints, formatRank, profileQuery } from './format'
+import { LeaderboardMemory, showOneMore, type ShowMoreState } from './leaderboard-memory'
+import { PODIUM } from './podium'
+import { avatarSrcset, avatarUrl } from '../contributors/avatar-url'
+import { formatNumber, formatPoints, formatRank } from '../text/number-format'
+import { profileQuery } from './profile-query'
 
 /** The fallback for browsers without srcset: the cells are drawn at 124px at most. */
 const AVATAR_SIZE = 56
-/** Gold, silver and bronze for the top three of a period: `--medal-*` in styles.css, classes in `styles/podium.css`. */
-export const PODIUM: Record<number, { icon: string, medal: 'gold' | 'silver' | 'bronze' } | undefined> = {
-  1: { icon: 'vikingHelmet', medal: 'gold' },
-  2: { icon: 'vikingShield', medal: 'silver' },
-  3: { icon: 'vikingAxes', medal: 'bronze' },
-}
-
-/** How many contributors the board shows at first, and how many more each "Show more" adds: a page on wider screens, fewer on phones. */
-const STEP = { wide: 100, phone: 50 }
-
-/** The pages loaded after the first, and how many of the loaded ones are on screen, wide and on a phone. */
-type Shown = { more: ContributorSummary[], wide: number, phone: number }
 
 /** The first page comes server-rendered (50 of it on phones); "Show more" shows the rest, then loads the next pages. */
-/** The extra pages of each board, for as long as the tab is open: a board is its period, country and data night. */
-@Service()
-export class LeaderboardMemory {
-  private readonly pages = new Map<string, Shown>()
-  readonly view = signal<'grid' | 'list'>('grid')
-  private key(page: LeaderboardPage): string {
-    return `${page.period}|${page.country ?? ''}|${page.collectedAt ?? ''}`
-  }
-  get(page: LeaderboardPage): Shown {
-    return this.pages.get(this.key(page)) ?? { more: [], wide: STEP.wide, phone: STEP.phone }
-  }
-  set(page: LeaderboardPage, shown: Shown): void {
-    this.pages.set(this.key(page), shown)
-  }
-}
-
 @Component({
   selector: 'app-leaderboard-grid',
   imports: [HlmButton, NgIcon, RankShield, RouterLink],
-  host: { '(window:scroll)': 'followFocus()', '(window:resize)': 'tip.set(null)', '(document:keydown.escape)': 'tip.set(null)' },
+  host: { '(window:scroll)': 'followFocus()', '(window:resize)': 'hideTip()', '(document:keydown.escape)': 'hideTip()' },
   providers: [provideIcons({ remixAddLine, remixLayoutGridLine, remixListUnordered, vikingAxes, vikingHelmet, vikingShield })],
   templateUrl: './leaderboard-grid.html',
   styleUrl: './leaderboard-grid.css',
@@ -55,14 +31,16 @@ export class LeaderboardGrid {
   /** The first page of a period and country. */
   readonly page = input.required<LeaderboardPage>()
 
+  private readonly memory = inject(LeaderboardMemory)
   private readonly fetchPage = injectServerFnMutation(getLeaderboard)
-  protected readonly memory = inject(LeaderboardMemory)
+  private readonly tipBox = viewChild<ElementRef<HTMLElement>>('tipBox')
+
   protected readonly view = this.memory.view
   /**
    * The pages after the first, as "Show more" loaded them: remembered per board, so coming back from a profile shows
    * the same list (and the browser's scroll position lands where it was). Another period or country: its own.
    */
-  private readonly shown = linkedSignal<LeaderboardPage, Shown>({ source: () => this.page(), computation: page => this.memory.get(page) })
+  private readonly shown = linkedSignal<LeaderboardPage, ShowMoreState>({ source: () => this.page(), computation: page => this.memory.get(page) })
   /** Both belong to one board: a failure or a request of the last one must not show on the next. */
   protected readonly loading = linkedSignal({ source: () => this.page(), computation: () => false })
   protected readonly failed = linkedSignal({ source: () => this.page(), computation: () => false })
@@ -74,6 +52,8 @@ export class LeaderboardGrid {
   protected readonly morePhone = computed(() => this.shown().phone < this.page().total)
   protected readonly query = computed(() => profileQuery(this.page().period, this.page().country))
   protected readonly listLabel = computed(() => `Contributors, ranked: ${formatNumber(this.items().length)} of ${formatNumber(this.page().total)} shown`)
+  protected readonly tip = signal<{ item: ContributorSummary, link: HTMLElement, x: number, y: number, bottom: number } | null>(null)
+
   protected readonly AVATAR_SIZE = AVATAR_SIZE
   protected readonly avatar = (item: ContributorSummary) => avatarUrl(item.githubId, AVATAR_SIZE)
   protected readonly avatars = (item: ContributorSummary) => avatarSrcset(item.githubId)
@@ -82,8 +62,23 @@ export class LeaderboardGrid {
   protected readonly who = (item: ContributorSummary) =>
     item.name && item.name.toLowerCase() !== item.username.toLowerCase() ? `${item.name} (${item.username})` : item.username
   protected readonly overall = (item: ContributorSummary) => formatRank(item.rank)
-  protected readonly tip = signal<{ item: ContributorSummary, link: HTMLElement, x: number, y: number, bottom: number } | null>(null)
-  private readonly tipBox = viewChild<ElementRef<HTMLElement>>('tipBox')
+  protected readonly place = (item: ContributorSummary) => item.countryRank ?? item.rank
+  protected readonly rank = (item: ContributorSummary) => formatRank(this.place(item))
+  protected readonly label = (item: ContributorSummary) =>
+    `${this.who(item)}, ${this.rank(item)}${item.countryRank ? ` in the country, ${this.overall(item)} overall` : ''}, ${this.points(item)}`
+  protected readonly points = (item: ContributorSummary) => formatPoints(item.score)
+
+  constructor() {
+    afterRenderEffect(() => this.keepTipOnScreen())
+  }
+
+  protected showAs(view: 'grid' | 'list'): void {
+    this.view.set(view)
+  }
+
+  protected hideTip(): void {
+    this.tip.set(null)
+  }
 
   protected showTip(event: Event): void {
     const link = (event.target as Element | null)?.closest<HTMLElement>('a[data-index]')
@@ -94,56 +89,23 @@ export class LeaderboardGrid {
     if (item) this.placeTip(item, link)
   }
 
+  /** The pointer left an avatar, not just for a child of it. */
+  protected leaveTip(event: PointerEvent): void {
+    const link = (event.target as Element | null)?.closest('a[data-index]')
+    if (!link || !link.contains(event.relatedTarget as Node | null)) this.hideTip()
+  }
+
   protected followFocus(): void {
     const shown = this.tip()
     if (shown && shown.link === document.activeElement) this.placeTip(shown.item, shown.link)
-    else this.tip.set(null)
-  }
-
-  private placeTip(item: ContributorSummary, link: HTMLElement): void {
-    const box = link.getBoundingClientRect()
-    this.tip.set({ item, link, x: box.left + box.width / 2, y: box.top, bottom: box.bottom })
-  }
-
-  protected hideTip(event: PointerEvent): void {
-    const link = (event.target as Element | null)?.closest('a[data-index]')
-    if (!link || !link.contains(event.relatedTarget as Node | null)) this.tip.set(null)
-  }
-  protected readonly place = (item: ContributorSummary) => item.countryRank ?? item.rank
-  protected readonly rank = (item: ContributorSummary) => formatRank(this.place(item))
-  protected readonly label = (item: ContributorSummary) =>
-    `${this.who(item)}, ${this.rank(item)}${item.countryRank ? ` in the country, ${this.overall(item)} overall` : ''}, ${this.points(item)}`
-  protected readonly points = (item: ContributorSummary) => formatPoints(item.score)
-
-  constructor() {
-    afterRenderEffect(() => {
-      const box = this.tipBox()?.nativeElement
-      const shown = this.tip()
-      if (!box || !shown) return
-      const arrow = box.querySelector<HTMLElement>('[data-arrow]')
-      box.style.marginLeft = ''
-      box.style.marginTop = ''
-      delete box.dataset['side']
-      if (arrow) arrow.style.marginLeft = ''
-      const { left, right, top, height } = box.getBoundingClientRect()
-      const shift = left < 8 ? 8 - left : right > innerWidth - 8 ? innerWidth - 8 - right : 0
-      if (shift) {
-        box.style.marginLeft = `${shift}px`
-        if (arrow) arrow.style.marginLeft = `${-shift}px`
-      }
-      const header = document.querySelector('app-site-header')?.getBoundingClientRect().bottom ?? 0
-      if (top < header + 8) {
-        box.style.marginTop = `${shown.bottom - shown.y + 16 + height}px`
-        box.dataset['side'] = 'bottom'
-      }
-    })
+    else this.hideTip()
   }
 
   protected async showMore(): Promise<void> {
     // The period or the country can change while this loads: its items must not join the new board.
     const first = this.page()
     const phone = window.matchMedia('(max-width: 639.98px)').matches
-    const shown = { ...this.shown(), [phone ? 'phone' : 'wide']: this.shown()[phone ? 'phone' : 'wide'] + STEP[phone ? 'phone' : 'wide'] }
+    const shown = showOneMore(this.shown(), phone)
     const needed = Math.min(Math.max(shown.wide, shown.phone), first.total)
     const reveal = (more: ContributorSummary[]) => {
       this.shown.set({ ...shown, more })
@@ -165,4 +127,31 @@ export class LeaderboardGrid {
     }
   }
 
+  private placeTip(item: ContributorSummary, link: HTMLElement): void {
+    const box = link.getBoundingClientRect()
+    this.tip.set({ item, link, x: box.left + box.width / 2, y: box.top, bottom: box.bottom })
+  }
+
+  /** The tip stays inside the window and below the sticky header: shifted sideways, or turned below its link. */
+  private keepTipOnScreen(): void {
+    const box = this.tipBox()?.nativeElement
+    const shown = this.tip()
+    if (!box || !shown) return
+    const arrow = box.querySelector<HTMLElement>('[data-arrow]')
+    box.style.marginLeft = ''
+    box.style.marginTop = ''
+    delete box.dataset['side']
+    if (arrow) arrow.style.marginLeft = ''
+    const { left, right, top, height } = box.getBoundingClientRect()
+    const shift = left < 8 ? 8 - left : right > innerWidth - 8 ? innerWidth - 8 - right : 0
+    if (shift) {
+      box.style.marginLeft = `${shift}px`
+      if (arrow) arrow.style.marginLeft = `${-shift}px`
+    }
+    const header = document.querySelector('app-site-header')?.getBoundingClientRect().bottom ?? 0
+    if (top < header + 8) {
+      box.style.marginTop = `${shown.bottom - shown.y + 16 + height}px`
+      box.dataset['side'] = 'bottom'
+    }
+  }
 }

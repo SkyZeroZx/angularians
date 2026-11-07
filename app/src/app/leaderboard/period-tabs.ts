@@ -3,7 +3,7 @@ import { Component, computed, input, linkedSignal, output } from '@angular/core'
 import { periodPhrase, type Period } from '@angularians/shared'
 import { HlmSelectImports } from '@spartan-ng/helm/select'
 import { HlmTabsImports } from '@spartan-ng/helm/tabs'
-import { formatRank } from './format'
+import { formatRank } from '../text/number-format'
 
 const TAB_LABELS: Record<string, string> = { '30d': '30 days', '12m': '12 months', 'all': 'All time' }
 const YEAR = 'year'
@@ -27,7 +27,7 @@ export class PeriodTabs {
   readonly periodChange = output<Period>()
 
   /** Follows a click right away: `period` only changes once the new board has loaded. */
-  protected readonly selected = linkedSignal(() => this.period())
+  private readonly selected = linkedSignal(() => this.period())
   protected readonly phraseOf = (period: string) => periodPhrase(period).replace(/^(in|of) /, '')
   protected readonly tabs = computed(() => ['30d', '12m', 'all']
     .filter(value => this.periods().includes(value))
