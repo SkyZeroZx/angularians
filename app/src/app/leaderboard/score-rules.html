@@ -48,6 +48,12 @@
         }
       </ul>
       <p class="mt-2 text-sm text-muted-foreground">Security credits count on the advisory's publication date. Each person earns points for their highest-valued role once per advisory.</p>
+      <p class="mt-2 text-sm text-muted-foreground">Every credited role receives the same severity multiplier: base role points × severity. Without recorded severity, the multiplier is 1.</p>
+      <ul class="mt-2 flex flex-wrap gap-2 text-xs text-muted-foreground" aria-label="Security severity multipliers">
+        @for (severity of severities; track severity.label) {
+          <li class="rounded-md bg-muted px-2 py-1">{{ severity.label }} × {{ severity.multiplier }}</li>
+        }
+      </ul>
     </section>
 
     <details class="group rounded-lg bg-muted/40 p-3 text-sm ring-1 ring-border">

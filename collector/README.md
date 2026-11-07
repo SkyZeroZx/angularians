@@ -22,11 +22,14 @@ repositories. Scoring rules are in
 
 To refresh just advisory credits in an existing full snapshot, run
 `pnpm --filter @angularians/collector refresh-advisories`. It reads the same GitHub sources as the nightly collector,
-replaces old advisory counts for everyone, and keeps other activity and the snapshot date unchanged. Repeating it
+replaces old advisory counts for everyone, retaining role and severity together, and keeps other activity and the snapshot date unchanged. Repeating it
 does not duplicate credits. `meta.json` records the separate `advisoriesCollectedAt` date.
 
-Each period record keeps `advisoryRoles: { role: count }` and its total in `advisories`. The collector deduplicates
-by GHSA and GitHub id before recording the highest-valued role.
+Each period record keeps `advisoryCredits: { role: { severity: count } }`, the source for its points and derived
+`advisories` total. GitHub's `medium` severity is collected as `moderate`. Repository severity wins when present;
+the global advisory can fill it when missing. Missing or unrecognized
+severity becomes `unknown` with multiplier 1. The collector deduplicates by GHSA and GitHub id before recording the
+highest-valued role, so a credit keeps the severity of its own advisory.
 
 ```bash
 GITHUB_TOKEN=… pnpm collect                                 # full history → data/
@@ -40,7 +43,7 @@ GITHUB_TOKEN=… pnpm collect -- --since=90d --out=/tmp/test  # a quick test run
 | `--since=90d` or `--since=2026-08-01` | `COLLECT_SINCE` | full history | Test runs only |
 | `--pulls=rest\|search` | `COLLECT_PULLS` | `rest` | `search` when `/pulls` is not reachable: same data, more requests |
 | `--no-activity` | `COLLECT_ACTIVITY=false` | activity on | Landed PRs only: no issues, comments, review comments or discussions; no security advisories either, unless `--advisories` |
-| `--no-advisories` | `COLLECT_ADVISORIES=false` | on in the run of angular/angular | No Angular security advisory credits (points depend on role; `--advisories` turns them on in another run) |
+| `--no-advisories` | `COLLECT_ADVISORIES=false` | on in the run of angular/angular | No Angular security advisory credits (points depend on role and severity; `--advisories` turns them on in another run) |
 | `--no-profiles` | `COLLECT_PROFILES=false` | profiles on | Profiles need GraphQL, so a token |
 | `--out=dir` | `CONTRIBUTORS_OUTPUT_DIR` | `data/` | |
 | | `COLLECT_CACHE_DIR` | `.cache/` | The treeless git clone of the repo |

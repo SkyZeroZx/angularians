@@ -70,6 +70,9 @@ _Avoid_: like, upvote
 An accepted credit on an Angular security advisory, counted once per person and advisory using their highest-valued role. A security report is the finder or reporter role; analysis, remediation and review are other credited roles. It belongs to the advisory's publication date.
 _Avoid_: CVE (an advisory may have none), security report when referring to every role
 
+**Advisory severity**:
+The advisory's published severity: low, moderate, high or critical. Every credited role receives the same severity multiplier; an unspecified severity has multiplier 1. Counts keep role and severity together.
+
 ## Ranking
 
 **Score**:

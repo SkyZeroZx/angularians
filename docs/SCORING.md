@@ -2,7 +2,7 @@
 
 Every contribution counts for its author, on the day it was made (a pull request on the day it landed). The base weights are those of [Nuxters](https://nuxt.com/nuxters),
 plus review comments and security advisory credits; GitHub Discussions count too, as issues and comments. Unlike Nuxters, no repository counts double, translations
-give no points, and a pull request without a type is a chore, not a feat ([how they compare](research/score-vs-other-leaderboards.md)). The points of each kind of contribution are in `KINDS` (`shared/src/kinds.ts`); advisory role weights are in `shared/src/advisory-scoring.ts`. The other rules are in `shared/src/scoring.ts` and `shared/src/pull-requests.ts`.
+give no points, and a pull request without a type is a chore, not a feat ([how they compare](research/score-vs-other-leaderboards.md)). The points of each kind of contribution are in `KINDS` (`shared/src/kinds.ts`); advisory roles and severity multipliers are in `shared/src/advisory-scoring.ts`. The other rules are in `shared/src/scoring.ts` and `shared/src/pull-requests.ts`.
 
 ## Merged pull requests, by type
 
@@ -27,10 +27,32 @@ a feat, `documentation` docs), else counts as a chore: these are mostly version 
 | Comment (on an issue, a PR or a discussion, replies too) | 0.5 |
 | Helpful comment (3+ reactions, or marked as a discussion's answer) | +2 |
 | Reaction received (on an issue, a PR, a discussion or a comment, not on a review comment; on the day of what got it) | 0.1 |
-| Security advisory: `remediation_developer` | 30 |
-| Security advisory: `finder`, `reporter` or `analyst` | 20 |
+| Security advisory: `analyst` or `remediation_developer` | 30 |
+| Security advisory: `finder` or `reporter` | 20 |
 | Security advisory: `remediation_reviewer` | 10 |
 | Security advisory: `coordinator`, `remediation_verifier`, `tool`, `sponsor` or `other` | 1 |
+
+Advisory values above are base points. Every credited role uses the same severity multiplier, applied per advisory:
+
+| Severity | Multiplier |
+| --- | --- |
+| Low | ×1 |
+| Moderate | ×2 |
+| High | ×3 |
+| Critical | ×5 |
+| Unspecified | ×1 |
+
+An advisory earns `role points × severity multiplier`. Buckets keep both values together in
+`advisoryCredits: { role: { severity: count } }`; a contributor with one low and one critical finder credit earns
+`20 × 1 + 20 × 5 = 120`, not the same multiplier on both. Advisory points remain integers; the total score is rounded after combining other activity.
+Repository severity takes precedence; GitHub's global record fills missing severity. Snapshots keep role and
+severity together and use `moderate` as the canonical value. The `advisoryCredits` buckets are the source of security
+points. The `advisories` total is derived from those buckets for profile counts and badges.
+
+The profile keeps the security credit count and total points visible. A single "View calculation" disclosure contains
+the groups of roles with equal base points. Each group has its own disclosure with the role names, credit count and
+subtotal; expanding it shows severity, credits and earned points in a table. Multiple groups can stay open for
+comparison. The collector still keeps each role and severity together.
 
 Discussions (in every repository that has them, such as angular/angular's RFCs) come from GitHub's GraphQL API: they are
 counted as issues and comments are, in the issue and comment totals.

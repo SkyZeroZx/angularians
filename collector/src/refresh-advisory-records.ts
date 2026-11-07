@@ -13,7 +13,7 @@ export function refreshAdvisoryRecords(
   for (const period of new Set([...existing.keys(), ...credits.keys()])) {
     const activity = (existing.get(period) ?? []).map((record) => {
       const counts = { ...record, pullRequests: { ...record.pullRequests }, advisories: 0 }
-      delete counts.advisoryRoles
+      delete counts.advisoryCredits
       return { ...counts, score: score(counts) }
     }).filter(record => KINDS.some(kind => kind.key !== 'advisories' && amountOf(record, kind) > 0))
     refreshed.set(period, mergeRecords([activity, credits.get(period) ?? []]))

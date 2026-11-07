@@ -47,8 +47,8 @@ export interface ContributorRecord extends ActivityCounts {
   username: string
   score: number
   pullRequests: PullRequestCounts
-  /** Accepted credits, one role per advisory. Absent in files written before role scoring. */
-  advisoryRoles?: AdvisoryRoleCounts
+  /** Accepted credits grouped by role and severity; the source of advisory points and totals. */
+  advisoryCredits?: AdvisoryCreditCounts
   /** ISO date of the first counted contribution (landed PR, issue, comment or review comment). `null` when unknown. */
   firstContributionAt: string | null
 }
@@ -58,7 +58,8 @@ export type ActivityCounts = Record<ActivityKind, number>
 
 export type AdvisoryRole = 'finder' | 'reporter' | 'analyst' | 'coordinator' | 'remediation_developer'
   | 'remediation_reviewer' | 'remediation_verifier' | 'tool' | 'sponsor' | 'other'
-export type AdvisoryRoleCounts = Partial<Record<AdvisoryRole, number>>
+export type AdvisorySeverity = 'low' | 'moderate' | 'high' | 'critical' | 'unknown'
+export type AdvisoryCreditCounts = Partial<Record<AdvisoryRole, Partial<Record<AdvisorySeverity, number>>>>
 
 /** A contributor's stats over one period, ranked. */
 export interface Contributor extends ContributorRecord {
