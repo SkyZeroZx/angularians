@@ -16,7 +16,8 @@ into `data/` and commits it; that commit deploys the site. Details: [collector/R
 
 Changes land on `development` and reach `main`, the live site, in releases; `main` is merged back into `development` after
 each, so it has the nightly data. Netlify's build minutes are limited: `ignore` in `netlify.toml` skips a build when only
-docs, Markdown, agent skills or GitHub config changed.
+docs, Markdown, agent skills or GitHub config changed. Netlify builds no deploy previews: `.github/workflows/ci.yml` runs the tests, the
+types and the build on every pull request and every push to `development`.
 
 ## Site
 
