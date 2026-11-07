@@ -1,18 +1,23 @@
 import { DOCUMENT, isPlatformBrowser } from '@angular/common'
 import { injectRequest } from '@analogjs/router/tokens'
-import { inject, PLATFORM_ID, signal, Service } from '@angular/core'
+import { inject, InjectionToken, makeStateKey, PLATFORM_ID, signal, Service, TransferState } from '@angular/core'
 import type { SignedIn } from '../../server/auth/session'
 import { hasSignedInHint } from './hint'
 
+export const SIGN_IN_SET_UP = new InjectionToken<boolean>('SIGN_IN_SET_UP')
+const SIGN_IN_OFF = makeStateKey<boolean>('sign-in-off')
+
 /**
  * Who is signed in, asked in the browser only: pages are cached for everyone, so they never carry it.
- * `null` until known (and on the server).
+ * `null` until known (and on the server), except on a site without sign-in: `{ enabled: false }` from the first paint.
  */
 @Service()
 export class AuthService {
   private readonly browser = isPlatformBrowser(inject(PLATFORM_ID))
   private readonly document = inject(DOCUMENT)
   private readonly request = injectRequest()
+  private readonly transferState = inject(TransferState)
+  private readonly setUp = inject(SIGN_IN_SET_UP, { optional: true })
 
   readonly state = signal<SignedIn | null>(null)
   /**
@@ -23,7 +28,8 @@ export class AuthService {
 
   constructor() {
     this.readSignedInHint()
-    if (this.browser) this.loadState()
+    if (this.signInOff()) this.state.set({ enabled: false, user: null })
+    else if (this.browser) this.loadState()
   }
 
   /** Sign in, then come back to this path. */
@@ -34,6 +40,13 @@ export class AuthService {
   /** The hint cookie, from the page in the browser and from the request on the server. */
   private readSignedInHint(): void {
     this.wasSignedIn.set(hasSignedInHint(this.browser ? this.document.cookie : this.request?.headers.cookie))
+  }
+
+  private signInOff(): boolean {
+    if (this.browser) return this.transferState.get(SIGN_IN_OFF, false)
+    const off = this.setUp === false
+    this.transferState.set(SIGN_IN_OFF, off)
+    return off
   }
 
   /**
