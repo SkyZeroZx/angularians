@@ -4,7 +4,7 @@
 import { Resvg } from '@resvg/resvg-js'
 import { periodOrNull, periodPhrase, type ContributorProfile, type Period } from '@angularians/shared'
 import satori from 'satori'
-import { formatNumber, formatPoints } from '../../app/leaderboard/format'
+import { formatMonth, formatNumber, formatPoints, formatRank, statWord } from '../../app/leaderboard/format'
 
 export const CARD_WIDTH = 1200
 export const CARD_HEIGHT = 630
@@ -49,9 +49,6 @@ const statIcon = (paths: string[], color: string): Node =>
     viewBox: '0 0 16 16', width: STAT_ICON_SIZE, height: STAT_ICON_SIZE, fill: color,
   })
 
-/** `Apr 2025`, as on the profile. */
-const SINCE = new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' })
-const label = (value: number, one: string, many: string) => (value === 1 ? one : many)
 
 /**
  * Text with the word "Angularian(s)" set in the brand font (its capitals are about as tall as Manrope's):
@@ -86,15 +83,15 @@ export function cardPeriod(profile: ContributorProfile, requested: unknown): Per
 /** `avatar`: a data URL, or `null` when GitHub did not send it (a grey circle instead). */
 export function cardTree(profile: ContributorProfile, period: Period, avatar: string | null, flag: { src: string, name: string } | null = null, badges: readonly string[] = []): Node {
   const stats = period === 'all' ? profile : profile.periods.find(row => row.period === period)!
-  const since = profile.firstContributionAt ? SINCE.format(new Date(profile.firstContributionAt)) : null
+  const since = profile.firstContributionAt ? formatMonth(profile.firstContributionAt) : null
   const rows = [
     [
-      { label: label(stats.pullRequests.all, 'Merged PR', 'Merged PRs'), value: stats.pullRequests.all, color: COLORS.pullRequests, icon: ICONS.pullRequests },
-      { label: label(stats.issues, 'Issue', 'Issues'), value: stats.issues, color: COLORS.issues, icon: ICONS.issues },
+      { label: statWord('pullRequests', stats.pullRequests.all), value: stats.pullRequests.all, color: COLORS.pullRequests, icon: ICONS.pullRequests },
+      { label: statWord('issues', stats.issues), value: stats.issues, color: COLORS.issues, icon: ICONS.issues },
     ],
     [
-      { label: label(stats.comments + stats.reviewComments, 'Comment', 'Comments'), value: stats.comments + stats.reviewComments, color: COLORS.comments, icon: ICONS.comments },
-      { label: label(stats.reactions, 'Reaction', 'Reactions'), value: stats.reactions, color: COLORS.reactions, icon: ICONS.reactions },
+      { label: statWord('comments', stats.comments + stats.reviewComments), value: stats.comments + stats.reviewComments, color: COLORS.comments, icon: ICONS.comments },
+      { label: statWord('reactions', stats.reactions), value: stats.reactions, color: COLORS.reactions, icon: ICONS.reactions },
     ],
   ]
   return h('div', { width: '100%', height: '100%', flexDirection: 'column', justifyContent: 'space-between', backgroundColor: '#0a0a0a', color: '#ffffff', paddingTop: 44, paddingRight: 64, paddingBottom: 36, paddingLeft: 64, fontFamily: 'Manrope' }, [
@@ -104,7 +101,7 @@ export function cardTree(profile: ContributorProfile, period: Period, avatar: st
           ? h('img', { width: 108, height: 108, borderRadius: 9999, border: '4px solid #262626' }, undefined, { src: avatar, width: 108, height: 108 })
           : h('div', { width: 108, height: 108, borderRadius: 9999, backgroundColor: '#262626' }),
         h('div', { fontSize: 40, fontWeight: 600, marginTop: 12, maxWidth: 380, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }, profile.username),
-        h('div', { fontFamily: 'Norse', fontWeight: 700, fontSize: 84, lineHeight: 1, letterSpacing: 2, color: BRAND, marginTop: 6 }, `#${formatNumber(period === 'all' ? profile.rank : stats.rank)}`),
+        h('div', { fontFamily: 'Norse', fontWeight: 700, fontSize: 84, lineHeight: 1, letterSpacing: 2, color: BRAND, marginTop: 6 }, formatRank(period === 'all' ? profile.rank : stats.rank)),
         h('div', { fontSize: 30, fontWeight: 600, color: BRAND, marginTop: 4 }, formatPoints(stats.score)),
         ...(period !== 'all' ? [h('div', { fontSize: 24, color: '#a3a3a3', marginTop: 4 }, periodPhrase(period))] : []),
         ...(flag ? [h('div', { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: period === 'all' ? 10 : 4, fontSize: 24, color: '#a3a3a3' }, [

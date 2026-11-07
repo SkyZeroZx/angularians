@@ -28,7 +28,7 @@ import { NextUpdate } from '../leaderboard/next-update';
 import { MeCard } from '../leaderboard/me-card';
 import { ScoreRules } from '../leaderboard/score-rules';
 import { breadcrumbs, setJsonLd, setShareMeta, SITE_SCHEMA, SITE_URL } from '../site';
-import { boardDescription, formatDate, formatNumber, plural } from '../leaderboard/format';
+import { boardDescription, boardTotals, formatDate, formatNumber } from '../leaderboard/format';
 import { ClaimBadge } from '../leaderboard/claim-badge';
 import { EarnBadges } from '../leaderboard/earn-badges';
 import { JoinLinks } from '../leaderboard/join-links';
@@ -85,6 +85,11 @@ export default class Home {
     computation: (value, previous) => value ?? previous?.value,
   });
 
+  /** The board's totals over it, each in its GitHub colour (none for the people). */
+  protected readonly totals = computed(() => {
+    const page = this.board();
+    return page ? boardTotals(page) : [];
+  });
   protected readonly placeholders = Array.from({ length: 30 }, (_, index) => index);
   /** The three ways onto the board (Nuxters' "How to become a Nuxter"). */
   protected readonly becomeWays = [

@@ -1,8 +1,7 @@
 // GitHub Discussions (angular/angular's RFCs) through GraphQL: the REST API does not list them.
 import type { CommentInput, ContributorsAccumulator, IssueInput } from '@angularians/shared'
-import { graphql, retryTiming } from './github.ts'
-
-type Repo = { owner: string, name: string }
+import type { Repo } from './config.ts'
+import { graphql } from './github.ts'
 
 export interface DiscussionStats {
   /** Counted: created in the run's window (all of them in a full run). */
@@ -42,21 +41,32 @@ const MORE_REPLIES = `query($id: ID!, $after: String) { node(id: $id) { ... on D
 const user = (author: Author): CommentInput['user'] =>
   author?.login ? { login: author.login, id: author.databaseId ?? null, type: author.__typename === 'Bot' ? 'Bot' : 'User' } : null
 
-/** A rate limit (`RATE_LIMITED`): wait 1, 2, 4, 8, 16 minutes and ask again; any other error fails the run. */
 /** GitHub refuses a query that would return too much at once. */
 class TooBig extends Error {}
 
+/** A query's data; any error fails the run (`graphql` has already waited out the rate limits). */
 async function query<T>(text: string, variables: Record<string, unknown>): Promise<T> {
-  let { data, errors } = await graphql<T>(text, variables)
-  for (let attempt = 0; attempt < 5 && errors?.some(error => error.type === 'RATE_LIMITED'); attempt++) {
-    console.warn(`GraphQL rate limited, retrying discussions in ${2 ** attempt} min`)
-    await new Promise(resolve => setTimeout(resolve, 2 ** attempt * 60_000 * retryTiming.scale))
-    ;({ data, errors } = await graphql<T>(text, variables))
-  }
+  const { data, errors } = await graphql<T>(text, variables)
   if (errors?.some(error => error.type === 'RESOURCE_LIMITS_EXCEEDED')) throw new TooBig('GraphQL: resource limits exceeded')
   if (!data || errors?.length) throw new Error(`GraphQL discussions failed: ${JSON.stringify(errors).slice(0, 300)}`)
   return data
 }
+
+/** Each node of a connection: its first page, then the next ones, which `more` asks for from the cursor. */
+async function eachNode<T>(first: Page<T>, more: (after: string | null) => Promise<Page<T>>, visit: (node: T | null) => unknown): Promise<void> {
+  for (let page = first; ; page = await more(page.pageInfo.endCursor)) {
+    for (const node of page.nodes ?? []) await visit(node)
+    if (!page.pageInfo.hasNextPage) return
+  }
+}
+
+/** The next page of a discussion's comments, from the cursor. */
+const moreComments = (discussionId: string) => async (after: string | null) =>
+  (await query<{ node: { comments: Page<Comment> } }>(MORE_COMMENTS, { id: discussionId, after })).node.comments
+
+/** The next page of a comment's replies, from the cursor. */
+const moreReplies = (commentId: string) => async (after: string | null) =>
+  (await query<{ node: { replies: Page<Reply> } }>(MORE_REPLIES, { id: commentId, after })).node.replies
 
 /**
  * Every discussion of a repository, with its comments and their replies, scored as issues and comments are:
@@ -77,13 +87,7 @@ export async function collectDiscussions({ owner, name }: Repo, since: Date | nu
   const addComment = async (comment: Comment | null) => {
     if (!comment) return
     addReply(comment, comment.isAnswer)
-    for (const reply of comment.replies.nodes ?? []) addReply(reply)
-    let page = comment.replies.pageInfo
-    while (page.hasNextPage) {
-      const data = await query<{ node: { replies: Page<Reply> } }>(MORE_REPLIES, { id: comment.id, after: page.endCursor })
-      for (const reply of data.node.replies.nodes ?? []) addReply(reply)
-      page = data.node.replies.pageInfo
-    }
+    await eachNode(comment.replies, moreReplies(comment.id), reply => addReply(reply))
   }
 
   let after: string | null = null
@@ -110,13 +114,7 @@ export async function collectDiscussions({ owner, name }: Repo, since: Date | nu
         accumulator.addIssue(issue)
         stats.discussions++
       }
-      for (const comment of discussion.comments.nodes ?? []) await addComment(comment)
-      let page = discussion.comments.pageInfo
-      while (page.hasNextPage) {
-        const more = await query<{ node: { comments: Page<Comment> } }>(MORE_COMMENTS, { id: discussion.id, after: page.endCursor })
-        for (const comment of more.node.comments.nodes ?? []) await addComment(comment)
-        page = more.node.comments.pageInfo
-      }
+      await eachNode(discussion.comments, moreComments(discussion.id), addComment)
     }
     if (!discussions.pageInfo.hasNextPage) break
     after = discussions.pageInfo.endCursor
