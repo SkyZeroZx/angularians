@@ -61,6 +61,7 @@ Badges are in `earnedBadges()` of `app/src/app/profile/earned-badges.ts`, which 
 
 ## Pull requests
 
+- Open it against `development`, not `main`: `main` is what the site runs, and gets `development` in releases.
 - Keep a pull request to one change, with tests and docs.
 - Fill in the template.
 - Open an issue first for large changes, so we can agree on the approach.
