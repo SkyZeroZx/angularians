@@ -1,4 +1,5 @@
 import type { ActivityKind, PullRequestType } from './kinds.ts'
+import type { EncodedCalendar } from './calendar.ts'
 
 export type { PullRequestType } from './kinds.ts'
 
@@ -94,6 +95,8 @@ export interface ContributorProfile extends Contributor {
   packages: Array<{ name: string, pullRequests: number }>
   /** A public member of the organization of the repository (the Angular team badge). */
   team: boolean
+  calendar: number[]
+  collectedAt: string | null
 }
 
 /** A leaderboard row. */
@@ -166,4 +169,6 @@ export interface DataFolder {
   team: TeamRecord[]
   /** Old usernames of renamed contributors. */
   renames: TeamRecord[]
+  /** Each contributor's contributions per day, encoded (`calendar.json`). */
+  calendar: EncodedCalendar
 }

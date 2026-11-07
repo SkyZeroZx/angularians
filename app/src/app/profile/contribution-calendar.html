@@ -1,0 +1,104 @@
+<section aria-labelledby="calendar-title" aria-describedby="calendar-summary">
+  <div class="mb-1 flex items-center gap-1">
+    <h2 id="calendar-title" class="text-2xl font-medium tracking-tight">Contributions</h2>
+    <hlm-dialog autoFocus="dialog">
+      <button hlmDialogTrigger hlmBtn variant="ghost" size="icon-sm" type="button" aria-label="What counts in the graph" class="text-muted-foreground hover:text-foreground">
+        <ng-icon name="remixInformationLine" size="20" aria-hidden="true" />
+      </button>
+      <hlm-dialog-content *hlmDialogPortal class="max-h-[90dvh] overflow-y-auto sm:max-w-md">
+        <hlm-dialog-header>
+          <h2 hlmDialogTitle>What counts in the graph?</h2>
+          <p hlmDialogDescription>Each square is a day (UTC): what the person did themselves in the Angular repositories.</p>
+        </hlm-dialog-header>
+        <ul class="kinds">
+          @for (kind of kinds; track kind.name) {
+            <li>
+              <span class="kind-icon" [attr.data-tone]="kind.tone"><ng-icon [name]="kind.icon" size="18" aria-hidden="true" /></span>
+              <span class="flex flex-col">
+                <span class="text-sm font-medium">{{ kind.name }}</span>
+                <span class="text-sm text-muted-foreground">{{ kind.detail }}</span>
+              </span>
+            </li>
+          }
+        </ul>
+        <p class="note">
+          <ng-icon name="remixInformationLine" size="16" aria-hidden="true" />
+          Reactions they received do not count: those are other people's. Updated every night.
+        </p>
+        <h3 class="text-sm font-medium">From {{ repos.length }} repositories</h3>
+        <ul class="repos">
+          @for (repo of repos; track repo.name) {
+            <li>
+              <a [href]="repo.url" target="_blank" rel="noopener">
+                <ng-icon name="simpleGithub" size="14" aria-hidden="true" />{{ repo.name }}<ng-icon name="remixArrowRightUpLine" size="14" class="text-muted-foreground" aria-hidden="true" />
+              </a>
+            </li>
+          }
+        </ul>
+      </hlm-dialog-content>
+    </hlm-dialog>
+  </div>
+  <p id="calendar-summary" class="mb-4 text-muted-foreground">{{ summary() }}</p>
+  <hlm-select class="year-select" [value]="shown()" (valueChange)="pickPeriod($event)" [itemToString]="choiceLabel">
+    <hlm-select-trigger size="sm" buttonAriaLabel="Contributions in">
+      <hlm-select-value />
+    </hlm-select-trigger>
+    <hlm-select-content *hlmSelectPortal>
+      @for (choice of choices(); track choice.period) {
+        <hlm-select-item [value]="choice.period">{{ choice.label }}</hlm-select-item>
+      }
+    </hlm-select-content>
+  </hlm-select>
+  <div class="body">
+    <div class="graph">
+      <div class="plot" [style.--weeks]="grid().weeks.length" aria-hidden="true">
+        <div class="weekdays">
+          @for (weekday of weekdays; track $index) {
+            <span>{{ weekday }}</span>
+          }
+        </div>
+        <div class="scroller">
+          <div class="calendar">
+            <div class="months">
+              @for (month of grid().months; track month.week) {
+                <span [style.grid-column]="month.week + 1">{{ month.label }}</span>
+              }
+            </div>
+            <div class="days" (pointerover)="showDay($event)" (pointerleave)="hideDay()">
+              @for (week of grid().weeks; track $index) {
+                @for (cell of week; track $index) {
+                  @if (cell) {
+                    <span class="day" [class.outside]="cell.outside" [attr.data-level]="cell.level" [attr.data-label]="cell.label"></span>
+                  } @else {
+                    <span></span>
+                  }
+                }
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+      @if (hovered(); as tip) {
+        <span class="tip" role="presentation" [style.left.px]="tip.x" [style.top.px]="tip.y">{{ tip.label }}</span>
+      }
+      <div class="footer">
+        <div class="colors" role="group" aria-label="Graph colours">
+          <button type="button" class="gold" [attr.aria-pressed]="!green()" (click)="pickColors(false)">Viking gold</button>
+          <button type="button" class="green" [attr.aria-pressed]="green()" (click)="pickColors(true)">GitHub green</button>
+        </div>
+        <p class="legend" aria-hidden="true">
+          Less
+          @for (level of levels; track level) {
+            <span class="day" [attr.data-level]="level"></span>
+          }
+          More
+        </p>
+      </div>
+    </div>
+    <nav #yearList class="years" aria-label="Contributions in">
+      @for (choice of choices(); track choice.period) {
+        <button type="button" [attr.aria-pressed]="choice.period === shown()" (click)="pickPeriod(choice.period)">{{ choice.label }}</button>
+      }
+    </nav>
+  </div>
+</section>

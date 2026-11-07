@@ -3,7 +3,7 @@
 import { existsSync } from 'node:fs'
 import { readdir, readFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { META_FILE, PACKAGES_FILE, parseContributorsFile, parseMetaFile, parsePackagesFile, parseProfilesFile, parseUserIdsFile, PROFILES_FILE, RENAMES_FILE, TEAM_FILE } from './files.ts'
+import { CALENDAR_FILE, META_FILE, PACKAGES_FILE, parseCalendarFile, parseContributorsFile, parseMetaFile, parsePackagesFile, parseProfilesFile, parseUserIdsFile, PROFILES_FILE, RENAMES_FILE, TEAM_FILE } from './files.ts'
 import { periodFromFile } from './periods.ts'
 import type { DataFolder } from './types.ts'
 
@@ -14,6 +14,7 @@ const DATA_FILES = {
   team: [TEAM_FILE, parseUserIdsFile],
   renames: [RENAMES_FILE, parseUserIdsFile],
   meta: [META_FILE, parseMetaFile],
+  calendar: [CALENDAR_FILE, parseCalendarFile],
 } as const satisfies { [K in Exclude<keyof DataFolder, 'periods'>]: readonly [string, (data: unknown) => NonNullable<DataFolder[K]>] }
 
 /** A data file, validated by `parse`, or `null` when it is missing. Invalid JSON throws. */
@@ -24,7 +25,7 @@ export async function readDataFile<T>(dir: string, file: string, parse: (data: u
 
 /** Every file of a data folder, validated, the period files ranked. A missing folder or file reads as empty. */
 export async function readDataDir(dir: string): Promise<DataFolder> {
-  const folder: DataFolder = { meta: null, periods: {}, profiles: [], packages: [], team: [], renames: [] }
+  const folder: DataFolder = { meta: null, periods: {}, profiles: [], packages: [], team: [], renames: [], calendar: {} }
   const files = existsSync(dir) ? (await readdir(dir)).sort() : []
   for (const file of files) {
     const period = periodFromFile(file)

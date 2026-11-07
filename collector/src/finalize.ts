@@ -2,6 +2,9 @@ import { existsSync } from 'node:fs'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import {
+  CALENDAR_FILE,
+  decodeCalendar,
+  encodeCalendar,
   META_FILE,
   PACKAGES_FILE,
   periodFile,
@@ -11,6 +14,7 @@ import {
   TEAM_FILE,
   toJsonLines,
   updatedRenames,
+  type Calendar,
   type ContributorRecord,
   type PackagesRecord,
   type Period,
@@ -43,6 +47,7 @@ export interface Collected {
   activity: boolean
   files: Map<Period, ContributorRecord[]>
   packages: PackagesRecord[]
+  calendar: Calendar
   stats: Stats
 }
 
@@ -54,19 +59,24 @@ export async function writePart(dir: string, collected: Collected): Promise<void
   await mkdir(dir, { recursive: true })
   for (const [period, records] of collected.files) await writeLines(dir, periodFile(period), records)
   await writeLines(dir, PACKAGES_FILE, collected.packages)
-  const { files, packages, ...part } = collected
+  await writeCalendar(dir, collected.calendar)
+  const { files, packages, calendar, ...part } = collected
   await writeFile(join(dir, PART_FILE), `${JSON.stringify({ ...part, periods: [...files.keys()] }, null, 2)}\n`, 'utf8')
   console.log(`Wrote the part of ${collected.repos.join(', ')} to ${dir} (${files.get('all')?.length ?? 0} contributors all time)`)
 }
 
 export async function readPart(dir: string): Promise<Collected> {
-  const part = JSON.parse(await readFile(join(dir, PART_FILE), 'utf8')) as Omit<Collected, 'files' | 'packages'> & { periods: Period[] }
+  const part = JSON.parse(await readFile(join(dir, PART_FILE), 'utf8')) as Omit<Collected, 'files' | 'packages' | 'calendar'> & { periods: Period[] }
   const files = new Map<Period, ContributorRecord[]>()
   for (const period of part.periods) files.set(period, JSON.parse(await readFile(join(dir, periodFile(period)), 'utf8')) as ContributorRecord[])
   const packages = JSON.parse(await readFile(join(dir, PACKAGES_FILE), 'utf8')) as PackagesRecord[]
+  const encoded = JSON.parse(await readFile(join(dir, CALENDAR_FILE), 'utf8')) as Record<string, number[]>
+  const calendar: Calendar = new Map(Object.entries(encoded).map(([githubId, days]) => [Number(githubId), decodeCalendar(days)]))
   const { periods: _periods, ...rest } = part
-  return { ...rest, files, packages }
+  return { ...rest, files, packages, calendar }
 }
+
+const writeCalendar = (dir: string, calendar: Calendar) => writeFile(join(dir, CALENDAR_FILE), `${JSON.stringify(encodeCalendar(calendar))}\n`, 'utf8')
 
 /** Where a run gets the team and the profiles: GitHub, or fakes in tests. */
 export interface Sources {
@@ -96,7 +106,7 @@ export interface DataFiles {
   checks: string[]
 }
 
-/** The period files, renames, packages, team and profiles, and meta.json of a run. Throws `RefusedRun`. */
+/** The period files, renames, packages, team and profiles, and meta.json of a run (`writeData` adds the calendar). Throws `RefusedRun`. */
 export async function buildData(collected: Collected, previous: Previous, sources: Sources, options: { profiles: boolean }): Promise<DataFiles> {
   const { files: periods, stats } = collected
   const allTime = periods.get('all') ?? []
@@ -120,6 +130,9 @@ export async function buildData(collected: Collected, previous: Previous, source
   // The packages each contributor's merged PRs named (`fix(router)`), all time.
   files.set(PACKAGES_FILE, collected.packages)
   written.push(`Wrote ${collected.packages.length} contributors' packages`)
+
+  // Each contributor's contributions per day: the profile's graph.
+  written.push(`Wrote ${collected.calendar.size} contributors' days`)
 
   // The public members of the organizations of the repositories: the "Angular team" badge.
   let team: number | null = null
@@ -186,6 +199,7 @@ export async function writeData(outputDir: string, collected: Collected, options
 
   await mkdir(outputDir, { recursive: true })
   for (const [file, records] of data.files) await writeLines(outputDir, file, records)
+  await writeCalendar(outputDir, collected.calendar)
   for (const { file, what, error } of data.failures) {
     console.error(`${what} failed, ${existsSync(join(outputDir, file)) ? 'keeping the previous file' : `no ${file.replace('.json', '')} file`}:`, error instanceof Error ? error.message : error)
   }

@@ -23,6 +23,7 @@ const bundle: DataBundle = {
   ],
   packages: [{ githubId: 1, packages: [{ name: 'core', pullRequests: 40 }, { name: 'router', pullRequests: 10 }] }],
   team: [{ githubId: 1, username: 'crisbeto' }],
+  calendar: { 1: [4433, 3, 4434, 1] },
   renames: [],
 }
 const data = new ContributorsData(bundle)
@@ -62,6 +63,17 @@ describe('ContributorsData', () => {
     })
     expect(data.profile('atscott')).toMatchObject({ name: null, country: null, socialAccounts: [], packages: [], team: false })
     expect(data.profile('nobody')).toBeNull()
+  })
+
+  it('sends a person their days for the graph, and none before the collector wrote them', () => {
+    expect(data.profile('crisbeto')).toMatchObject({ calendar: [4433, 3, 4434, 1], collectedAt: '2026-11-03T05:13:36.895Z' })
+    expect(data.profile('atscott')?.calendar).toEqual([])
+    expect(new ContributorsData({ ...bundle, calendar: {} }).profile('crisbeto')?.calendar).toEqual([])
+  })
+
+  it('keeps the days out of the leaderboard and the search, which only the profile needs', () => {
+    expect(data.leaderboard({ period: 'all' }).items.some(item => 'calendar' in item)).toBe(false)
+    expect(data.search('cris').some(item => 'calendar' in item)).toBe(false)
   })
 
   it('searches prefixes first, then usernames and names containing the query', () => {

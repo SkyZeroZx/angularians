@@ -1,9 +1,10 @@
 // Weights and "helpful" rules ported from nuxt/nuxters `computeScore` and `addIssueStats`, breakdown from nuxt.com
 // `nuxterScoreBreakdown` (MIT, Copyright (c) 2023 Nuxt, Copyright (c) 2022-2023 NuxtLabs).
 // Differences: no core bonus (one repository), and inline review comments count too (1 point each).
+import type { Calendar } from './calendar.ts'
 import { isBotAccount } from './bots.ts'
 import { ACTIVITY_KINDS, KINDS, PULL_REQUEST_KINDS, type Kind, type PullRequestType } from './kinds.ts'
-import { allPeriods, periodsFor } from './periods.ts'
+import { allPeriods, periodsFor, utcDay } from './periods.ts'
 import type { ActivityCounts, ContributorRecord, GitHubUser, LandedPullRequest, PackagesRecord, Period, PullRequestCounts } from './types.ts'
 
 /** Points of a landed PR, by type. */
@@ -117,6 +118,7 @@ export class ContributorsAccumulator {
   private readonly packageCounts = new Map<number, Map<string, number>>()
   /** `GHSA id:GitHub id` of the advisories already counted. */
   private readonly advisories = new Set<string>()
+  private readonly days: Calendar = new Map()
 
   constructor(now: Date) {
     this.now = now
@@ -197,6 +199,10 @@ export class ContributorsAccumulator {
     return packagesRecords([...this.packageCounts].filter(([, packages]) => packages.size))
   }
 
+  calendar(): Calendar {
+    return this.days
+  }
+
   /** Every period, even an empty one, so readers can rely on its file. */
   records(): Map<Period, ContributorRecord[]> {
     const files = new Map<Period, ContributorRecord[]>()
@@ -223,6 +229,12 @@ export class ContributorsAccumulator {
     const login = this.logins.get(user.id)
     if (!login || (!Number.isNaN(time) && time >= login.time)) this.logins.set(user.id, { login: user.login, time: Number.isNaN(time) ? -Infinity : time })
     if (contribution && !Number.isNaN(time) && time < (this.first.get(user.id) ?? Infinity)) this.first.set(user.id, time)
+    if (contribution && !Number.isNaN(time)) {
+      let days = this.days.get(user.id)
+      if (!days) this.days.set(user.id, (days = new Map()))
+      const day = utcDay(time)
+      days.set(day, (days.get(day) ?? 0) + 1)
+    }
     for (const period of periodsFor(date, this.now)) {
       let contributors = this.byPeriod.get(period)
       if (!contributors) {

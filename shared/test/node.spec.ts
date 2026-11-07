@@ -20,7 +20,7 @@ async function folder(files: Record<string, unknown>): Promise<string> {
 
 describe('readDataDir', () => {
   it('reads a missing folder as empty', async () => {
-    expect(await readDataDir(join(tmpdir(), 'no-such-data-folder'))).toEqual({ meta: null, periods: {}, profiles: [], packages: [], team: [], renames: [] })
+    expect(await readDataDir(join(tmpdir(), 'no-such-data-folder'))).toEqual({ meta: null, periods: {}, profiles: [], packages: [], team: [], renames: [], calendar: {} })
   })
 
   it('validates every file it knows, ranks the periods and ignores the rest', async () => {

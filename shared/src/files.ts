@@ -1,5 +1,6 @@
 // Ported from nuxt.com `shared/utils/nuxters.ts` (`parseNuxtersFile`, `parseNuxterProfilesFile`, `safeNuxterUrl`)
 // and nuxt/nuxters `saveContributors` (MIT, Copyright (c) 2022-2023 NuxtLabs, Copyright (c) 2023 Nuxt).
+import type { EncodedCalendar } from './calendar.ts'
 import { countryCode } from './countries.ts'
 import { ACTIVITY_KINDS, PULL_REQUEST_KINDS } from './kinds.ts'
 import { compareRecords, emptyActivity, emptyCounts, score } from './scoring.ts'
@@ -136,6 +137,7 @@ export function parseProfilesFile(data: unknown): ProfileRecord[] {
 
 /** The packages of every contributor, from `packages.json`. Invalid entries are skipped. */
 export const PACKAGES_FILE = 'packages.json'
+export const CALENDAR_FILE = 'calendar.json'
 export function parsePackagesFile(data: unknown): PackagesRecord[] {
   if (!Array.isArray(data)) throw new TypeError(`${PACKAGES_FILE} must be an array`)
   const records: PackagesRecord[] = []
@@ -151,6 +153,23 @@ export function parsePackagesFile(data: unknown): PackagesRecord[] {
     if (packages.length) records.push({ githubId: id, packages })
   }
   return records
+}
+
+export function parseCalendarFile(data: unknown): EncodedCalendar {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) throw new TypeError(`${CALENDAR_FILE} must be an object`)
+  const people: EncodedCalendar = {}
+  for (const [key, days] of Object.entries(data)) {
+    const id = githubId(Number(key))
+    if (id === null || !Array.isArray(days) || days.length % 2) continue
+    const numbers = days as unknown[]
+    const valid = numbers.every((value, i) => {
+      if (typeof value !== 'number' || !Number.isSafeInteger(value)) return false
+      if (i % 2) return value > 0
+      return value >= 0 && (i === 0 || value > (numbers[i - 2] as number))
+    })
+    if (valid && days.length) people[id] = days as number[]
+  }
+  return people
 }
 
 /** The public members of the organization, from `team.json`. */

@@ -14,6 +14,7 @@ const collected = (records: ContributorRecord[], since: string | null = null): C
   activity: true,
   files: new Map([['all', records], ['2026', records]]),
   packages: [],
+  calendar: new Map(),
   stats: { ...emptyStats(), landedPullRequests: records.length },
 })
 const sources: Sources = {
