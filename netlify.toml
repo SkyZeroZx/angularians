@@ -7,6 +7,8 @@
   # ...and every other path by the server function. On Netlify (NETLIFY=true) Analog writes it to
   # app/netlify/functions/server, not dist/analog/server (see app/scripts/netlify-function.ts).
   functions = "app/netlify/functions"
+  # Skip the build when nothing the site is built from changed: docs, Markdown, agent skills and GitHub config.
+  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- . ':!docs' ':!*.md' ':!.agents' ':!.github'"
 
 [build.environment]
   # 24: the collector and the build scripts run TypeScript directly (type stripping).

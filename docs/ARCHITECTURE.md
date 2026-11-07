@@ -14,6 +14,10 @@ A pnpm workspace of three packages and the data they share.
 Every night `.github/workflows/collect.yml` collects each repository in a job of its own, in parallel, and a last job merges them
 into `data/` and commits it; that commit deploys the site. Details: [collector/README.md](../collector/README.md).
 
+Changes land on `development` and reach `main`, the live site, in releases; `main` is merged back into `development` after
+each, so it has the nightly data. Netlify's build minutes are limited: `ignore` in `netlify.toml` skips a build when only
+docs, Markdown, agent skills or GitHub config changed.
+
 ## Site
 
 Each profile has an Angular-only contribution graph: `calendar.json` holds every contributor's contributions of their own
