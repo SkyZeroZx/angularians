@@ -29,6 +29,19 @@ describe('parseContributorsFile', () => {
     expect(rows.map(row => row.username)).toEqual(['ok', 'x'.repeat(39)])
   })
 
+  it('uses accepted role counts for advisory count and score, ignoring unknown roles', () => {
+    const [row] = parseContributorsFile([record(1, 'SkyZeroZx', {}, {
+      advisories: 7,
+      advisoryRoles: { finder: 5, reporter: 2, remediation_developer: 12, analyst: 1, invented: 100 },
+    })])
+    expect(row).toMatchObject({ advisories: 20, score: 520, advisoryRoles: { finder: 5, reporter: 2, remediation_developer: 12, analyst: 1 } })
+  })
+
+  it('keeps the legacy reporter weight for files without role counts', () => {
+    const [row] = parseContributorsFile([record(1, 'legacy', {}, { advisories: 2 })])
+    expect(row).toMatchObject({ advisories: 2, score: 40 })
+  })
+
   it('reads a missing or invalid first contribution date as null', () => {
     const rows = parseContributorsFile([record(1, 'a', {}, { firstContributionAt: 'nope' }), record(2, 'b', {}, { firstContributionAt: undefined })])
     expect(rows.map(row => row.firstContributionAt)).toEqual([null, null])

@@ -8,9 +8,25 @@
         </span>
         <!-- One line: the label wraps instead -->
         <span class="shrink-0 whitespace-nowrap text-muted-foreground tabular-nums">
-          {{ number(row.amount) }} × {{ row.points }} = <span class="font-medium text-foreground">{{ number(row.total) }}</span>
+          @if (row.points === null) {
+            {{ credits(row.amount) }} = <span class="font-medium text-foreground">{{ number(row.total) }}</span>
+          } @else {
+            {{ number(row.amount) }} × {{ row.points }} = <span class="font-medium text-foreground">{{ number(row.total) }}</span>
+          }
         </span>
       </div>
+      @if (row.roles?.length) {
+        <ul class="ml-6 flex flex-col gap-1 text-xs text-muted-foreground">
+          @for (role of row.roles; track role.role) {
+            <li class="flex flex-col gap-1">
+              <div class="flex justify-between gap-2">
+                <span>{{ role.label }}</span>
+                <span class="whitespace-nowrap tabular-nums">{{ number(role.amount) }} × {{ role.points }} = {{ number(role.total) }}</span>
+              </div>
+            </li>
+          }
+        </ul>
+      }
       <hlm-progress [value]="row.total" [max]="max()" class="h-1.5" [attr.aria-label]="row.label + ': ' + points(row.total)">
         <hlm-progress-indicator />
       </hlm-progress>

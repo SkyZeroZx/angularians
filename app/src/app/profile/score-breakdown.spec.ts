@@ -17,9 +17,30 @@ describe('ScoreBreakdown', () => {
     expect(rows).toEqual([
       'Docs PRs 134 × 4 = 536', 'Fix PRs 66 × 5 = 330', 'Feature PRs 16 × 7 = 112', 'Chore PRs 33 × 3 = 99', 'Comments 41 × 0.5 = 20.5',
       'Review comments 12 × 1 = 12', 'Helpful issues 2 × 3 = 6', 'Issues 3 × 1 = 3', 'Reactions received 25 × 0.1 = 2.5', 'Helpful comments 1 × 2 = 2',
-      'Security reports 0 × 20 = 0',
+      'Security advisories 0 credits = 0',
     ]);
   });
+
+  it('shows every SkyZeroZx advisory credit and its role points', () => {
+    const fixture = TestBed.createComponent(ScoreBreakdown);
+    fixture.componentRef.setInput('stats', {
+      ...stats({}), advisories: 20,
+      advisoryRoles: { finder: 5, reporter: 2, remediation_developer: 12, analyst: 1 },
+    });
+    fixture.detectChanges();
+    const advisory = [...fixture.nativeElement.querySelectorAll('ul > li')]
+      .find((li: HTMLElement) => li.textContent?.includes('Security advisories')) as HTMLElement;
+    const summary = advisory.querySelector('div')!.textContent!.replace(/\s+/g, ' ').trim();
+    const roles = [...advisory.querySelector('ul')!.children]
+      .map(li => li.querySelector('div')!)
+      .map(header => [header.children[0]!.textContent!.trim(), header.children[1]!.textContent!.replace(/\s+/g, ' ').trim()]);
+    expect(summary).toBe('Security advisories 20 credits = 520');
+    expect(roles).toEqual([
+      ['Finder', '5 × 20 = 100'], ['Reporter', '2 × 20 = 40'],
+      ['Analyst', '1 × 20 = 20'], ['Remediation developer', '12 × 30 = 360'],
+    ]);
+  });
+;
 
   it('draws the bars on one scale: the biggest full, the others in proportion', () => {
     const fixture = TestBed.createComponent(ScoreBreakdown);

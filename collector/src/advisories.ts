@@ -1,6 +1,6 @@
-// Angular's security advisories and who reported them. Two lists, joined by GHSA id: the repositories' own advisories
+// Angular's security advisories and their accepted credits. Two lists, joined by GHSA id: the repositories' own advisories
 // (most of them, with their credits), and GitHub's reviewed npm advisories of the packages (a few were filed only there).
-import { ADVISORY_CREDITS, REPOS, type AdvisoryInput, type ContributorsAccumulator } from '@angularians/shared'
+import { ADVISORY_ROLE_POINTS, REPOS, type AdvisoryInput, type ContributorsAccumulator } from '@angularians/shared'
 import { paginate } from './github.ts'
 
 /** The packages whose advisories count. */
@@ -49,9 +49,9 @@ export async function fetchAdvisories(since: Date | null): Promise<AdvisoryInput
   return [...advisories.values()]
 }
 
-/** Every advisory into the accumulator: returns how many there were, and how many credited a reporter. */
-export async function collectAdvisories(since: Date | null, accumulator: ContributorsAccumulator): Promise<{ advisories: number, reported: number }> {
+/** Every advisory into the accumulator: returns how many there were, and how many credited someone. */
+export async function collectAdvisories(since: Date | null, accumulator: ContributorsAccumulator): Promise<{ advisories: number, credited: number }> {
   const advisories = await fetchAdvisories(since)
   for (const advisory of advisories) accumulator.addAdvisory(advisory)
-  return { advisories: advisories.length, reported: advisories.filter(a => a.credits.some(c => ADVISORY_CREDITS.includes(c.type))).length }
+  return { advisories: advisories.length, credited: advisories.filter(a => a.credits.some(c => Object.hasOwn(ADVISORY_ROLE_POINTS, c.type))).length }
 }

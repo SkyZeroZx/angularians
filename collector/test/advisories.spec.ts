@@ -17,7 +17,7 @@ async function* pages<T>(...lists: T[][]) {
 describe('collectAdvisories', () => {
   beforeEach(() => vi.mocked(paginate).mockReset())
 
-  it('scores the reporters of Angular advisories from both lists, once per advisory', async () => {
+  it('scores accepted Angular advisory roles from both lists, once per advisory', async () => {
     const eve = user('eve', 7)
     vi.mocked(paginate).mockImplementation(((url = '') => {
       if (url === '/repos/angular/angular/security-advisories?per_page=100&state=published') {
@@ -40,7 +40,8 @@ describe('collectAdvisories', () => {
     }) as never)
 
     const accumulator = new ContributorsAccumulator(new Date('2026-06-01T00:00:00Z'))
-    expect(await collectAdvisories(new Date('2026-01-01T00:00:00Z'), accumulator)).toEqual({ advisories: 3, reported: 2 })
-    expect(accumulator.records().get('all')?.map(r => [r.username, r.advisories, r.score])).toEqual([['eve', 1, 20], ['hal', 1, 20]])
+    expect(await collectAdvisories(new Date('2026-01-01T00:00:00Z'), accumulator)).toEqual({ advisories: 3, credited: 2 })
+    expect(accumulator.records().get('all')?.map(r => [r.username, r.advisories, r.score])).toEqual([['gus', 1, 30], ['eve', 1, 20], ['hal', 1, 20]])
   })
+
 })

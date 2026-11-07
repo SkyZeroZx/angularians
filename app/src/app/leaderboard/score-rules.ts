@@ -1,5 +1,5 @@
 import { Component } from '@angular/core'
-import { ACTIVITY_POINTS, HELPFUL_COMMENT_REACTIONS, HELPFUL_ISSUE_COMMENTS, HELPFUL_ISSUE_REACTIONS, PULL_REQUEST_POINTS, REPOS } from '@angularians/shared'
+import { ACTIVITY_POINTS, ADVISORY_ROLE_POINTS, HELPFUL_COMMENT_REACTIONS, HELPFUL_ISSUE_COMMENTS, HELPFUL_ISSUE_REACTIONS, PULL_REQUEST_POINTS, REPOS } from '@angularians/shared'
 import { NgIcon, provideIcons } from '@ng-icons/core'
 import { octComment, octIssueOpened, octShield, octSmiley } from '@ng-icons/octicons'
 import { remixChatHeartLine, remixFileCodeLine, remixLightbulbLine } from '@ng-icons/remixicon'
@@ -31,6 +31,9 @@ export class ScoreRules {
     { what: 'Helpful comment', when: `On top, with ${HELPFUL_COMMENT_REACTIONS}+ reactions, or as a discussion's accepted answer.`, value: `+${ACTIVITY_POINTS.helpfulComments}`, unit: 'pts', icon: 'remixChatHeartLine', color: 'pink' },
     { what: 'Review comment', when: 'Every comment on the code of a pull request.', value: `${ACTIVITY_POINTS.reviewComments}`, unit: 'pt', icon: 'remixFileCodeLine', color: 'purple' },
     { what: 'Reaction', when: 'Received on your issues, pull requests, discussions and comments.', value: `${ACTIVITY_POINTS.reactions}`, unit: 'pt', icon: 'octSmiley', color: 'orange' },
-    { what: 'Security report', when: 'Credited as reporter or finder on an Angular security advisory, on the day it is published.', value: `${ACTIVITY_POINTS.advisories}`, unit: 'pts', icon: 'octShield', color: 'red' },
+    { what: 'Security remediation', when: 'Remediation developer on an Angular security advisory.', value: `${ADVISORY_ROLE_POINTS.remediation_developer}`, unit: 'pts', icon: 'octShield', color: 'red' },
+    { what: 'Security discovery or analysis', when: 'Finder, reporter or analyst.', value: `${ADVISORY_ROLE_POINTS.finder}`, unit: 'pts', icon: 'octShield', color: 'red' },
+    { what: 'Security review', when: 'Remediation reviewer.', value: `${ADVISORY_ROLE_POINTS.remediation_reviewer}`, unit: 'pts', icon: 'octShield', color: 'red' },
+    { what: 'Other security credit', when: 'Coordinator, remediation verifier, tool, sponsor or other. One highest role counts per advisory.', value: `${ADVISORY_ROLE_POINTS.other}`, unit: 'pt', icon: 'octShield', color: 'red' },
   ] satisfies readonly { color: GithubColor, [key: string]: unknown }[]
 }

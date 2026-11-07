@@ -22,8 +22,30 @@ describe('score', () => {
     expect(score(stats({}, { reactions: 4 }))).toBe(0)
   })
 
-  it('gives 20 points per security advisory reported', () => {
+  it('keeps the 20-point reporter score in older files without role counts', () => {
     expect(score(stats({ fix: 1 }, { advisories: 2 }))).toBe(45)
+  })
+
+  it('scores every advisory role by its weight, with one credited advisory counted once', () => {
+    const counts = { ...stats({}), advisories: 20, advisoryRoles: { finder: 5, reporter: 2, remediation_developer: 12, analyst: 1 } }
+    expect(score(counts)).toBe(520)
+    expect(scoreBreakdown(counts).find(row => row.key === 'advisories')).toMatchObject({
+      amount: 20, points: null, total: 520,
+      roles: [
+        { role: 'finder', amount: 5, points: 20, total: 100 },
+        { role: 'reporter', amount: 2, points: 20, total: 40 },
+        { role: 'analyst', amount: 1, points: 20, total: 20 },
+        { role: 'remediation_developer', amount: 12, points: 30, total: 360 },
+      ],
+    })
+  })
+
+  it.each([
+    ['finder', 20], ['reporter', 20], ['analyst', 20], ['remediation_developer', 30],
+    ['remediation_reviewer', 10], ['coordinator', 1], ['remediation_verifier', 1],
+    ['tool', 1], ['sponsor', 1], ['other', 1],
+  ] as const)('awards %s advisory credits %i points', (role, points) => {
+    expect(score({ ...stats({}), advisories: 1, advisoryRoles: { [role]: 1 } })).toBe(points)
   })
 })
 
@@ -121,16 +143,23 @@ describe('ContributorsAccumulator', () => {
     expect(acc.records().get('all')?.[0]).toMatchObject({ comments: 2, helpfulComments: 1, reviewComments: 1, reactions: 5, score: Math.round(1 + 2 + 1 + 0.5) })
   })
 
-  it('counts an advisory for its reporters and finders, once per advisory, in the periods of its publication', () => {
+  it('counts each accepted role once per person and advisory, in the periods of publication', () => {
     const acc = new ContributorsAccumulator(now)
     const credit = (type: string, login: string, id: number) => ({ type, user: user(login, id) })
-    const advisory = { ghsa_id: 'GHSA-aaaa-bbbb-cccc', published_at: '2025-06-01T00:00:00Z', credits: [credit('reporter', 'eve', 7), credit('finder', 'eve', 7), credit('finder', 'fay', 8), credit('remediation_developer', 'gus', 9), credit('remediation_reviewer', 'hal', 10), credit('analyst', 'ida', 11), credit('other', 'jo', 12)] }
+    const advisory = { ghsa_id: 'GHSA-aaaa-bbbb-cccc', published_at: '2025-06-01T00:00:00Z', credits: [credit('reporter', 'eve', 7), credit('finder', 'eve', 7), credit('finder', 'fay', 8), credit('finder', 'gus', 9), credit('remediation_developer', 'gus', 9), credit('remediation_reviewer', 'hal', 10), credit('analyst', 'ida', 11), credit('other', 'jo', 12)] }
     acc.addAdvisory(advisory)
     acc.addAdvisory(advisory)
     acc.addAdvisory({ ...advisory, ghsa_id: 'GHSA-dddd-eeee-ffff', published_at: '2026-10-30T00:00:00Z', credits: [credit('reporter', 'eve', 7)] })
     const files = acc.records()
-    expect(files.get('all')?.map(r => [r.username, r.advisories, r.score])).toEqual([['eve', 2, 40], ['fay', 1, 20]])
-    expect(files.get('2025')?.map(r => [r.username, r.advisories])).toEqual([['eve', 1], ['fay', 1]])
+    expect(files.get('all')?.map(r => [r.username, r.advisories, r.score])).toEqual([
+      ['eve', 2, 40], ['gus', 1, 30], ['fay', 1, 20], ['ida', 1, 20], ['hal', 1, 10], ['jo', 1, 1],
+    ])
+    expect(files.get('all')?.find(r => r.username === 'eve')?.advisoryRoles).toEqual({ reporter: 2 })
+    expect(files.get('all')?.find(r => r.username === 'jo')?.advisoryRoles).toEqual({ other: 1 })
+    expect(files.get('all')?.find(r => r.username === 'gus')?.advisoryRoles).toEqual({ remediation_developer: 1 })
+    expect(files.get('2025')?.map(r => [r.username, r.advisories])).toEqual([
+      ['gus', 1], ['eve', 1], ['fay', 1], ['ida', 1], ['hal', 1], ['jo', 1],
+    ])
     expect(files.get('30d')?.map(r => [r.username, r.advisories])).toEqual([['eve', 1]])
     expect(files.get('all')?.[0]?.firstContributionAt).toBe('2025-06-01T00:00:00.000Z')
   })
@@ -197,6 +226,14 @@ describe('mergeRecords', () => {
     mergeRecords([[input], [record(1, 'ann', 1, 0, null)]])
     expect(input.pullRequests.all).toBe(1)
   })
+
+  it('adds advisory role counts across parts and recomputes their weighted score', () => {
+    const first = { ...record(1, 'ann', 0, 0, null), advisories: 1, advisoryRoles: { finder: 1 } }
+    const second = { ...record(1, 'ann', 0, 0, null), advisories: 1, advisoryRoles: { remediation_developer: 1 } }
+    expect(mergeRecords([[first], [second]])[0]).toMatchObject({ advisories: 2, advisoryRoles: { finder: 1, remediation_developer: 1 }, score: 50 })
+    expect(first.advisoryRoles).toEqual({ finder: 1 })
+  })
+
 })
 
 describe('mergePackages', () => {

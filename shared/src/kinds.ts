@@ -23,8 +23,8 @@ export const KINDS = [
   { key: 'reviewComments', pullRequest: false, points: 1, label: 'Review comments', icon: 'file-code' },
   // Received on the contributor's issues, PRs and comments, counted on the day of the item.
   { key: 'reactions', pullRequest: false, points: 0.1, label: 'Reactions received', icon: 'smile-plus' },
-  // Angular security advisories credited to them as reporter or finder.
-  { key: 'advisories', pullRequest: false, points: 20, label: 'Security reports', icon: 'shield' },
+  // Accepted Angular security credits. The legacy weight is 20; new records score by role.
+  { key: 'advisories', pullRequest: false, points: 20, label: 'Security advisories', icon: 'shield' },
 ] as const
 
 export type Kind = typeof KINDS[number]

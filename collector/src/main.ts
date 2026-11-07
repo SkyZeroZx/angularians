@@ -53,7 +53,7 @@ for (const repo of config.repos) {
 if (config.advisories) {
   const advisories = await collectAdvisories(config.since, accumulator)
   stats.advisories = advisories.advisories
-  console.log(`Security advisories: ${advisories.advisories}, ${advisories.reported} of them with a reporter`)
+  console.log(`Security advisories: ${advisories.advisories}, ${advisories.credited} of them with an accepted credit`)
 }
 
 const collected: Collected = {

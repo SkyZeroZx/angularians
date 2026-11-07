@@ -7,6 +7,7 @@ import { remixBookOpenLine, remixBrushLine, remixChatHeartLine, remixFileCodeLin
 import { octComment, octIssueOpened, octShield, octSmiley } from '@ng-icons/octicons'
 import { HlmProgressImports } from '@spartan-ng/helm/progress'
 import { formatNumber, formatPoints } from '../text/number-format'
+import { plural } from '../text/plural'
 
 /** `scoreBreakdown`'s icon keys, and the icons they show. */
 const ICONS: Record<string, string> = {
@@ -41,4 +42,5 @@ export class ScoreBreakdown {
   protected readonly icon = (name: string) => ICONS[name] ?? 'remixRocketLine'
   protected readonly number = formatNumber
   protected readonly points = formatPoints
+  protected readonly credits = (amount: number) => plural(amount, 'credit', 'credits')
 }
