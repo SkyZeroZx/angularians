@@ -43,6 +43,7 @@ import { profileLinks } from '../profile/profile-links';
 import { profileStats } from '../profile/profile-stats';
 import { ContributorSince } from '../profile/contributor-since';
 import { ScoreDialog } from '../profile/score-dialog';
+import { showsSignInPrompt } from '../profile/sign-in-prompt';
 import { Share } from '../profile/share';
 import { AuthService } from '../auth/auth.service';
 import { AngularianPill } from '../layout/angularian-pill';
@@ -89,10 +90,8 @@ export default class Profile {
   protected readonly validUsername = computed(() => GITHUB_USERNAME_RE.test(this.username()));
   protected readonly failedToLoad = computed(() => !!this.profile.error() && this.validUsername());
   private readonly promptClosed = signal(false);
-  protected readonly signedOut = computed(() => {
-    const state = this.auth.state();
-    return !!state?.enabled && !state.user && !this.promptClosed();
-  });
+  /** The "Is this your profile?" prompt, until closed: `showsSignInPrompt`. */
+  protected readonly signedOut = computed(() => !this.promptClosed() && showsSignInPrompt(this.auth.state(), this.auth.wasSignedIn()));
   protected readonly isAngularian = computed(() => {
     const person = this.loaded();
     return !!person && !!(person.pullRequests.all || person.helpfulIssues || person.helpfulComments);
@@ -101,6 +100,8 @@ export default class Profile {
     const me = this.auth.state()?.user;
     return !!me && me.githubId === this.loaded()?.githubId;
   });
+  /** The profile, when it is the signed-in visitor's own. */
+  protected readonly ownProfile = computed(() => (this.isOwner() ? this.loaded() : undefined));
 
   protected readonly available = computed(() => this.loaded()?.periods.map(row => row.period) ?? ['all']);
   protected readonly period = computed<Period>(() => shownPeriod(this.requested(), this.available()));

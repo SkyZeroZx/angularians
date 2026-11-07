@@ -3,3 +3,17 @@
   align-items: center;
   gap: var(--spacing);
 }
+
+/* Phones: centred under the totals, as the board's line centres it */
+@media (width < 40rem) {
+  .label {
+    justify-items: center;
+  }
+}
+
+/* Wide screens: at the end of the row, so the text keeps to the right */
+@media (width >= 40rem) {
+  .label {
+    justify-items: end;
+  }
+}
