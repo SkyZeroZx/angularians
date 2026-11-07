@@ -44,7 +44,7 @@
 
 .halo {
   stroke: var(--primary);
-  stroke-width: 56px;
+  stroke-width: 70px;
   filter: blur(26px);
   animation: halo var(--storm) linear both;
 }
@@ -54,16 +54,51 @@
 }
 
 .main.glow {
-  stroke-width: 18px;
+  stroke-width: 30px;
   animation: main var(--storm) linear both;
 }
 
-.main.core {
-  animation: main var(--storm) linear both;
+.main.core,
+.main.inner {
+  animation: main var(--storm) linear both, core var(--storm) linear both;
 }
 
 .main.core path {
-  animation: leader var(--leader) steps(9, end) calc(var(--storm) * 0.25) both, core var(--storm) linear both;
+  stroke-width: calc(var(--storm-core) * var(--taper));
+}
+
+.main.inner {
+  stroke: var(--lightning-inner);
+  filter: blur(2.5px);
+}
+
+.main.inner path {
+  stroke-width: calc(var(--storm-core) * (var(--taper) + 2.2));
+  stroke-opacity: 0.8;
+}
+
+.main path:nth-child(1) {
+  --taper: 0.6;
+}
+
+.main path:nth-child(2) {
+  --taper: 0.75;
+}
+
+.main path:nth-child(3) {
+  --taper: 0.9;
+}
+
+.main path:nth-child(4) {
+  --taper: 1.05;
+}
+
+.main path:nth-child(5) {
+  --taper: 1.2;
+}
+
+.main path:nth-child(6) {
+  --taper: 1.35;
 }
 
 .branches {
@@ -71,19 +106,23 @@
 }
 
 .branches.glow {
-  stroke-width: 7px;
+  stroke-width: 11px;
 }
 
 .branches.core {
-  stroke-width: 1.6px;
+  stroke-width: 2.4px;
+}
+
+.branches .fork {
+  opacity: 0.65;
 }
 
 .branches.glow .fork {
-  stroke-width: 4px;
+  stroke-width: 6px;
 }
 
 .branches.core .fork {
-  stroke-width: 0.9px;
+  stroke-width: 1.3px;
 }
 
 .cloud {
@@ -109,6 +148,18 @@
   filter: blur(22px);
   opacity: 0;
   animation: impact var(--storm) ease-out both;
+}
+
+.spark {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  margin: -2.5px 0 0 -2.5px;
+  border-radius: 9999px;
+  background: var(--lightning);
+  box-shadow: 0 0 6px var(--primary);
+  opacity: 0;
+  animation: spark var(--storm) cubic-bezier(0.2, 0.7, 0.4, 1) both;
 }
 
 /* Angie comes up from the bottom right, raises the hammer, and goes. */
@@ -160,17 +211,30 @@
   46%, 100% { opacity: 0; }
 }
 
+@property --storm-core {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 2.4px;
+}
+
 @keyframes core {
-  0%, 28.7% { stroke-width: 1.5px; }
-  28.75% { stroke-width: 6px; }
-  30% { stroke-width: 3px; }
-  30.8% { stroke-width: 5px; }
-  31.5% { stroke-width: 3px; }
-  32.3% { stroke-width: 4.5px; }
-  33% { stroke-width: 3px; }
-  34.05% { stroke-width: 4.5px; }
-  38.5% { stroke-width: 3.5px; }
-  46%, 100% { stroke-width: 3px; }
+  0%, 28.7% { --storm-core: 2.4px; }
+  28.75% { --storm-core: 9.6px; }
+  30% { --storm-core: 4.8px; }
+  30.8% { --storm-core: 8px; }
+  31.5% { --storm-core: 4.8px; }
+  32.3% { --storm-core: 7.2px; }
+  33% { --storm-core: 4.8px; }
+  34.05% { --storm-core: 7.2px; }
+  38.5% { --storm-core: 5.6px; }
+  46%, 100% { --storm-core: 4.8px; }
+}
+
+@keyframes spark {
+  0%, 28.7% { opacity: 0; transform: translate(0, 0); }
+  28.75% { opacity: 1; transform: translate(0, 0); }
+  41% { opacity: 0; transform: translate(var(--dx), var(--dy)); }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)); }
 }
 
 @keyframes branch {
