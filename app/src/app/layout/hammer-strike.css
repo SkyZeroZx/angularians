@@ -1,0 +1,164 @@
+/*
+ * The storm's whole timeline, in one place: the keyframes below are in % of it. Angie swings at 25 %, the bolt lands at
+ * 28.75 % (1.15 s; the thunder in hammer-strike.ts follows it), and the storm ends with her animation.
+ */
+:host {
+  --storm: 4s;
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+}
+
+/* The whole sky flickers as the bolt lands. */
+.sky {
+  position: absolute;
+  inset: 0;
+  background: var(--foreground);
+  opacity: 0;
+  animation: sky var(--storm) linear both;
+}
+
+.bolt {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: none;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+/* Drawn from the sky down: the stepped leader, then the return stroke lights the whole channel. */
+.bolt path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+
+.glow {
+  stroke: var(--primary);
+  filter: blur(5px);
+}
+
+.core {
+  stroke: var(--lightning);
+}
+
+.main.glow {
+  stroke-width: 20px;
+  animation: leader var(--storm) linear both, main var(--storm) linear both;
+}
+
+.main.core {
+  stroke-width: 2.5px;
+  animation: leader var(--storm) linear both, main var(--storm) linear both, core var(--storm) linear both;
+}
+
+.branch.glow {
+  stroke-width: 8px;
+  animation: leader var(--storm) linear both, branch var(--storm) linear both;
+}
+
+.branch.core {
+  stroke-width: 1.5px;
+  animation: leader var(--storm) linear both, branch var(--storm) linear both;
+}
+
+.impact {
+  position: absolute;
+  width: 260px;
+  height: 110px;
+  margin: -55px 0 0 -130px;
+  border-radius: 9999px;
+  background: var(--primary);
+  filter: blur(22px);
+  opacity: 0;
+  animation: impact var(--storm) ease-out both;
+}
+
+/* Angie comes up from the bottom right, raises the hammer, and goes. */
+.angie {
+  position: absolute;
+  right: 3vw;
+  bottom: 0;
+  width: clamp(140px, 18vw, 260px);
+  height: auto;
+  transform-origin: 60% 100%;
+  filter: drop-shadow(0 10px 24px var(--angie-shadow));
+  animation: angie var(--storm) cubic-bezier(0.3, 0.7, 0.3, 1) both;
+}
+
+/* Angie comes up, winds up and swings, watches the storm, and goes. */
+@keyframes angie {
+  0% { transform: translateY(110%) rotate(6deg); }
+  15% { transform: translateY(4%) rotate(-3deg); }
+  21% { transform: translateY(6%) rotate(-9deg); }
+  25% { transform: translateY(0) rotate(7deg); }
+  29% { transform: translateY(1%) rotate(0deg); }
+  82% { transform: translateY(1%) rotate(0deg); }
+  100% { transform: translateY(110%) rotate(6deg); }
+}
+
+/* The leader creeps down (25 to 28.75 %); then the return stroke, four re-strikes, and a slow fade by 70 %. */
+@keyframes leader {
+  0%, 25% { stroke-dashoffset: 1; }
+  28.75%, 100% { stroke-dashoffset: 0; }
+}
+
+@keyframes main {
+  0%, 24.9% { opacity: 0; }
+  25% { opacity: 0.35; }
+  28.7% { opacity: 0.35; }
+  28.75% { opacity: 1; }
+  30.5% { opacity: 0.2; }
+  32.5% { opacity: 1; }
+  35% { opacity: 0.3; }
+  37.5% { opacity: 1; }
+  40.5% { opacity: 0.35; }
+  43.75% { opacity: 0.95; }
+  47.5% { opacity: 0.45; }
+  50% { opacity: 0.8; }
+  58% { opacity: 0.5; }
+  70%, 100% { opacity: 0; }
+}
+
+@keyframes core {
+  0%, 28.7% { stroke-width: 1.5px; }
+  28.75% { stroke-width: 6px; }
+  37.5% { stroke-width: 5px; }
+  50% { stroke-width: 4px; }
+  70%, 100% { stroke-width: 3px; }
+}
+
+@keyframes branch {
+  0%, 24.9% { opacity: 0; }
+  25% { opacity: 0.3; }
+  28.75% { opacity: 0.9; }
+  30.5% { opacity: 0.15; }
+  32.5% { opacity: 0.7; }
+  35% { opacity: 0.1; }
+  37.5% { opacity: 0.55; }
+  43.75% { opacity: 0.3; }
+  52%, 100% { opacity: 0; }
+}
+
+@keyframes sky {
+  0%, 28.7% { opacity: 0; }
+  28.75% { opacity: 0.25; }
+  30.5% { opacity: 0.03; }
+  32.5% { opacity: 0.18; }
+  35% { opacity: 0.02; }
+  37.5% { opacity: 0.13; }
+  40.5% { opacity: 0; }
+  43.75% { opacity: 0.08; }
+  48%, 100% { opacity: 0; }
+}
+
+@keyframes impact {
+  0%, 28.7% { opacity: 0; transform: scale(0.4); }
+  28.75% { opacity: 0.95; transform: scale(1); }
+  37.5% { opacity: 0.8; transform: scale(1.2); }
+  70% { opacity: 0; transform: scale(1.7); }
+  100% { opacity: 0; }
+}
