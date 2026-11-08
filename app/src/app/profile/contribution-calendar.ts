@@ -15,11 +15,14 @@ import { contributionGrid } from './contribution-grid'
 
 const COLORS_KEY = 'angularians-graph-colors'
 const GREEN_CLASS = 'graph-green'
+/** Half a tooltip's width: it stays inside the graph over the first and the last weeks. */
+const TIP_HALF = 120
 
 @Component({
   selector: 'app-contribution-calendar',
   imports: [HlmButton, HlmDialogImports, HlmSelectImports, NgIcon],
   providers: [provideIcons({ octComment, octGitMerge, octIssueOpened, octShield, remixArrowRightUpLine, remixInformationLine, remixTranslate2, simpleGithub })],
+  host: { '(document:click)': 'closeDayOutside($event)' },
   templateUrl: './contribution-calendar.html',
   styleUrl: './contribution-calendar.css',
 })
@@ -51,7 +54,7 @@ export class ContributionCalendar {
   ])
   protected readonly choiceLabel = (period: Period) => this.choices().find(choice => choice.period === period)?.label ?? period
   protected readonly shown = computed<Period>(() => (isYear(this.period()) || this.period() === '30d' ? this.period() : '12m'))
-  protected readonly hovered = signal<{ label: string, x: number, y: number } | null>(null)
+  protected readonly hovered = signal<{ label: string, x: number, y: number, source: 'hover' | 'tap' } | null>(null)
   protected readonly weekdays = ['', 'Mon', '', 'Wed', '', 'Fri', '']
   protected readonly levels = [0, 1, 2, 3, 4]
   protected readonly repos = REPOS.map(name => ({ name, url: `https://github.com/${name}` }))
@@ -65,15 +68,26 @@ export class ContributionCalendar {
   protected readonly green = signal(false)
 
   protected showDay(event: PointerEvent): void {
-    const cell = event.target as HTMLElement
-    const label = cell.dataset['label']
-    if (!label) return
-    const box = cell.getBoundingClientRect()
-    const graph = cell.closest('.graph')!.getBoundingClientRect()
-    this.hovered.set({ label, x: box.left - graph.left + box.width / 2, y: box.top - graph.top })
+    if (event.pointerType !== 'touch') this.pointAt(event.target as HTMLElement, 'hover')
   }
 
-  protected hideDay(): void {
+  protected hideDay(event: PointerEvent): void {
+    if (event.pointerType !== 'touch' && this.hovered()?.source === 'hover') this.hovered.set(null)
+  }
+
+  protected tapDay(event: PointerEvent): void {
+    if (event.pointerType === 'mouse') return
+    const cell = event.target as HTMLElement
+    const shown = this.hovered()
+    if (shown?.source === 'tap' && shown.label === cell.dataset['label']) this.hovered.set(null)
+    else this.pointAt(cell, 'tap')
+  }
+
+  protected closeDayOutside(event: Event): void {
+    if (!(event.target as HTMLElement).closest('.days')) this.hovered.set(null)
+  }
+
+  protected closeDay(): void {
     this.hovered.set(null)
   }
 
@@ -93,6 +107,18 @@ export class ContributionCalendar {
       localStorage.setItem(COLORS_KEY, green ? 'green' : 'gold')
     }
     catch {}
+  }
+
+  private pointAt(cell: HTMLElement, source: 'hover' | 'tap'): void {
+    const label = cell.dataset['label']
+    if (!label) {
+      this.hovered.set(null)
+      return
+    }
+    const box = cell.getBoundingClientRect()
+    const graph = cell.closest('.graph')!.getBoundingClientRect()
+    const x = Math.min(Math.max(box.left - graph.left + box.width / 2, TIP_HALF), graph.width - TIP_HALF)
+    this.hovered.set({ label, x, y: box.top - graph.top, source })
   }
 
   private followThePickedYear(): void {
