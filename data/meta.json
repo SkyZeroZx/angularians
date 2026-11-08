@@ -1,5 +1,5 @@
 {
-  "collectedAt": "2026-11-08T07:31:02.618Z",
+  "collectedAt": "2026-11-08T10:15:09.375Z",
   "repos": [
     "angular/angular",
     "angular/components",
@@ -12,7 +12,7 @@
   "partial": false,
   "since": null,
   "activity": true,
-  "contributors": 61450,
+  "contributors": 61452,
   "profiles": 46835,
   "team": 30,
   "pulls": 79481,
@@ -23,7 +23,7 @@
   "landedByPrClose": 19234,
   "landedPullRequests": 52824,
   "issues": 66392,
-  "comments": 590363,
+  "comments": 590364,
   "reviewComments": 147347,
   "activityPages": 8847,
   "discussions": 43,
