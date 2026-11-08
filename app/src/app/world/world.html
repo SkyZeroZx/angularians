@@ -33,7 +33,7 @@
 <!-- The card floats on the globe: picking a country moves nothing on the page -->
 <!-- `when`, not `on viewport`: Angular's viewport trigger creates its IntersectionObserver during server rendering too
      (after-render hooks run there in this app), where none exists. -->
-<div #globeBox class="relative mx-auto aspect-square w-full max-w-[36rem]">
+<div #globeBox class="relative mx-auto aspect-square w-full max-w-[min(50rem,85svh)]">
   @defer (when inView()) {
     <app-globe [countries]="map().countries" [selected]="selected()" (select)="select.emit($event)" />
   } @placeholder {
@@ -41,7 +41,7 @@
     <div class="grid size-full place-items-center"><div class="size-[78%] rounded-full bg-muted/50 ring-1 ring-border"></div></div>
   }
   @if (current(); as shown) {
-    <div class="absolute right-0 bottom-0 w-80 max-sm:hidden">
+    <div class="absolute right-0 bottom-0 w-80 max-sm:hidden [@media(max-height:36rem)]:hidden">
       <ng-container [ngTemplateOutlet]="card" [ngTemplateOutletContext]="{ $implicit: shown }" />
     </div>
   }
@@ -52,7 +52,7 @@
     <input hlmInputGroupInput type="search" autocomplete="off" aria-label="Search a country" placeholder="Search a country" [value]="query()" (input)="filterCountries($event)" />
     <hlm-input-group-addon><ng-icon name="remixSearchLine" aria-hidden="true" /></hlm-input-group-addon>
   </div>
-  <ol class="-mx-1 flex max-h-100 flex-col gap-1 overflow-y-auto p-1 pt-2" [class.lg:h-100]="query().trim()" aria-label="Countries, from the most contributors">
+  <ol class="-mx-1 flex max-h-100 flex-col gap-1 overflow-y-auto overscroll-contain p-1 pt-2" [class.lg:h-100]="query().trim()" aria-label="Countries, from the most contributors">
     @for (item of shownCountries(); track item.code) {
       <li>
         <button
@@ -88,7 +88,7 @@
 
 <!-- Phones: the globe is too small to float on, and often scrolled away from the list. A card at the bottom of the screen. -->
 @if (current(); as shown) {
-  <div class="sticky bottom-4 z-10 sm:hidden">
+  <div class="sticky bottom-4 z-10 sm:[@media(min-height:36rem)]:hidden">
     <ng-container [ngTemplateOutlet]="card" [ngTemplateOutletContext]="{ $implicit: shown }" />
   </div>
 }

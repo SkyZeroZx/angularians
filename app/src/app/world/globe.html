@@ -11,7 +11,7 @@
 <canvas
   #canvas
   [class.is-light]="!theme.dark()"
-  [hidden]="failed()"
+  [hidden]="lost()"
   tabindex="0"
   role="img"
   aria-label="Contributors around the world. Arrow keys rotate the globe, plus and minus zoom, zero resets. Every country is also in the list."
@@ -23,9 +23,10 @@
   (lostpointercapture)="endDrag($event)"
   (keydown)="moveWithKeys($event)"
   (webglcontextlost)="showWebGlFailure($event)"
+  (webglcontextrestored)="restoreGlobe()"
 ></canvas>
 
-@if (ready() && !failed()) {
+@if (live()) {
   @for (ship of SHIPS; track $index) {
     <span class="globe__ship" [attr.data-ship]="$index" data-visible="false" aria-hidden="true"><ng-icon name="vikingLongship" size="1.75rem" /></span>
   }
@@ -38,7 +39,6 @@
       inert
       [class.is-selected]="selected() === marker.code"
       [class.is-avatars]="avatars()"
-      [attr.data-tier]="tier(marker.count)"
       [attr.aria-label]="marker.name + ', ' + count(marker.count)"
       [attr.aria-pressed]="selected() === marker.code"
       (click)="toggleCountry(marker.code)"
@@ -49,7 +49,7 @@
     >
       @if (hovered() === marker.code) {
         <span class="globe__label" aria-hidden="true">
-          <img [src]="flag(marker.code)" alt="" width="16" height="16" class="size-4 shrink-0" />{{ marker.name }}
+          <img [src]="flag(marker.code)" alt="" width="16" height="16" class="size-4 shrink-0" />{{ marker.name }}<span class="globe__label-count">{{ number(marker.count) }}</span>
         </span>
       }
       @if (avatars()) {
@@ -59,21 +59,17 @@
           }
         </span>
       } @else {
-        @if (isTopTier(marker.count)) {
-          <span class="brand relative top-[0.06em] text-lg leading-none">{{ number(marker.count) }}</span>
-        } @else {
-          <span>{{ number(marker.count) }}</span>
-        }
+        <img class="globe__flag" [src]="flag(marker.code)" alt="" width="16" height="16" loading="lazy" />
       }
     </button>
   }
 }
 
-@if (failed()) {
+@if (lost()) {
   <p class="absolute inset-[20%] grid place-content-center text-center text-sm text-muted-foreground" role="status">The globe needs WebGL. Every country is in the list.</p>
 }
 
-@if (ready() && !failed()) {
+@if (live()) {
   <div class="absolute bottom-1 left-1/2 flex -translate-x-1/2 gap-0.5 rounded-lg bg-background/80 p-1 ring-1 ring-border backdrop-blur" role="group" aria-label="Globe controls">
     <button hlmBtn variant="ghost" size="icon-sm" type="button" [attr.aria-label]="paused() ? 'Resume rotation' : 'Pause rotation'" [attr.aria-pressed]="paused()" (click)="togglePause()">
       <ng-icon [name]="paused() ? 'remixPlayLine' : 'remixPauseLine'" aria-hidden="true" />

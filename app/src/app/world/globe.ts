@@ -22,7 +22,7 @@ const DEFAULT_CAMERA = { ...faceOnGlobe([20, -30]), zoom: 1 };
 const MAX_ZOOM = 3;
 /** One press of a zoom button or of + and −. */
 const ZOOM_STEP = 0.25;
-/** Zoomed in, countries show their best ranked contributors instead of a count. */
+/** Zoomed in, countries show their best ranked contributors instead of a flag. */
 const AVATAR_ZOOM = 1.6;
 /** Zoomed in, the globe outgrows the canvas and fades out from 82% of the radius: markers stay inside. */
 const FRAME = 0.88;
@@ -30,7 +30,8 @@ const FRAME = 0.88;
 const SHIPS: ReadonlyArray<readonly [number, number]> = [[42, -40], [8, -32], [-32, -18], [20, -145], [-22, -120], [32, 165], [-25, 78], [8, 65]];
 const SAIL_MS = 36000;
 const SAIL_DEGREES = 11;
-const MARKER_WIDTH: Record<string, number> = { base: 20, mid: 22, top: 26 };
+/** The room a country's flag claims on the globe: less than its size, so close neighbours overlap a little and both show. */
+const FLAG_ROOM = 11;
 const KEY_MOVES: Record<string, [number, number]> = { ArrowLeft: [-0.15, 0], ArrowRight: [0.15, 0], ArrowUp: [0, -0.15], ArrowDown: [0, 0.15] };
 
 const clamp = (value: number, low: number, high: number) => Math.min(high, Math.max(low, value));
@@ -45,7 +46,7 @@ interface GlobeMarker extends CountryStats {
   selector: 'app-globe',
   imports: [HlmButton, NgIcon],
   providers: [provideIcons({ vikingLongship, remixSubtractLine, remixPauseLine, remixPlayLine, remixAddLine, remixRestartLine })],
-  host: { '[attr.data-ready]': 'ready() || null', '(document:visibilitychange)': 'followTabVisibility()' },
+  host: { '[attr.data-ready]': 'live() || null', '(document:visibilitychange)': 'followTabVisibility()' },
   templateUrl: './globe.html',
   styleUrl: './globe.css',
 })
@@ -63,8 +64,9 @@ export class Globe {
   protected readonly land = signal<[number, number, number]>([0.44, 0.69, 0.48]);
 
   protected readonly SHIPS = SHIPS;
-  protected readonly failed = signal(false);
-  protected readonly ready = signal(false);
+  private readonly status = signal<'starting' | 'live' | 'lost'>('starting');
+  protected readonly live = computed(() => this.status() === 'live');
+  protected readonly lost = computed(() => this.status() === 'lost');
   protected readonly paused = signal(false);
   protected readonly zoom = signal(1);
   protected readonly avatars = computed(() => this.zoom() >= AVATAR_ZOOM);
@@ -79,9 +81,6 @@ export class Globe {
     .sort((a, b) => Number(b.code === this.selected()) - Number(a.code === this.selected()) || b.count - a.count));
 
   protected readonly hovered = signal<string | null>(null);
-  private readonly topCount = computed(() => Math.max(1, ...this.countries().map(country => country.count)));
-  protected readonly tier = (count: number) => count >= this.topCount() * 0.25 ? 'top' : count >= this.topCount() * 0.05 ? 'mid' : 'base';
-  protected readonly isTopTier = (count: number) => this.tier(count) === 'top';
   protected readonly flag = flagUrl;
   protected readonly number = formatNumber;
   protected readonly count = (value: number) => plural(value, 'Angularian', 'Angularians');
@@ -116,27 +115,7 @@ export class Globe {
   /** Draws the globe with WebGL, and runs its frames while it is on screen. */
   private start(): void {
     const element = this.host.nativeElement as HTMLElement;
-    const canvas = this.canvas().nativeElement;
-    try {
-      if (!canvas.getContext('webgl2') && !canvas.getContext('webgl')) throw new Error('WebGL unavailable');
-      this.globe = createGlobe(canvas, {
-        width: 1,
-        height: 1,
-        devicePixelRatio: Math.min(devicePixelRatio || 1, innerWidth < 768 ? 1.5 : 2),
-        phi: this.phi,
-        theta: this.theta,
-        scale: 0.98,
-        mapSamples: 32000,
-        // Required, but unused: the markers are HTML over the canvas, none of the library's.
-        markerColor: this.land(),
-        markers: [],
-        ...palette(this.theme.dark()),
-      });
-    }
-    catch {
-      this.failed.set(true);
-      return;
-    }
+    if (!this.draw()) return;
 
     // Frames run only while the globe is on screen, in a visible tab, and moving.
     const resize = new ResizeObserver(([entry]) => {
@@ -179,9 +158,35 @@ export class Globe {
       this.globe = undefined;
     });
 
-    this.ready.set(true);
+    this.status.set('live');
     this.focusSelected();
     this.schedule();
+  }
+
+  /** A new drawing on the canvas, or the failure message when WebGL cannot give one. */
+  private draw(): boolean {
+    const canvas = this.canvas().nativeElement;
+    try {
+      if (!canvas.getContext('webgl2') && !canvas.getContext('webgl')) throw new Error('WebGL unavailable');
+      this.globe = createGlobe(canvas, {
+        width: 1,
+        height: 1,
+        devicePixelRatio: Math.min(devicePixelRatio || 1, innerWidth < 768 ? 1.5 : 2),
+        phi: this.phi,
+        theta: this.theta,
+        scale: 0.98,
+        mapSamples: 32000,
+        // Required, but unused: the markers are HTML over the canvas, none of the library's.
+        markerColor: this.land(),
+        markers: [],
+        ...palette(this.theme.dark()),
+      });
+      return true;
+    }
+    catch {
+      this.status.set('lost');
+      return false;
+    }
   }
 
   /** A new selection, new markers, zoom, pause or theme: the globe turns or redraws. */
@@ -218,7 +223,7 @@ export class Globe {
   }
 
   private schedule(): void {
-    if (!this.globe || !this.onScreen || !this.tabVisible || this.running) return;
+    if (!this.live() || !this.globe || !this.onScreen || !this.tabVisible || this.running) return;
     this.running = true;
     this.lastTime = performance.now();
     const tick = (time: number) => {
@@ -250,10 +255,9 @@ export class Globe {
 
     // Markers are HTML on top of the canvas: hide the ones behind the globe, out of the frame, or over another.
     const element = this.host.nativeElement as HTMLElement;
-    const occupied: Array<{ x: number, y: number, width: number }> = [];
+    const occupied: Array<{ x: number, y: number, width: number, height: number }> = [];
     const frame = Math.min(width, height) / 2 * FRAME;
     const avatars = this.avatars();
-    const markerHeight = avatars ? 32 : 28;
     for (const country of this.markers()) {
       const marker = element.querySelector<HTMLElement>(`.globe__marker[data-code="${country.code}"]`);
       if (!marker) continue;
@@ -262,12 +266,13 @@ export class Globe {
       const y = height / 2 + this.projection.y * height / 2;
       const markerWidth = avatars
         ? (country.code === this.selected() ? 32 + (country.top.length - 1) * 24 : 32)
-        : MARKER_WIDTH[this.tier(country.count)] + formatNumber(country.count).length * (this.tier(country.count) === 'base' ? 7 : 8);
+        : FLAG_ROOM;
+      const markerHeight = avatars ? 32 : FLAG_ROOM;
       const wasVisible = marker.dataset['visible'] === 'true';
       const front = this.projection.depth > (wasVisible ? 0.1 : 0.14);
       const fits = Math.hypot(x - width / 2, y - height / 2) < frame - Math.max(markerWidth, markerHeight) / 2;
-      const gap = wasVisible ? 4 : 8;
-      const hasRoom = occupied.every(other => Math.abs(other.x - x) > (other.width + markerWidth) / 2 + gap || Math.abs(other.y - y) > 28 + gap);
+      const gap = avatars ? (wasVisible ? 4 : 8) : (wasVisible ? 0 : 1);
+      const hasRoom = occupied.every(other => Math.abs(other.x - x) > (other.width + markerWidth) / 2 + gap || Math.abs(other.y - y) > (other.height + markerHeight) / 2 + gap);
       const show = front && fits && hasRoom;
       if (show !== wasVisible) {
         marker.dataset['visible'] = String(show);
@@ -278,7 +283,7 @@ export class Globe {
         const transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) translate(-50%, -50%)`;
         if (marker.style.transform !== transform) marker.style.transform = transform;
       }
-      if (show) occupied.push({ x, y, width: markerWidth });
+      if (show) occupied.push({ x, y, width: markerWidth, height: markerHeight });
     }
     if (rotating && !this.reducedMotion) this.sailTime += elapsed;
     SHIPS.forEach(([latitude, longitude], index) => {
@@ -415,7 +420,15 @@ export class Globe {
 
   protected showWebGlFailure(event: Event): void {
     event.preventDefault();
-    this.failed.set(true);
+    this.status.set('lost');
     this.pause();
+  }
+
+  /** The browser gave the context back (a phone, returning to the tab): a new drawing, its GL objects are gone. */
+  protected restoreGlobe(): void {
+    if (!this.draw()) return;
+    this.status.set('live');
+    this.resized = true;
+    this.schedule();
   }
 }
