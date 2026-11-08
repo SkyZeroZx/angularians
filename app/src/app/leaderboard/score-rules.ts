@@ -1,8 +1,8 @@
 import { Component } from '@angular/core'
-import { ACTIVITY_POINTS, ADVISORY_ROLE_POINTS, ADVISORY_SEVERITY_MULTIPLIERS, HELPFUL_COMMENT_REACTIONS, HELPFUL_ISSUE_COMMENTS, HELPFUL_ISSUE_REACTIONS, PULL_REQUEST_POINTS, REPOS } from '@angularians/shared'
+import { ACTIVITY_POINTS, ADVISORY_ROLE_POINTS, ADVISORY_SEVERITY_MULTIPLIERS, HELPFUL_COMMENT_REACTIONS, HELPFUL_ISSUE_COMMENTS, HELPFUL_ISSUE_REACTIONS, PULL_REQUEST_POINTS, REPOS, SEVERITY_LABELS } from '@angularians/shared'
 import { NgIcon, provideIcons } from '@ng-icons/core'
 import { octComment, octIssueOpened, octShield, octSmiley } from '@ng-icons/octicons'
-import { remixChatHeartLine, remixFileCodeLine, remixLightbulbLine } from '@ng-icons/remixicon'
+import { remixChatHeartLine, remixFileCodeLine, remixLightbulbLine, remixTranslate2 } from '@ng-icons/remixicon'
 import { vikingAnvil, vikingBroom, vikingHammer, vikingScroll, vikingSword } from '../layout/viking-icons'
 import { HlmButton } from '@spartan-ng/helm/button'
 import { HlmDialogImports } from '@spartan-ng/helm/dialog'
@@ -12,19 +12,13 @@ import type { GithubColor } from './github-color'
 @Component({
   selector: 'app-score-rules',
   imports: [HlmButton, HlmDialogImports, NgIcon],
-  providers: [provideIcons({ octComment, octIssueOpened, octShield, octSmiley, remixChatHeartLine, remixFileCodeLine, remixLightbulbLine, vikingAnvil, vikingBroom, vikingHammer, vikingScroll, vikingSword })],
+  providers: [provideIcons({ octComment, octIssueOpened, octShield, octSmiley, remixChatHeartLine, remixFileCodeLine, remixLightbulbLine, remixTranslate2, vikingAnvil, vikingBroom, vikingHammer, vikingScroll, vikingSword })],
   templateUrl: './score-rules.html',
   styleUrl: './score-rules.css',
 })
 export class ScoreRules {
   protected readonly repos = REPOS
-  protected readonly severities = [
-    { label: 'Low', multiplier: ADVISORY_SEVERITY_MULTIPLIERS.low },
-    { label: 'Moderate', multiplier: ADVISORY_SEVERITY_MULTIPLIERS.moderate },
-    { label: 'High', multiplier: ADVISORY_SEVERITY_MULTIPLIERS.high },
-    { label: 'Critical', multiplier: ADVISORY_SEVERITY_MULTIPLIERS.critical },
-    { label: 'Unspecified', multiplier: ADVISORY_SEVERITY_MULTIPLIERS.unknown },
-  ]
+  protected readonly severities = (['low', 'moderate', 'high', 'critical', 'unknown'] as const).map(severity => ({ label: SEVERITY_LABELS[severity], multiplier: ADVISORY_SEVERITY_MULTIPLIERS[severity] }))
   protected readonly types = [
     { title: 'Features', description: 'New APIs, capabilities and speed.', icon: 'vikingSword', color: 'purple', points: PULL_REQUEST_POINTS.feat },
     { title: 'Fixes', description: 'Bugs found and fixed.', icon: 'vikingAnvil', color: 'red', points: PULL_REQUEST_POINTS.fix },
@@ -42,5 +36,6 @@ export class ScoreRules {
     { what: 'Security discovery', when: 'Finder or reporter.', value: `${ADVISORY_ROLE_POINTS.finder}`, unit: 'pts', icon: 'octShield', color: 'red' },
     { what: 'Security review', when: 'Remediation reviewer.', value: `${ADVISORY_ROLE_POINTS.remediation_reviewer}`, unit: 'pts', icon: 'octShield', color: 'red' },
     { what: 'Other security credit', when: 'Coordinator, remediation verifier, tool, sponsor or other. One highest role counts per advisory.', value: `${ADVISORY_ROLE_POINTS.other}`, unit: 'pt', icon: 'octShield', color: 'red' },
+    { what: 'Translation', when: "Translating angular.dev into a language, one of its community translations.", value: `${ACTIVITY_POINTS.translations}`, unit: 'pts', icon: 'remixTranslate2', color: 'blue' },
   ] satisfies readonly { color: GithubColor, [key: string]: unknown }[]
 }

@@ -3,7 +3,7 @@
 import { Component, computed, input } from '@angular/core'
 import { scoreBreakdown, type ScoredStats } from '@angularians/shared'
 import { NgIcon, provideIcons } from '@ng-icons/core'
-import { remixArrowRightSLine, remixBookOpenLine, remixBrushLine, remixChatHeartLine, remixFileCodeLine, remixLightbulbLine, remixRocketLine, remixToolsLine } from '@ng-icons/remixicon'
+import { remixArrowRightSLine, remixBookOpenLine, remixBrushLine, remixChatHeartLine, remixFileCodeLine, remixLightbulbLine, remixRocketLine, remixToolsLine, remixTranslate2 } from '@ng-icons/remixicon'
 import { octComment, octIssueOpened, octShield, octSmiley } from '@ng-icons/octicons'
 import { HlmProgressImports } from '@spartan-ng/helm/progress'
 import { formatNumber, formatPoints } from '../text/number-format'
@@ -23,6 +23,7 @@ const ICONS: Record<string, string> = {
   'message-circle': 'octComment',
   'smile-plus': 'octSmiley',
   'shield': 'octShield',
+  'languages': 'remixTranslate2',
 }
 
 /** One row per contribution type: count × points = total, with a bar on one scale so the rows compare. */
@@ -31,7 +32,7 @@ const ICONS: Record<string, string> = {
   imports: [HlmProgressImports, NgIcon],
   providers: [provideIcons({
     remixBookOpenLine, remixBrushLine, octIssueOpened, remixFileCodeLine, remixLightbulbLine, octComment, remixChatHeartLine,
-    remixRocketLine, octShield, octSmiley, remixToolsLine, remixArrowRightSLine,
+    remixRocketLine, octShield, octSmiley, remixToolsLine, remixArrowRightSLine, remixTranslate2,
   })],
   templateUrl: './score-breakdown.html',
   styleUrl: './score-breakdown.css',

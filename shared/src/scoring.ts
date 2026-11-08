@@ -6,9 +6,10 @@ import { isBotAccount } from './bots.ts'
 import { addAdvisoryCounts, advisoryBreakdown, advisoryCount, advisoryPoints, ADVISORY_ROLE_POINTS, cloneAdvisoryCredits, normalizeAdvisorySeverity, type AdvisoryRoleBreakdown } from './advisory-scoring.ts'
 import { ACTIVITY_KINDS, KINDS, PULL_REQUEST_KINDS, type Kind, type PullRequestType } from './kinds.ts'
 import { allPeriods, periodsFor, utcDay } from './periods.ts'
+import type { Translation } from './translations.ts'
 import type { ActivityCounts, AdvisoryCreditCounts, AdvisoryRole, ContributorRecord, GitHubUser, LandedPullRequest, PackagesRecord, Period, PullRequestCounts } from './types.ts'
 
-export { advisoryCount, advisoryPoints, ADVISORY_ROLE_POINTS, ADVISORY_SEVERITY_MULTIPLIERS, normalizeAdvisorySeverity } from './advisory-scoring.ts'
+export { advisoryCount, advisoryPoints, ADVISORY_ROLE_POINTS, ADVISORY_SEVERITY_MULTIPLIERS, normalizeAdvisorySeverity, SEVERITY_LABELS } from './advisory-scoring.ts'
 
 /** Points of a landed PR, by type. */
 export const PULL_REQUEST_POINTS = Object.fromEntries(PULL_REQUEST_KINDS.map(kind => [kind.key, kind.points])) as Readonly<Record<PullRequestType, number>>
@@ -212,6 +213,13 @@ export class ContributorsAccumulator {
         const severities = counts.advisoryCredits[role] ??= {}
         severities[severity] = (severities[severity] ?? 0) + 1
       })
+    }
+  }
+
+  /** A community translation of angular.dev counts for each of its translators, on its `joinedAt`. */
+  addTranslation(translation: Translation): void {
+    for (const { githubId, username } of translation.translators) {
+      this.add({ login: username, id: githubId }, translation.joinedAt, true, counts => (counts.translations += 1))
     }
   }
 

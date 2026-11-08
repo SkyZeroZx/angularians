@@ -1,5 +1,5 @@
 // Weights ported from nuxt/nuxters `computeScore`, rows from nuxt.com `nuxterScoreBreakdown` (MIT, Copyright (c) 2023
-// Nuxt, Copyright (c) 2022-2023 NuxtLabs). Review comments and security reports are ours.
+// Nuxt, Copyright (c) 2022-2023 NuxtLabs). Review comments, security advisory credits and translations are ours.
 
 /**
  * Every kind of contribution that scores, in the order of the fields of a contributor file.
@@ -25,6 +25,8 @@ export const KINDS = [
   { key: 'reactions', pullRequest: false, points: 0.1, label: 'Reactions received', icon: 'smile-plus' },
   // Variable points, calculated from the credited role and severity.
   { key: 'advisories', pullRequest: false, points: null, label: 'Security advisories', icon: 'shield' },
+  // Community translations of angular.dev they translated (`TRANSLATIONS`), on each one's `joinedAt`.
+  { key: 'translations', pullRequest: false, points: 20, label: 'Translations', icon: 'languages' },
 ] as const
 
 export type Kind = typeof KINDS[number]
