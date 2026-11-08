@@ -44,6 +44,8 @@ Browsers keep `/assets/*` and `/fonts/*` for a year and `/flags/*` for 30 days (
 
 The data is read once per server instance from a JSON file next to the server (`app/scripts/bundle-data.ts` writes it from
 `readDataDir` of `@angularians/shared/node`, which validates every file of `data/`; `app/scripts/copy-data.ts` copies it there): at ~25 MB it is too big to compile into the server.
+In development, card and OG image requests are forwarded to Nitro handlers. Keep their paths in `app/vite.config.ts`
+relative to `app/`: Windows absolute paths become invalid ESM imports in Nitro's dev bundle.
 
 Pages load their data with `injectSeededServerFn` (`app/src/app/data/seeded-server-fn.ts`), not Analog's
 `injectServerFn`: it hands the browser the server's value on the first render, so hydration keeps the server-rendered page
