@@ -84,6 +84,20 @@ export const PROJECT_BADGES: readonly ProjectBadge[] = [
   { name: 'Angular videos on YouTube', badge: 'Angular skald', officialBadge: 'Angular YouTuber', tone: 'angular-youtuber', href: 'https://www.youtube.com/@theigorsedov', logo: '/credits/youtube-logo.svg', does: 'Angular explained in videos', people: [
     { githubId: 13938290, username: 'IgorSedov', name: 'Igor Sedov', role: 'creator' },
   ] },
+  { name: 'Angular videos on YouTube', badge: 'Angular skald', officialBadge: 'Angular YouTuber', tone: 'angular-youtuber', href: 'https://www.youtube.com/@RainerHahnekamp', logo: '/credits/youtube-logo.svg', does: 'Angular explained in videos', people: [
+    { githubId: 5721205, username: 'rainerhahnekamp', name: 'Rainer Hahnekamp', role: 'creator' },
+  ] },
+  { name: 'ng-news', badge: 'ng-news skald', officialBadge: 'ng-news host', tone: 'ng-news', href: 'https://www.youtube.com/@ng-news', logo: '/credits/ng-news.png', does: 'A weekly video update for the Angular community', people: [
+    { githubId: 5721205, username: 'rainerhahnekamp', name: 'Rainer Hahnekamp', role: 'maintainer' },
+  ] },
+  { name: 'NgRx', badge: 'Store keeper', officialBadge: 'NgRx core team', tone: 'ngrx', href: 'https://ngrx.io', logo: '/credits/ngrx.svg', does: 'Reactive state management for Angular', people: [
+    { githubId: 42211, username: 'brandonroberts', name: 'Brandon Roberts', role: 'maintainer' },
+    { githubId: 3712277, username: 'MikeRyanDev', name: 'Mike Ryan', role: 'maintainer' },
+    { githubId: 28659384, username: 'timdeschryver', name: 'Tim Deschryver', role: 'maintainer' },
+    { githubId: 2830407, username: 'alex-okrushko', name: 'Alex Okrushko', role: 'maintainer' },
+    { githubId: 17877290, username: 'markostanimirovic', name: 'Marko Stanimirović', role: 'maintainer' },
+    { githubId: 5721205, username: 'rainerhahnekamp', name: 'Rainer Hahnekamp', role: 'maintainer' },
+  ] },
 ]
 
 export const BUILT_ON = PROJECT_BADGES.filter(project => project.builtOn)

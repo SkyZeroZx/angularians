@@ -37,6 +37,8 @@ export const TAG_COLORS: Record<BadgeTone, TagColors> = {
   'angular-space': { pill: '#6D3BBF', text: '#B79CF0' },
   'angular-wroclaw': { pill: '#C2258E', text: '#FF77C8' },
   'angular-youtuber': { pill: '#FF0000', text: '#FF6B6B' },
+  'ngrx': { pill: '#AA1BB6', text: '#D66BE8' },
+  'ng-news': { pill: '#F0105C', text: '#FF6B96' },
   'lang-az': same('#00B5E2'),
   'lang-es': { pill: '#C60B1E', text: '#D64F5D' },
   'lang-uz': same('#0099B5'),

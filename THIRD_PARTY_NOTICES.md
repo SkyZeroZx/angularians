@@ -130,7 +130,7 @@ The badges of Ashley Hunter's Angular Native (https://ng-native.com) and Angular
 (https://angularprimitives.com) show their marks, unchanged, in `app/public/credits/`. Santosh Yadav's ngx-builders
 (https://github.com/ngx-builders) shows its GitHub organization avatar, unchanged. The badges of NG Baguette (https://ngbaguette.angulardevs.fr) and Angular
 Devs France (https://angulardevs.fr) show their logos, reduced to 256 pixels (NG Baguette's white logo on a dark tile, so it shows in both themes), and OpenNG (https://www.openng.org) its GitHub
-organization avatar. NG Poland (https://ng-poland.pl) and NG Asia (https://ng-asia.org) show the mark their own sites use, and NG Tunisia (https://ng-tunisia.org) its logo, reduced to 256 pixels. Angular Space (https://www.angularspace.com) shows its site icon, unchanged, and Angular Wrocław (https://www.meetup.com/angularwroclaw/) the shield from its Meetup banner. The Angular skald badge shows the YouTube logo, a trademark of Google LLC, drawn from Simple Icons.
+organization avatar. NG Poland (https://ng-poland.pl) and NG Asia (https://ng-asia.org) show the mark their own sites use, and NG Tunisia (https://ng-tunisia.org) its logo, reduced to 256 pixels. Angular Space (https://www.angularspace.com) shows its site icon, unchanged, and Angular Wrocław (https://www.meetup.com/angularwroclaw/) the shield from its Meetup banner. The Angular skald badge shows the YouTube logo, a trademark of Google LLC, drawn from Simple Icons. NgRx (https://ngrx.io) shows the logo from its own site, and ng-news (https://www.youtube.com/@ng-news) its channel image.
 
 ## Data
 

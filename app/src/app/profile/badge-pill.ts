@@ -10,7 +10,7 @@ import type { EarnedBadge } from './earned-badges'
 export type BadgeTone =
   | 'team' | 'gde' | 'star' | 'nx' | 'shieldwall' | 'primary' | 'gold' | 'green' | 'purple' | 'foreground'
   | `lang-${string}`
-  | 'analog' | 'ng-icons' | 'ngxtension' | 'pangular' | 'slide-ng' | 'ng-native' | 'ng-primitives' | 'ngx-builders' | 'ng-baguette' | 'angular-devs-france' | 'openng' | 'ng-poland' | 'ng-asia' | 'ng-tunisia' | 'angular-space' | 'angular-wroclaw' | 'angular-youtuber'
+  | 'analog' | 'ng-icons' | 'ngxtension' | 'pangular' | 'slide-ng' | 'ng-native' | 'ng-primitives' | 'ngx-builders' | 'ng-baguette' | 'angular-devs-france' | 'openng' | 'ng-poland' | 'ng-asia' | 'ng-tunisia' | 'angular-space' | 'angular-wroclaw' | 'angular-youtuber' | 'ngrx' | 'ng-news'
 
 /** One badge: a link to its project, or a button that shows its tooltip. Its icons come from the page's `provideIcons`. */
 @Component({
