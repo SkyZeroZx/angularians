@@ -73,7 +73,7 @@
 }
 
 /* The projects: on dark, a lighter text and a stronger ring (ngx-builders sets its own) */
-.dark :is(.tone-analog, .tone-ng-icons, .tone-ngxtension, .tone-pangular, .tone-slide-ng, .tone-ng-native, .tone-ng-primitives, .tone-ng-baguette, .tone-angular-devs-france, .tone-openng, .tone-ng-poland, .tone-ng-asia, .tone-ng-tunisia, .tone-angular-space, .tone-angular-wroclaw) {
+.dark :is(.tone-analog, .tone-ng-icons, .tone-ngxtension, .tone-pangular, .tone-slide-ng, .tone-ng-native, .tone-ng-primitives, .tone-ng-baguette, .tone-angular-devs-france, .tone-openng, .tone-ng-poland, .tone-ng-asia, .tone-ng-tunisia, .tone-angular-space, .tone-angular-wroclaw, .tone-angular-youtuber) {
   --pill-ring: color-mix(in oklab, var(--pill) 40%, transparent);
 }
 
@@ -204,6 +204,14 @@
 }
 .dark .tone-angular-wroclaw {
   --pill-text: #FF77C8;
+}
+
+.tone-angular-youtuber {
+  --pill: #FF0000;
+  --pill-text: #CC0000;
+}
+.dark .tone-angular-youtuber {
+  --pill-text: #FF6B6B;
 }
 
 /* The translations: each in its flag's colour, its text 4.5:1 on the tint in both themes */

@@ -36,6 +36,7 @@ export const TAG_COLORS: Record<BadgeTone, TagColors> = {
   'ng-tunisia': { pill: '#E70013', text: '#F2555F' },
   'angular-space': { pill: '#6D3BBF', text: '#B79CF0' },
   'angular-wroclaw': { pill: '#C2258E', text: '#FF77C8' },
+  'angular-youtuber': { pill: '#FF0000', text: '#FF6B6B' },
   'lang-az': same('#00B5E2'),
   'lang-es': { pill: '#C60B1E', text: '#D64F5D' },
   'lang-uz': same('#0099B5'),
