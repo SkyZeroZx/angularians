@@ -11,7 +11,9 @@
     </a>
     <span class="mr-1 h-5 w-px bg-border" aria-hidden="true"></span>
     <!-- GitHub and the theme always; then, signed in, the avatar and its menu -->
-    <app-github-stars />
+    <a hlmBtn variant="ghost" size="icon" [href]="repoUrl" target="_blank" rel="noopener" aria-label="Angularians on GitHub" title="Angularians on GitHub">
+      <ng-icon name="simpleGithub" aria-hidden="true" />
+    </a>
     <app-theme-toggle />
     @if (avatarSlot()) {
       <!-- The avatar's place, drawn by the server for a visitor signed in last time and kept for the whole visit, so

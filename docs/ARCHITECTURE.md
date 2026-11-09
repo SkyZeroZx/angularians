@@ -115,8 +115,6 @@ needs it as a utility, and remove any token nothing uses any more.
 
 An easter egg, which the account menu turns off for good (`layout/angie.service.ts`), and which its "My Angularian profile" link also calls; after the first storm a dialog (`layout/angie-intro.ts`) introduces her once, with the off switch and the star and sponsor links: the word "Angularian(s)" or "ng-halla", or a click on the header's or footer's logo, calls Angie (`app/public/angie/`) to bring down a storm with thunder (`app/public/sounds/`), on a click on the word, once a visit on a click on a logo, or once a visit on hover after a first click; `app/src/app/layout/hammer-strike.ts`, the bolt's shape in `lightning.ts`.
 
-The header shows the repository's star count, read from GitHub's API in the visitor's browser and kept for the visit (`layout/github-stars.ts`), so it costs no function call.
-
 ## Search engines
 
 - `/sitemap.xml` (`app/src/server/routes/sitemap.xml.get.ts`): the home page, each country's board and the profile of
