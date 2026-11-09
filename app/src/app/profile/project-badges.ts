@@ -81,7 +81,7 @@ export const PROJECT_BADGES: readonly ProjectBadge[] = [
   { name: 'Angular Wrocław', badgeIsOfficial: true, badge: 'Angular Wrocław organizer', tone: 'angular-wroclaw', href: 'https://www.meetup.com/angularwroclaw/', logo: '/credits/angular-wroclaw.png', does: 'The Angular meetup in Wrocław', people: [
     { githubId: 69144223, username: 'danielglejzner', name: 'Daniel Glejzner', role: 'organizer' },
   ] },
-  { name: 'Angular videos on YouTube', badge: 'Angular skald', officialBadge: 'Angular YouTuber', tone: 'angular-youtuber', href: 'https://www.youtube.com/@theigorsedov', logo: '/credits/youtube.svg', does: 'Angular explained in videos', people: [
+  { name: 'Angular videos on YouTube', badge: 'Angular skald', officialBadge: 'Angular YouTuber', tone: 'angular-youtuber', href: 'https://www.youtube.com/@theigorsedov', logo: '/credits/youtube-logo.svg', does: 'Angular explained in videos', people: [
     { githubId: 13938290, username: 'IgorSedov', name: 'Igor Sedov', role: 'creator' },
   ] },
 ]
