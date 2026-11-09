@@ -123,11 +123,13 @@ export interface LeaderboardPage {
   period: Period
   /** The ISO country code the leaderboard is filtered on, `null` for everyone. */
   country: string | null
-  /** The badges it is filtered on: anyone with at least one. Empty for everyone. */
+  /** The badges it is filtered on. Empty for everyone. */
   badges: string[]
+  /** With several badges: anyone with at least one, or only those with all of them. */
+  match: BadgeMatch
   /** The periods with data, in display order: rolling windows, all time, then years (newest first). */
   periods: Period[]
-  /** Contributors in the period (and country). */
+  /** Contributors in the period (and country and badges). */
   total: number
   /** PRs landed in the period (and country). */
   landedPullRequests: number
@@ -160,6 +162,8 @@ export interface ContributorsMap {
   /** Every badge someone on the board holds, by label, for the filter. */
   badges: BadgeFilter[]
 }
+
+export type BadgeMatch = 'any' | 'all'
 
 /** A badge the board can be filtered on. `icon` and `logo` are the badge's own; `count`: the people in the period who hold it. */
 export interface BadgeFilter {

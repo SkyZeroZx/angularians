@@ -12,7 +12,7 @@ export function showOneMore(state: ShowMoreState, phone: boolean): ShowMoreState
   return phone ? { ...state, phone: state.phone + STEP.phone } : { ...state, wide: state.wide + STEP.wide }
 }
 
-/** The extra pages of each board, for as long as the tab is open: a board is its period, country, badges and data night. */
+/** The extra pages of each board, for as long as the tab is open: a board is its period, country, badges, match and data night. */
 @Service()
 export class LeaderboardMemory {
   readonly view = signal<'grid' | 'list'>('grid')
@@ -28,6 +28,6 @@ export class LeaderboardMemory {
   }
 
   private key(page: LeaderboardPage): string {
-    return `${page.period}|${page.country ?? ''}|${page.badges.join()}|${page.collectedAt ?? ''}`
+    return `${page.period}|${page.country ?? ''}|${page.badges.join()}|${page.match}|${page.collectedAt ?? ''}`
   }
 }

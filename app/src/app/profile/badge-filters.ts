@@ -3,7 +3,7 @@ import { badgeKey, NUMBER_ONE_KEY } from './card-badges'
 import type { EarnedBadge } from './earned-badges'
 import { PROJECT_BADGES } from './project-badges'
 
-export const BADGE_FILTER_GROUPS = ['Recognitions', 'Translations', 'Projects', 'Community'] as const
+export const BADGE_FILTER_GROUPS = ['Recognitions', 'Projects', 'Community', 'Translations'] as const
 export type BadgeFilterGroup = (typeof BADGE_FILTER_GROUPS)[number]
 
 export interface BadgeIndex {

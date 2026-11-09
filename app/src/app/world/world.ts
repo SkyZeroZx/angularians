@@ -34,8 +34,8 @@ export class World {
   readonly selected = input<string | null>(null);
   /** The best ranked contributors of the selected country: the first page of its board, empty while it loads. */
   readonly people = input<ContributorSummary[]>([]);
-  /** The people are a filtered part of the country: only they get a tile, none is still loading. */
-  readonly filtered = input(false);
+  /** How many people of the country the board's badge filter leaves, `null` without a filter or while it loads. */
+  readonly filteredTotal = input<number | null>(null);
   readonly select = output<string | null>();
   /** "See the N contributors": scroll up to the board, already filtered. */
   readonly leaderboard = output<void>();
@@ -47,8 +47,9 @@ export class World {
   protected readonly query = signal('');
 
   protected readonly current = computed(() => this.map().countries.find(item => item.code === this.selected()) ?? null);
+  protected readonly boardCount = computed(() => this.filteredTotal() ?? this.current()?.count ?? 0);
   /** One tile per person shown, known from the count: the card keeps its size while they load. */
-  protected readonly tiles = computed(() => Array.from({ length: Math.min(CARD_TILES, this.filtered() ? this.people().length : this.current()?.count ?? 0) }, (_, index) => this.people()[index] ?? null));
+  protected readonly tiles = computed(() => Array.from({ length: Math.min(CARD_TILES, this.boardCount()) }, (_, index) => this.people()[index] ?? null));
   private readonly ranks = computed(() => countryRanks(this.map().countries));
   protected readonly shownCountries = computed(() => this.map().countries.filter(item => matchesCountry(item.code, this.query())));
   private readonly largest = computed(() => this.map().countries[0]?.count ?? 1);

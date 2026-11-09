@@ -121,7 +121,7 @@ An easter egg, which the account menu turns off for good (`layout/angie.service.
   everyone with a merged PR, dated with the last collection. `robots.txt` points to it and keeps crawlers out of `/api/`.
 - One address per page: `angularians.netlify.app` (at the CDN, a redirect in `netlify.toml`) and a trailing slash (`/erkamyaman/`) answer 301 to the canonical URL
   (`app/src/server/middleware/canonical-url.ts`); every page sets `<link rel="canonical">`. A period (`?period=`) is the
-  same page as the home page without one (the last 12 months); a country (`?country=TR`) is a page of its own, with its own title. Badges (`?badges=`) are a filter of the same page, with the same canonical URL.
+  same page as the home page without one (the last 12 months); a country (`?country=TR`) is a page of its own, with its own title. Badges (`?badges=`, `?match=`) are a filter of the same page, with the same canonical URL.
 - Structured data (`setJsonLd` in `app/src/app/seo-head.ts`): `WebSite` on the home page, `ProfilePage` with its `Person`
   and a `BreadcrumbList` on profiles, a `BreadcrumbList` on a country's board.
 - The cards (`/og.png`, `/:username/card.png`) keep their bottom-left corner free: X lays the page's title over it.
@@ -160,7 +160,7 @@ Signing in from the home page ends on your profile, or back on the home page if 
 
 | Route | |
 | --- | --- |
-| `GET /api/contributors?period=12m&country=TR&badges=angular-gde,github-star&page=1` | One page (100) of the leaderboard, with each profile's name when it has one; filtered on a country, also each row's `countryRank`; filtered on badges, anyone with at least one of them |
+| `GET /api/contributors?period=12m&country=TR&badges=angular-gde,github-star&match=all&page=1` | One page (100) of the leaderboard, with each profile's name when it has one; filtered on a country, also each row's `countryRank`; filtered on badges, anyone with at least one of them, or with `match=all` only those with all of them |
 | `GET /api/contributors/:username` | A profile: all-time stats, rank in each period, links |
 | `GET /api/search/contributors?q=cris&country=TR` | Up to 8 contributors, of that country if given |
 | `GET /api/map/contributors?period=all` | Contributors by country, and every badge on the board with how many hold it in the period |

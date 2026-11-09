@@ -1,4 +1,4 @@
-import { matchesCountry } from './country-match';
+import { matchesCountry, matchesName } from './country-match';
 
 describe('matchesCountry', () => {
   it.each([
@@ -17,3 +17,9 @@ describe('matchesCountry', () => {
     expect(matchesCountry('ZZ', 'usa')).toBe(false);
   });
 });
+
+describe('matchesName', () => {
+  it('finds a name written without its Polish letters', () => {
+    expect(matchesName('Angular Wrocław organizer', 'wroclaw')).toBe(true)
+  })
+})

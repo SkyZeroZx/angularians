@@ -124,6 +124,13 @@ describe('ContributorsData', () => {
       expect(page).toMatchObject({ total: 2, badges: ['angular-team', 'angular-gde'] })
     })
 
+    it('can ask for people who hold every one of the badges', () => {
+      const page = badged.leaderboard({ period: 'all', badges: ['angular-team', 'top-10-all-time'], match: 'all' })
+      expect(page.items.map(item => item.username)).toEqual(['lead'])
+      expect(page).toMatchObject({ total: 1, match: 'all' })
+      expect(badged.leaderboard({ period: 'all', badges: ['angular-team', 'angular-gde'], match: 'all' }).total).toBe(0)
+    })
+
     it('keeps the place in the country when both filters are on', () => {
       const page = badged.leaderboard({ period: 'all', country: 'TR', badges: ['angular-gde'] })
       expect(page.items.map(item => [item.username, item.countryRank])).toEqual([['expert', 3]])

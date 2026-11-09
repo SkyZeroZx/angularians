@@ -7,7 +7,7 @@
 export interface Translation {
   /** The language's name in that language. */
   language: string
-  /** Names its badge's colours, a `tone-lang-*` class of `badge-pill.css`. */
+  /** Names its badge's colours, a `tone-lang-*` class of `styles/badge-tones.css`. */
   code: string
   /** The country code of the flag its badge shows. */
   flag: string

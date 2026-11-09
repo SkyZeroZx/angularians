@@ -82,7 +82,7 @@ export default defineConfig(() => ({
           // country). Any other one (`?utm_source=`) shares the page's copy. A route reading a new parameter must add it here.
           // and per value of the signed-in hint cookie (app/src/app/auth/hint.ts), whose pages start with the signed-in
           // card's skeleton. Every other cookie is ignored by the cache.
-          '/**': { headers: { 'cache-control': 'public, max-age=0, s-maxage=86400, stale-while-revalidate=86400', 'netlify-cdn-cache-control': 'public, durable, s-maxage=86400, stale-while-revalidate=86400', 'netlify-vary': 'query=period|country|badges|page|q|flag|hide|names|v,cookie=angularians-signed-in' } },
+          '/**': { headers: { 'cache-control': 'public, max-age=0, s-maxage=86400, stale-while-revalidate=86400', 'netlify-cdn-cache-control': 'public, durable, s-maxage=86400, stale-while-revalidate=86400', 'netlify-vary': 'query=period|country|badges|match|page|q|flag|hide|names|v,cookie=angularians-signed-in' } },
           // Sign-in: per person, with cookies. Never in a shared cache.
           '/api/auth/**': { headers: { 'cache-control': 'private, no-store', 'netlify-cdn-cache-control': 'no-store' } },
           // Server functions are POSTs whose input is in the body, which no cache key sees: never cached.

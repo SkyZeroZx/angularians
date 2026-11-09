@@ -8,8 +8,8 @@ import { contributorsData } from '../../server/data/store'
  * Invalid input is rejected by the schema before the handler runs.
  */
 
-export const getLeaderboard = serverFn(LeaderboardInput, ({ period, country, badges, page }) =>
-  contributorsData().leaderboard({ period, country, badges, page }))
+export const getLeaderboard = serverFn(LeaderboardInput, ({ period, country, badges, match, page }) =>
+  contributorsData().leaderboard({ period, country, badges, match, page }))
 
 /** `null` when the username has no contribution: the page shows "not found". */
 export const getContributor = serverFn(ContributorInput, ({ username }) => contributorsData().profile(username))

@@ -10,7 +10,7 @@
         <ng-icon name="remixCloseLine" aria-hidden="true" />
       </button>
     </div>
-    <ul class="mt-4 grid grid-cols-6 gap-2" [attr.aria-busy]="(!people().length && !filtered()) || null" [attr.aria-label]="'Best ranked from ' + name(shown.code)">
+    <ul class="mt-4 grid grid-cols-6 gap-2" [attr.aria-busy]="(!people().length && boardCount() > 0) || null" [attr.aria-label]="'Best ranked from ' + name(shown.code)">
       @for (tile of tiles(); track $index) {
         <li class="aspect-square">
           @if (tile) {
@@ -23,10 +23,12 @@
         </li>
       }
     </ul>
-    <button hlmBtn variant="link" class="mt-3 px-0 text-muted-foreground hover:text-foreground" type="button" (click)="showBoard()">
-      <span>See the {{ countBefore(shown.count) }}<span class="brand text-primary">{{ angularians(shown.count) }}</span> from {{ name(shown.code) }}</span>
-      <ng-icon name="remixArrowUpLine" aria-hidden="true" />
-    </button>
+    @if (boardCount()) {
+      <button hlmBtn variant="link" class="mt-3 px-0 text-muted-foreground hover:text-foreground" type="button" (click)="showBoard()">
+        <span>See the {{ countBefore(boardCount()) }}<span class="brand text-primary">{{ angularians(boardCount()) }}</span> from {{ name(shown.code) }}</span>
+        <ng-icon name="remixArrowUpLine" aria-hidden="true" />
+      </button>
+    }
   </div>
 </ng-template>
 

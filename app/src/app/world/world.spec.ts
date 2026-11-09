@@ -43,6 +43,24 @@ describe('World', () => {
     expect(element.querySelector('ol')!.textContent).toContain('No country found');
   });
 
+  it('shows only the filtered people on the card, with nothing left loading', () => {
+    const fixture = render('US', [{ githubId: 1, username: 'a', rank: 3, score: 9 }]);
+    fixture.componentRef.setInput('filteredTotal', 1);
+    fixture.detectChanges();
+    const element: HTMLElement = fixture.nativeElement;
+    const list = element.querySelector('ul[aria-label^="Best ranked"]')!;
+    expect(list.querySelectorAll('li')).toHaveLength(1);
+    expect(list.querySelector('[hlmSkeleton]')).toBeNull();
+    expect(element.textContent).toContain('See the Angularian from');
+  });
+
+  it('offers no way to a board the filter left empty', () => {
+    const fixture = render('US');
+    fixture.componentRef.setInput('filteredTotal', 0);
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).textContent).not.toContain('See the');
+  });
+
   it('gives countries with the same count the same rank', () => {
     TestBed.configureTestingModule({ providers: [provideRouter([])] });
     const fixture = TestBed.createComponent(World);

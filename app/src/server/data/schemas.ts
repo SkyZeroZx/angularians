@@ -14,6 +14,7 @@ export const LeaderboardInput = v.object({
   period: v.optional(PeriodSchema, DEFAULT_PERIOD),
   country: v.optional(v.nullable(CountrySchema), null),
   badges: v.optional(v.pipe(v.array(v.pipe(v.string(), v.maxLength(MAX_BADGE_KEY_LENGTH))), v.maxLength(MAX_BADGE_KEYS)), []),
+  match: v.optional(v.picklist(['any', 'all']), 'any'),
   page: v.optional(v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(10_000)), 1),
 })
 export type LeaderboardInput = v.InferInput<typeof LeaderboardInput>

@@ -2,7 +2,7 @@ import { countrySearchNames } from '@angularians/shared'
 
 /** Whether a search matches a name, ignoring case and accents. */
 export function matchesName(name: string, search: string): boolean {
-  const plain = (text: string) => text.normalize('NFD').replace(/\p{M}/gu, '').trim().toLowerCase().replace(/ı/g, 'i')
+  const plain = (text: string) => text.normalize('NFD').replace(/\p{M}/gu, '').trim().toLowerCase().replace(/ı/g, 'i').replace(/ł/g, 'l')
   return plain(name).includes(plain(search))
 }
 

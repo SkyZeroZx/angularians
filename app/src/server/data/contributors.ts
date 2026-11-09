@@ -4,6 +4,7 @@
 import {
   sortPeriods,
   type BadgeFilter,
+  type BadgeMatch,
   type Contributor,
   type ContributorProfile,
   type ContributorsMap,
@@ -27,8 +28,9 @@ const TOP_PER_COUNTRY = 3
 export interface LeaderboardQuery {
   period: Period
   country?: string | null
-  /** Keep anyone with at least one of these badges. */
   badges?: readonly string[]
+  /** Keep anyone with at least one of the badges, or only those with all of them. */
+  match?: BadgeMatch
   /** 1-based */
   page?: number
   pageSize?: number
@@ -104,11 +106,11 @@ export class ContributorsData {
   }
 
   /** One page of a period, optionally of one country or some badges: `rank` stays the global one, `countryRank` is the place in the country. */
-  leaderboard({ period, country = null, badges = [], page = 1, pageSize = DEFAULT_PAGE_SIZE }: LeaderboardQuery): LeaderboardPage {
+  leaderboard({ period, country = null, badges = [], match = 'any', page = 1, pageSize = DEFAULT_PAGE_SIZE }: LeaderboardQuery): LeaderboardPage {
     const all = this.byPeriod.get(period) ?? []
     const inCountry = country ? all.filter(row => this.countryOf(row.githubId) === country) : all
     const holders = badges.map(key => this.indexedBadges().holders.get(key))
-    const rows = badges.length ? inCountry.filter(row => holders.some(people => people?.has(row.githubId))) : inCountry
+    const rows = badges.length ? inCountry.filter(row => holders[match === 'all' ? 'every' : 'some'](people => people?.has(row.githubId))) : inCountry
     const size = Math.min(Math.max(1, Math.floor(pageSize)), MAX_PAGE_SIZE)
     const start = (Math.max(1, Math.floor(page)) - 1) * size
     // Ties share a place, as they share a global rank.
@@ -119,6 +121,7 @@ export class ContributorsData {
       period,
       country,
       badges: [...badges],
+      match,
       periods: this.periods,
       total: rows.length,
       landedPullRequests: total(row => row.pullRequests.all),

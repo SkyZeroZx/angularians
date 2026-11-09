@@ -30,7 +30,7 @@
     <!-- Phones: one under the other, the search's placeholder does not fit in half the width -->
     <div class="grid gap-3 sm:flex">
       <app-country-select [countries]="mapValue()?.countries ?? []" [value]="country()" (valueChange)="setCountry($event)" />
-      <app-badge-select [filters]="mapValue()?.badges ?? []" [value]="badges()" (valueChange)="setBadges($event)" />
+      <app-badge-select [filters]="mapValue()?.badges ?? []" [value]="badges()" [match]="match()" (valueChange)="setBadges($event)" (matchChange)="setMatch($event)" />
       <app-contributor-search [period]="period()" [country]="country()" />
     </div>
   </div>
@@ -74,7 +74,7 @@
         [map]="world"
         [selected]="country()"
         [people]="countryPeople()"
-        [filtered]="badges().length > 0"
+        [filteredTotal]="countryFilteredTotal()"
         (select)="pickInWorld($event)"
         (leaderboard)="showLeaderboard()"
       />

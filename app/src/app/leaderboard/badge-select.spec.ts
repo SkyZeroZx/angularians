@@ -36,6 +36,48 @@ describe('BadgeSelect', () => {
     expect(select.groupMatches(items, 'zzz')).toBe(false)
   })
 
+  describe('picking', () => {
+    const select = (value: string[]) => {
+      const fixture = TestBed.createComponent(BadgeSelect)
+      fixture.componentRef.setInput('filters', [{ ...filter('gde', 2), label: 'Angular GDE' }, filter('star', 1)])
+      fixture.componentRef.setInput('value', value)
+      const emitted: string[][] = []
+      const matched: string[] = []
+      fixture.componentInstance.valueChange.subscribe(keys => emitted.push(keys))
+      fixture.componentInstance.matchChange.subscribe(match => matched.push(match))
+      return { emitted, matched, parts: fixture.componentInstance as unknown as { summary(): string, canMatch(): boolean, pickBadges(keys: string[]): void, pickMatch(match: 'any' | 'all'): void, clear(): void } }
+    }
+
+    it('sums up what is picked', () => {
+      expect(select([]).parts.summary()).toBe('All badges')
+      expect(select(['gde']).parts.summary()).toBe('Angular GDE')
+      expect(select(['gde', 'star']).parts.summary()).toBe('2 badges')
+    })
+
+    it('offers any or all only with two badges or more', () => {
+      expect(select(['gde']).parts.canMatch()).toBe(false)
+      expect(select(['gde', 'star']).parts.canMatch()).toBe(true)
+    })
+
+    it('tells only of real changes, sorted', () => {
+      const { emitted, parts } = select(['gde'])
+      parts.pickBadges(['gde'])
+      expect(emitted).toEqual([])
+      parts.pickBadges(['star', 'gde'])
+      expect(emitted).toEqual([['gde', 'star']])
+      parts.clear()
+      expect(emitted[1]).toEqual([])
+    })
+
+    it('tells of a new match only', () => {
+      const { matched, parts } = select(['gde', 'star'])
+      parts.pickMatch('any')
+      expect(matched).toEqual([])
+      parts.pickMatch('all')
+      expect(matched).toEqual(['all'])
+    })
+  })
+
   it('keeps a picked badge so it can be unticked', () => {
     expect(groups(['picked'])[0]!.filters.map(item => item.key)).toEqual(['held', 'picked'])
   })

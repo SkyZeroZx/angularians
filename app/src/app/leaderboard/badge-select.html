@@ -15,6 +15,16 @@
         <input brnComboboxInput hlmInputGroupInput aria-label="Search a badge" placeholder="Search a badge" />
         <hlm-input-group-addon><ng-icon name="remixSearchLine" aria-hidden="true" /></hlm-input-group-addon>
       </div>
+      @if (canMatch()) {
+        <div role="group" aria-label="People must have" class="m-1 grid shrink-0 grid-cols-2 gap-1">
+          @for (choice of matchChoices(); track choice.value) {
+            <button hlmBtn type="button" size="sm" [variant]="choice.active ? 'secondary' : 'ghost'" [attr.aria-label]="choice.name" [title]="choice.name" [attr.aria-pressed]="choice.active" (click)="pickMatch(choice.value)">
+              @if (choice.active) { <ng-icon name="remixCheckLine" aria-hidden="true" /> }
+              {{ choice.label }}
+            </button>
+          }
+        </div>
+      }
       <p hlmComboboxEmpty>No badge found</p>
       <div hlmComboboxList aria-label="Badges">
         @for (group of groups(); track group.name) {

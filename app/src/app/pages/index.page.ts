@@ -5,7 +5,7 @@ import { Meta, Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { type RouteMeta } from '@analogjs/router';
 import { injectResponse } from '@analogjs/router/tokens';
-import { countryCode, countryName, DEFAULT_PERIOD, HELPFUL_COMMENT_REACTIONS, HELPFUL_ISSUE_COMMENTS, HELPFUL_ISSUE_REACTIONS, periodOrNull, periodPhrase, type LeaderboardPage, type Period } from '@angularians/shared';
+import { countryCode, countryName, DEFAULT_PERIOD, HELPFUL_COMMENT_REACTIONS, HELPFUL_ISSUE_COMMENTS, HELPFUL_ISSUE_REACTIONS, periodOrNull, periodPhrase, type BadgeMatch, type LeaderboardPage, type Period } from '@angularians/shared';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { remixArrowRightUpLine, remixCalendarLine, remixChatHeartLine, remixGroupLine } from '@ng-icons/remixicon';
 import { octComment, octGitMerge, octIssueOpened } from '@ng-icons/octicons';
@@ -69,13 +69,15 @@ export default class Home {
   private readonly meta = inject(Meta);
   private readonly document = inject(DOCUMENT);
 
-  /** `?period=`, `?country=` and `?badges=` are the state: shareable, and kept on reload. Unknown values fall back. */
+  /** `?period=`, `?country=`, `?badges=` and `?match=` are the state: shareable, and kept on reload. Unknown values fall back. */
   private readonly requestedPeriod = injectQueryParams(params => periodOrNull(params['period']));
   protected readonly country = injectQueryParams(params => countryCode(params['country']));
   protected readonly badges = injectQueryParams(params => parseBadgeKeys(params['badges']));
+  protected readonly match = injectQueryParams((params): BadgeMatch => (params['match'] === 'all' ? 'all' : 'any'));
+  protected readonly filtering = computed(() => this.badges().length > 0);
   protected readonly period = computed(() => this.requestedPeriod() ?? DEFAULT_PERIOD);
 
-  protected readonly leaderboard = injectSeededServerFn(getLeaderboard, () => ({ period: this.period(), country: this.country(), badges: this.badges(), page: 1 }));
+  protected readonly leaderboard = injectSeededServerFn(getLeaderboard, () => ({ period: this.period(), country: this.country(), badges: this.badges(), match: this.match(), page: 1 }));
   /** Countries of the same period, for the filter and the globe. */
   protected readonly map = injectSeededServerFn(getContributorsMap, () => ({ period: this.period() }));
   private readonly boardValue = loadedValue(this.leaderboard);
@@ -100,6 +102,11 @@ export default class Home {
   protected readonly countryPeople = computed(() => {
     const page = this.board();
     return page && page.country === this.country() ? page.items : [];
+  });
+  /** How many of the country the badges leave, once the board is that country's. */
+  protected readonly countryFilteredTotal = computed(() => {
+    const page = this.board();
+    return this.filtering() && page?.country === this.country() ? page?.total ?? null : null;
   });
   protected readonly errorMessage = computed(() => {
     if (!this.leaderboard.error()) return 'The countries could not be loaded.';
@@ -168,12 +175,22 @@ export default class Home {
 
   protected setBadges(badges: string[]): void {
     this.keepWorldAt = null;
-    void this.router.navigate([], { queryParams: { badges: badges.length ? badges.join(',') : null }, queryParamsHandling: 'merge', replaceUrl: true });
+    void this.router.navigate([], { queryParams: { badges: badges.length ? badges.join(',') : null, match: badges.length > 1 ? this.matchParam(this.match()) : null }, queryParamsHandling: 'merge', replaceUrl: true });
+  }
+
+  protected setMatch(match: BadgeMatch): void {
+    this.keepWorldAt = null;
+    void this.router.navigate([], { queryParams: { match: this.matchParam(match) }, queryParamsHandling: 'merge', replaceUrl: true });
   }
 
   /** The visitor scrolled while the board loads: their scroll wins. */
   protected forgetWorldPlace(): void {
     this.keepWorldAt = null;
+  }
+
+  /** "Any" is the default: it leaves the URL clean. */
+  private matchParam(match: BadgeMatch): string | null {
+    return match === 'all' ? match : null;
   }
 
   /** Once the board of a country picked on the globe renders, the globe is back where it was on screen. */
@@ -189,13 +206,13 @@ export default class Home {
   /** The title, the link preview and the structured data of the board on screen. */
   private updateHead(page: LeaderboardPage | undefined): void {
     if ((this.leaderboard.error() || this.map.error()) && this.response) markFailed(this.response);
-    const shared = this.requestedPeriod() && page?.total ? page.period : null;
-    const country = this.country() && page?.total ? this.country() : null;
+    const shared = !this.filtering() && this.requestedPeriod() && page?.total ? page.period : null;
+    const country = !this.filtering() && this.country() && page?.total ? this.country() : null;
     const { title, description } = boardHead(page, shared, country);
     this.title.setTitle(title);
     // The site's card, or the card of the shared period. The canonical URL has no `?period=`; a country keeps its own.
     const query = shared ? `?period=${shared}` : '';
-    const canonicalCountry = this.badges().length ? this.country() : country;
+    const canonicalCountry = this.filtering() ? this.country() : country;
     const canonical = canonicalCountry ? `/?country=${canonicalCountry}` : '/';
     setShareMeta(this.meta, this.document, { title, description, url: `${SITE_URL}/${query}`, image: `${SITE_URL}/og.png${query}`, canonical });
     setJsonLd(this.document, boardJsonLd(country));

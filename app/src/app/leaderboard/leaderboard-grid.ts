@@ -116,7 +116,7 @@ export class LeaderboardGrid {
     this.loading.set(true)
     this.failed.set(false)
     try {
-      const page = await this.fetchPage({ period: first.period, country: first.country, badges: first.badges, page: next })
+      const page = await this.fetchPage({ period: first.period, country: first.country, badges: first.badges, match: first.match, page: next })
       if (first === this.page()) reveal([...this.shown().more, ...page.items])
     }
     catch {
