@@ -30,4 +30,4 @@ export interface LaunchPost {
 }
 
 /** The launch post; `null` hides the home page's callout until the post is out. */
-export const LAUNCH_POST: LaunchPost | null = null
+export const LAUNCH_POST: LaunchPost | null = { title: 'The gates of ng-halla are open', href: 'https://github.com/erkamyaman/angularians/discussions/90' }
