@@ -87,6 +87,9 @@ export const PROJECT_BADGES: readonly ProjectBadge[] = [
   { name: 'Angular videos on YouTube', badge: 'Angular skald', officialBadge: 'Angular YouTuber', tone: 'angular-youtuber', href: 'https://www.youtube.com/@RainerHahnekamp', logo: '/credits/youtube-logo.svg', does: 'Angular explained in videos', people: [
     { githubId: 5721205, username: 'rainerhahnekamp', name: 'Rainer Hahnekamp', role: 'creator' },
   ] },
+  { name: 'Decoded Frontend', badge: 'Angular skald', officialBadge: 'Angular YouTuber', tone: 'angular-youtuber', href: 'https://www.youtube.com/@DecodedFrontend', logo: '/credits/youtube-logo.svg', does: 'Angular explained in videos', people: [
+    { githubId: 8568104, username: 'DMezhenskyi', name: 'Dmytro Mezhenskyi', role: 'creator' },
+  ] },
   { name: 'ng-news', badge: 'ng-news skald', officialBadge: 'ng-news host', tone: 'ng-news', href: 'https://www.youtube.com/@ng-news', logo: '/credits/ng-news.png', does: 'A weekly video update for the Angular community', people: [
     { githubId: 5721205, username: 'rainerhahnekamp', name: 'Rainer Hahnekamp', role: 'maintainer' },
   ] },
