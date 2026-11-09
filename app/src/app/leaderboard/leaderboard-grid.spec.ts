@@ -7,7 +7,7 @@ describe('LeaderboardGrid', () => {
     TestBed.configureTestingModule({ providers: [provideRouter([])] });
     const fixture = TestBed.createComponent(LeaderboardGrid);
     fixture.componentRef.setInput('page', {
-      period: 'all', country: null, periods: ['all'], total: 3, landedPullRequests: 0, issues: 0, comments: 0, reviewComments: 0, collectedAt: null,
+      period: 'all', country: null, badges: [], periods: ['all'], total: 3, landedPullRequests: 0, issues: 0, comments: 0, reviewComments: 0, collectedAt: null,
       items: [
         { githubId: 1, username: 'mhevery', name: 'Miško Hevery', rank: 1, score: 9761 },
         { githubId: 2, username: 'crisbeto', name: 'CRISBETO', rank: 2, score: 5 },

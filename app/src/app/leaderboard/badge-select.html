@@ -1,0 +1,41 @@
+@if (filters().length) {
+  <div brnCombobox brnPopover #combobox="brnComboboxMultiple" class="relative block w-full sm:w-52" [value]="value()" (valueChange)="pickBadges($any($event))" [itemToString]="label" [filter]="matches" [closeOnSelect]="false" autoHighlight>
+    <button #trigger type="button" hlmComboboxTrigger role="combobox" aria-label="Filter by badge" aria-haspopup="dialog" [attr.aria-expanded]="combobox.isExpanded()" (keydown.arrowdown)="openList($event)" (keydown.arrowup)="openList($event)" class="w-full sm:w-52">
+      <ng-icon name="remixAwardLine" class="shrink-0 text-muted-foreground" aria-hidden="true" />
+      <span class="flex-1 truncate text-start" [class.pe-6]="value().length"><app-brand-text [text]="summary()" /></span>
+      <ng-icon name="remixArrowDownSLine" class="text-muted-foreground text-[length:--spacing(4)]" aria-hidden="true" />
+    </button>
+    @if (value().length) {
+      <button type="button" aria-label="Clear badges" class="absolute end-8 top-1/2 grid size-6 -translate-y-1/2 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none" (click)="clear()">
+        <ng-icon name="remixCloseLine" aria-hidden="true" />
+      </button>
+    }
+    <div *brnPopoverContent hlmComboboxContent class="min-w-60">
+      <div hlmInputGroup class="m-1 w-auto shrink-0">
+        <input brnComboboxInput hlmInputGroupInput aria-label="Search a badge" placeholder="Search a badge" />
+        <hlm-input-group-addon><ng-icon name="remixSearchLine" aria-hidden="true" /></hlm-input-group-addon>
+      </div>
+      <p hlmComboboxEmpty>No badge found</p>
+      <div hlmComboboxList aria-label="Badges">
+        @for (group of groups(); track group.name) {
+          <div brnComboboxGroup [hidden]="!groupMatches(group.filters, combobox.search())">
+            <p brnComboboxLabel class="px-2 py-1.5 text-xs text-muted-foreground">{{ group.name }}</p>
+            @for (filter of group.filters; track filter.key) {
+              <div hlmComboboxItem [value]="filter.key">
+                @switch (filter.icon) {
+                  @case ('angular') { <app-angular-logo class="size-4 shrink-0" /> }
+                  @case ('gde') { <img [src]="filter.logo" alt="" width="136" height="77" class="h-[0.8em] w-4 shrink-0 object-contain" /> }
+                  @case ('logo') { <img [src]="filter.logo" alt="" width="16" height="16" loading="lazy" class="size-4 shrink-0 object-contain" /> }
+                  @default { <ng-icon [name]="filter.icon" size="1rem" class="shrink-0 text-(color:--pill-text)" [class]="'tone-' + filter.tone" aria-hidden="true" /> }
+                }
+                <span class="flex-1 truncate"><app-brand-text [text]="filter.label" /></span>
+                <span class="text-xs text-muted-foreground tabular-nums">{{ number(filter.count) }}</span>
+                @if (value().includes(filter.key)) { <ng-icon name="remixCheckLine" class="absolute end-2 text-[length:--spacing(4)]" aria-hidden="true" /> }
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}

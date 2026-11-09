@@ -1,12 +1,13 @@
 import { Component, computed, input, model, output } from '@angular/core'
 import { HlmButton } from '@spartan-ng/helm/button'
 import { HlmSelectImports } from '@spartan-ng/helm/select'
+import { BrandText } from '../layout/brand-text'
 import { badgeKey, cardBadgeLabel, shownBadges, type BadgeNameStyle } from './card-badges'
 import type { EarnedBadge } from './earned-badges'
 
 @Component({
   selector: 'app-card-badge-options',
-  imports: [HlmButton, HlmSelectImports],
+  imports: [BrandText, HlmButton, HlmSelectImports],
   templateUrl: './card-badge-options.html',
 })
 export class CardBadgeOptions {

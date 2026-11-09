@@ -5,8 +5,8 @@ import type { BadgeTone } from '../../app/profile/badge-pill'
 import { PROJECT_BADGES } from '../../app/profile/project-badges'
 import { TAG_COLORS, tagColors } from './tag-colors'
 
-const css = readFileSync('src/app/profile/badge-pill.css', 'utf8')
-const darkRules = [...css.matchAll(/:host-context\(\.dark\) \.tone-([\w-]+) \{\s*--pill-text: (#[0-9A-Fa-f]{6});/g)]
+const css = readFileSync('src/styles/badge-tones.css', 'utf8')
+const darkRules = [...css.matchAll(/\.dark \.tone-([\w-]+) \{\s*--pill-text: (#[0-9A-Fa-f]{6});/g)]
 
 describe('TAG_COLORS', () => {
   it('has the dark text of every badge tone that sets one', () => {

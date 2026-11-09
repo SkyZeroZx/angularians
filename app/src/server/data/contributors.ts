@@ -3,6 +3,7 @@
 // bundle instead of a database.
 import {
   sortPeriods,
+  type BadgeFilter,
   type Contributor,
   type ContributorProfile,
   type ContributorsMap,
@@ -13,6 +14,8 @@ import {
   type Period,
   type ProfileRecord,
 } from '@angularians/shared'
+import { indexBadges, type BadgeIndex } from '../../app/profile/badge-filters'
+import { earnedBadges } from '../../app/profile/earned-badges'
 import type { DataBundle } from './bundle'
 
 /** 10 rows of the 10-column avatar grid. */
@@ -24,6 +27,8 @@ const TOP_PER_COUNTRY = 3
 export interface LeaderboardQuery {
   period: Period
   country?: string | null
+  /** Keep anyone with at least one of these badges. */
+  badges?: readonly string[]
   /** 1-based */
   page?: number
   pageSize?: number
@@ -44,6 +49,7 @@ export class ContributorsData {
   private readonly usernames: Map<number, string>
   /** Old username, lowercased → GitHub id. */
   private readonly renames: Map<string, number>
+  private badgeIndex?: BadgeIndex
 
   constructor(bundle: DataBundle) {
     this.byPeriod = new Map(Object.entries(bundle.periods))
@@ -97,28 +103,31 @@ export class ContributorsData {
     return this.profiles.get(githubId)?.country ?? null
   }
 
-  /** One page of a period, optionally of one country: `rank` stays the global one, `countryRank` is the place in it. */
-  leaderboard({ period, country = null, page = 1, pageSize = DEFAULT_PAGE_SIZE }: LeaderboardQuery): LeaderboardPage {
+  /** One page of a period, optionally of one country or some badges: `rank` stays the global one, `countryRank` is the place in the country. */
+  leaderboard({ period, country = null, badges = [], page = 1, pageSize = DEFAULT_PAGE_SIZE }: LeaderboardQuery): LeaderboardPage {
     const all = this.byPeriod.get(period) ?? []
-    const rows = country ? all.filter(row => this.countryOf(row.githubId) === country) : all
+    const inCountry = country ? all.filter(row => this.countryOf(row.githubId) === country) : all
+    const holders = badges.map(key => this.indexedBadges().holders.get(key))
+    const rows = badges.length ? inCountry.filter(row => holders.some(people => people?.has(row.githubId))) : inCountry
     const size = Math.min(Math.max(1, Math.floor(pageSize)), MAX_PAGE_SIZE)
     const start = (Math.max(1, Math.floor(page)) - 1) * size
     // Ties share a place, as they share a global rank.
-    const places: number[] = []
-    rows.forEach((row, index) => places.push(index && rows[index - 1].rank === row.rank ? places[index - 1] : index + 1))
+    const places = new Map<number, number>()
+    inCountry.forEach((row, index) => places.set(row.githubId, index && inCountry[index - 1].rank === row.rank ? places.get(inCountry[index - 1].githubId)! : index + 1))
     const total = (count: (row: Contributor) => number) => rows.reduce((sum, row) => sum + count(row), 0)
     return {
       period,
       country,
+      badges: [...badges],
       periods: this.periods,
       total: rows.length,
       landedPullRequests: total(row => row.pullRequests.all),
       issues: total(row => row.issues),
       comments: total(row => row.comments),
       reviewComments: total(row => row.reviewComments),
-      items: rows.slice(start, start + size).map((row, index) => {
+      items: rows.slice(start, start + size).map((row) => {
         const item = this.namedSummary(row)
-        return country ? { ...item, countryRank: places[start + index] } : item
+        return country ? { ...item, countryRank: places.get(row.githubId) } : item
       }),
       collectedAt: this.collectedAt,
     }
@@ -193,7 +202,19 @@ export class ContributorsData {
       total: rows.length,
       located,
       countries: [...countries.values()].sort((a, b) => b.count - a.count || a.code.localeCompare(b.code)),
+      badges: this.badgeFilters(rows),
     }
+  }
+
+  private badgeFilters(rows: readonly Contributor[]): BadgeFilter[] {
+    const { filters, holders } = this.indexedBadges()
+    const inPeriod = new Set(rows.map(row => row.githubId))
+    return filters.map(filter => ({ ...filter, count: [...holders.get(filter.key)!].filter(id => inPeriod.has(id)).length }))
+  }
+
+  /** Worked out from the all-time rows the first time it is needed, then kept. */
+  private indexedBadges(): BadgeIndex {
+    return this.badgeIndex ??= indexBadges((this.byPeriod.get('all') ?? []).map(row => ({ githubId: row.githubId, badges: earnedBadges(this.profile(row.username)!) })))
   }
 }
 

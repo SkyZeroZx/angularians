@@ -120,7 +120,7 @@ export class HammerStrike {
 function angularian(target: EventTarget | null): Element | null {
   const element = target as Element | null
   const word = element?.closest?.('.brand')
-  if (!word || word.closest('a, button, hlm-dialog-content')) return null
+  if (!word || word.closest('a, button, .cdk-overlay-container')) return null
   return [element!, word].find(candidate => /^(angularians?|ng-halla)$/i.test(candidate.textContent?.trim() ?? '')) ?? null
 }
 

@@ -1,13 +1,14 @@
-const MAX_KEYS = 30
-const MAX_KEY_LENGTH = 60
+export const MAX_BADGE_KEYS = 30
+export const MAX_BADGE_KEY_LENGTH = 60
+export const NUMBER_ONE_KEY = 'number-one'
 
 export const badgeKey = (label: string): string =>
-  label.startsWith('#1 in ') ? 'number-one' : label.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-|-$/g, '')
+  label.startsWith('#1 in ') ? NUMBER_ONE_KEY : label.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-|-$/g, '')
 
-export function hiddenBadgeKeys(value: unknown): string[] {
+export function parseBadgeKeys(value: unknown): string[] {
   if (typeof value !== 'string') return []
-  const keys = value.split(',').filter(key => key && key.length <= MAX_KEY_LENGTH)
-  return [...new Set(keys)].sort().slice(0, MAX_KEYS)
+  const keys = value.split(',').filter(key => key && key.length <= MAX_BADGE_KEY_LENGTH)
+  return [...new Set(keys)].sort().slice(0, MAX_BADGE_KEYS)
 }
 
 export function shownBadges<T extends { label: string }>(badges: readonly T[], hidden: readonly string[]): T[] {
@@ -26,7 +27,7 @@ export interface BadgeOptions {
   names: BadgeNameStyle
 }
 
-export const parseBadgeOptions = (hide: unknown, names: unknown): BadgeOptions => ({ hidden: hiddenBadgeKeys(hide), names: parseBadgeNames(names) })
+export const parseBadgeOptions = (hide: unknown, names: unknown): BadgeOptions => ({ hidden: parseBadgeKeys(hide), names: parseBadgeNames(names) })
 
 export function badgeQuery({ hidden, names }: BadgeOptions): Record<string, string> {
   return {

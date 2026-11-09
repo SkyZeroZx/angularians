@@ -34,7 +34,9 @@ import { boardHead } from '../leaderboard/board-head';
 import { boardJsonLd } from '../leaderboard/board-json-ld';
 import { boardTotals } from '../leaderboard/board-totals';
 import { formatNumber } from '../text/number-format';
+import { BadgeSelect } from '../leaderboard/badge-select';
 import { ClaimBadge } from '../leaderboard/claim-badge';
+import { parseBadgeKeys } from '../profile/card-badges';
 import { EarnBadges } from '../leaderboard/earn-badges';
 import { JoinLinks } from '../leaderboard/join-links';
 import { LaunchPostCallout } from '../leaderboard/launch-post-callout';
@@ -53,7 +55,7 @@ export const routeMeta = {
   selector: 'app-home',
   imports: [
     LaunchPostCallout,
-    ClaimBadge, EarnBadges, JoinLinks,
+    BadgeSelect, ClaimBadge, EarnBadges, JoinLinks,
     AngularLogo, ContributorSearch, CountrySelect, HlmButton, HlmCardImports, HlmSkeleton, LeaderboardGrid, LogoMark, MeCard, NextUpdate, NgIcon, ScoreRules,
     PageGrid, PageHero, PageSection, PeriodTabs, World,
   ],
@@ -67,12 +69,13 @@ export default class Home {
   private readonly meta = inject(Meta);
   private readonly document = inject(DOCUMENT);
 
-  /** `?period=` and `?country=` are the state: shareable, and kept on reload. Unknown values fall back. */
+  /** `?period=`, `?country=` and `?badges=` are the state: shareable, and kept on reload. Unknown values fall back. */
   private readonly requestedPeriod = injectQueryParams(params => periodOrNull(params['period']));
   protected readonly country = injectQueryParams(params => countryCode(params['country']));
+  protected readonly badges = injectQueryParams(params => parseBadgeKeys(params['badges']));
   protected readonly period = computed(() => this.requestedPeriod() ?? DEFAULT_PERIOD);
 
-  protected readonly leaderboard = injectSeededServerFn(getLeaderboard, () => ({ period: this.period(), country: this.country(), page: 1 }));
+  protected readonly leaderboard = injectSeededServerFn(getLeaderboard, () => ({ period: this.period(), country: this.country(), badges: this.badges(), page: 1 }));
   /** Countries of the same period, for the filter and the globe. */
   protected readonly map = injectSeededServerFn(getContributorsMap, () => ({ period: this.period() }));
   private readonly boardValue = loadedValue(this.leaderboard);
@@ -133,7 +136,7 @@ export default class Home {
 
   /** An empty board: "No contributions in 2015 from France yet." */
   protected emptyBoardText(page: LeaderboardPage): string {
-    return `No contributions ${periodPhrase(page.period)}${page.country ? ` from ${countryName(page.country)}` : ''} yet.`;
+    return `No contributions ${periodPhrase(page.period)}${page.country ? ` from ${countryName(page.country)}` : ''}${page.badges.length ? ` with ${page.badges.length === 1 ? 'that badge' : 'those badges'}` : ''} yet.`;
   }
 
   protected worldDescription(countries: number): string {
@@ -163,6 +166,11 @@ export default class Home {
     void this.router.navigate([], { queryParams: { country }, queryParamsHandling: 'merge', replaceUrl: true });
   }
 
+  protected setBadges(badges: string[]): void {
+    this.keepWorldAt = null;
+    void this.router.navigate([], { queryParams: { badges: badges.length ? badges.join(',') : null }, queryParamsHandling: 'merge', replaceUrl: true });
+  }
+
   /** The visitor scrolled while the board loads: their scroll wins. */
   protected forgetWorldPlace(): void {
     this.keepWorldAt = null;
@@ -187,7 +195,8 @@ export default class Home {
     this.title.setTitle(title);
     // The site's card, or the card of the shared period. The canonical URL has no `?period=`; a country keeps its own.
     const query = shared ? `?period=${shared}` : '';
-    const canonical = country ? `/?country=${country}` : '/';
+    const canonicalCountry = this.badges().length ? this.country() : country;
+    const canonical = canonicalCountry ? `/?country=${canonicalCountry}` : '/';
     setShareMeta(this.meta, this.document, { title, description, url: `${SITE_URL}/${query}`, image: `${SITE_URL}/og.png${query}`, canonical });
     setJsonLd(this.document, boardJsonLd(country));
   }

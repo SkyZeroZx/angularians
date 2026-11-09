@@ -8,6 +8,7 @@
 @import "@fontsource-variable/manrope";
 /* Classes shared by several components */
 @import "./styles/github-colors.css";
+@import "./styles/badge-tones.css";
 @import "./styles/podium.css";
 @import "./styles/guide.css";
 @import "./styles/stack.css";
@@ -99,7 +100,7 @@
   --medal-bronze: #B5561C;
   --medal-bronze-text: #9A4510;
 
-  /* The Shieldwall badge, for Angular's security advisories (badge-pill.css): GitHub's red, softer on dark. */
+  /* The Shieldwall badge, for Angular's security advisories (styles/badge-tones.css): GitHub's red, softer on dark. */
   --shieldwall: var(--github-red);
 
   /*
@@ -231,7 +232,9 @@
   cursor: url(/cursors/hammer.png) 3 3, auto;
 }
 
-hlm-dialog-content .brand,
+a .brand,
+button .brand,
+.cdk-overlay-container .brand,
 html.angie-off .brand {
   cursor: inherit;
 }

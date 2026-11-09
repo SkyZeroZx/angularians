@@ -3,8 +3,8 @@ import { ContributorInput, LeaderboardInput, MapInput, queryNumber, SearchInput 
 
 describe('schemas', () => {
   it('defaults the leaderboard to the last 12 months, page 1, everyone', () => {
-    expect(v.parse(LeaderboardInput, {})).toEqual({ period: '12m', country: null, page: 1 })
-    expect(v.parse(LeaderboardInput, { period: '2016', country: 'tr', page: 3 })).toEqual({ period: '2016', country: 'TR', page: 3 })
+    expect(v.parse(LeaderboardInput, {})).toEqual({ period: '12m', country: null, badges: [], page: 1 })
+    expect(v.parse(LeaderboardInput, { period: '2016', country: 'tr', page: 3 })).toEqual({ period: '2016', country: 'TR', badges: [], page: 3 })
   })
 
   it('rejects unknown periods, countries, pages and usernames', () => {

@@ -101,12 +101,58 @@ describe('ContributorsData', () => {
   })
 
   it('counts contributors by country with the best ranked first', () => {
-    expect(data.map('all')).toEqual({
+    expect(data.map('all')).toMatchObject({
       period: 'all',
       total: 5,
       located: 3,
       countries: [{ code: 'TR', count: 2, top: ['Cristina', 'bob'] }, { code: 'BG', count: 1, top: ['crisbeto'] }],
     })
-    expect(data.map('30d')).toEqual({ period: '30d', total: 0, located: 0, countries: [] })
+    expect(data.map('30d')).toMatchObject({ period: '30d', total: 0, located: 0, countries: [] })
+  })
+
+  describe('badges', () => {
+    const GDE = 44946000
+    const badged = new ContributorsData({
+      ...bundle,
+      periods: { 'all': [row(1, 'lead', 1, 50), row(2, 'plain', 2, 40), row(GDE, 'expert', 3, 30)], '12m': [row(GDE, 'expert', 1, 9)], '30d': [], '2015': [row(2, 'plain', 1, 1)] },
+      profiles: [1, 2, GDE].map(githubId => ({ githubId, username: `user${githubId}`, name: null, website: null, socialAccounts: [], country: 'TR' })),
+    })
+
+    it('shows anyone with at least one of the badges and keeps their ranks', () => {
+      const page = badged.leaderboard({ period: 'all', badges: ['angular-team', 'angular-gde'] })
+      expect(page.items.map(item => [item.username, item.rank])).toEqual([['lead', 1], ['expert', 3]])
+      expect(page).toMatchObject({ total: 2, badges: ['angular-team', 'angular-gde'] })
+    })
+
+    it('keeps the place in the country when both filters are on', () => {
+      const page = badged.leaderboard({ period: 'all', country: 'TR', badges: ['angular-gde'] })
+      expect(page.items.map(item => [item.username, item.countryRank])).toEqual([['expert', 3]])
+    })
+
+    it('counts a badge in every period, for whoever is in that period', () => {
+      expect(badged.leaderboard({ period: '12m', badges: ['angular-team', 'angular-gde'] }).items.map(item => item.username)).toEqual(['expert'])
+    })
+
+    it('counts only the holders who are in the period', () => {
+      const count = (period: '12m' | '30d', key: string) => badged.map(period).badges.find(filter => filter.key === key)?.count
+      expect(count('12m', 'angular-gde')).toBe(1)
+      expect(count('12m', 'number-one')).toBe(0)
+      expect(count('30d', 'angular-gde')).toBe(0)
+    })
+
+    it('finds nobody for a badge nobody holds', () => {
+      expect(badged.leaderboard({ period: 'all', badges: ['no-such-badge'] })).toMatchObject({ total: 0, items: [] })
+    })
+
+    it('leaves the board whole without badges', () => {
+      expect(badged.leaderboard({ period: 'all' })).toMatchObject({ total: 3, badges: [] })
+    })
+
+    it('offers the badges people hold, by label, with how many hold them', () => {
+      const filters = badged.map('all').badges
+      expect(filters.find(filter => filter.key === 'angular-gde')).toMatchObject({ label: 'Angular GDE', group: 'Recognitions', count: 1 })
+      expect(filters.find(filter => filter.key === 'number-one')).toMatchObject({ label: '#1 of a year', count: 1 })
+      expect(filters.map(filter => filter.label)).toEqual(filters.map(filter => filter.label).sort((a, b) => a.localeCompare(b)))
+    })
   })
 })

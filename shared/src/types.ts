@@ -123,6 +123,8 @@ export interface LeaderboardPage {
   period: Period
   /** The ISO country code the leaderboard is filtered on, `null` for everyone. */
   country: string | null
+  /** The badges it is filtered on: anyone with at least one. Empty for everyone. */
+  badges: string[]
   /** The periods with data, in display order: rolling windows, all time, then years (newest first). */
   periods: Period[]
   /** Contributors in the period (and country). */
@@ -155,6 +157,21 @@ export interface ContributorsMap {
   /** The ones with a recognized country on their GitHub profile. */
   located: number
   countries: CountryStats[]
+  /** Every badge someone on the board holds, by label, for the filter. */
+  badges: BadgeFilter[]
+}
+
+/** A badge the board can be filtered on. `icon` and `logo` are the badge's own; `count`: the people in the period who hold it. */
+export interface BadgeFilter {
+  key: string
+  label: string
+  /** The project's real name and role, for a badge with a fun name: the search finds it by this too. */
+  official?: string
+  group: string
+  icon: string
+  tone: string
+  logo?: string
+  count: number
 }
 
 /** What the site reads of `meta.json`. */

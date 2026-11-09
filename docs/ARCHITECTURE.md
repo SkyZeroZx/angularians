@@ -83,7 +83,7 @@ that are not variables are the fixed hex listed below.
 | Angular | `--angular-pink`, `--angular-purple` (utilities `*-angular-pink`, `*-angular-purple`) | the team badge, the Angular guide |
 | GitHub | `--github-purple`, `-red`, `-blue`, `-gold`, `-green`, `-pink`, `-orange`; `--github-*-on-light`, GitHub's light-theme value in both themes; `--github-gold-text`, `--github-green-text`, a shade darker on light for text on a tint | the kinds of contribution, with the `github-*` classes of `styles/github-colors.css`; the profile's stat tints; the gold and green badges |
 | Medals | `--medal-gold`, `--medal-silver`, `--medal-bronze` and their `-text` | the top three, through the classes of `styles/podium.css` (which set `--podium-ring` and `--podium-text`) |
-| Badges | `--shieldwall` | the Shieldwall badge, for Angular's security advisories (`badge-pill.css`) |
+| Badges | `--shieldwall` | the Shieldwall badge, for Angular's security advisories (`styles/badge-tones.css`) |
 | Projects | `--idea-library`, `--idea-tool`, `--idea-meetup`, `--idea-teaching` | the kinds of project in "Forged something for Angular?" |
 | The globe | `--globe-base`, `--globe-glow` (and `--primary` for its land) | the world globe's WebGL colours, read by `world/globe.ts` |
 | GitHub's graph | `--graph-green-0` to `--graph-green-4`: GitHub's own contribution greens, another project's colours | the contribution graph in green, when a visitor picks it |
@@ -102,7 +102,7 @@ does not set; `@theme inline` in `styles.css` unmaps them, so `bg-sidebar` makes
 
 Fixed hex stays only where no theme applies, in four cases (AGENTS.md lists the same):
 
-1. another project's own colour (a badge's tone in `badge-pill.css`, a translation's flag there, the Discord and YouTube guides), set once in a
+1. another project's own colour (a badge's tone in `styles/badge-tones.css`, a translation's flag there, the Discord and YouTube guides), set once in a
    variable on the element when it is used more than once;
 2. the artwork of a logo (`angular-logo.html`, YouTube's);
 3. black or white as a shade, a mask or over a photo (the rank shield's darker half, the globe's fade, the leaderboard's
@@ -121,7 +121,7 @@ An easter egg, which the account menu turns off for good (`layout/angie.service.
   everyone with a merged PR, dated with the last collection. `robots.txt` points to it and keeps crawlers out of `/api/`.
 - One address per page: `angularians.netlify.app` (at the CDN, a redirect in `netlify.toml`) and a trailing slash (`/erkamyaman/`) answer 301 to the canonical URL
   (`app/src/server/middleware/canonical-url.ts`); every page sets `<link rel="canonical">`. A period (`?period=`) is the
-  same page as the home page without one (the last 12 months); a country (`?country=TR`) is a page of its own, with its own title.
+  same page as the home page without one (the last 12 months); a country (`?country=TR`) is a page of its own, with its own title. Badges (`?badges=`) are a filter of the same page, with the same canonical URL.
 - Structured data (`setJsonLd` in `app/src/app/seo-head.ts`): `WebSite` on the home page, `ProfilePage` with its `Person`
   and a `BreadcrumbList` on profiles, a `BreadcrumbList` on a country's board.
 - The cards (`/og.png`, `/:username/card.png`) keep their bottom-left corner free: X lays the page's title over it.
@@ -160,9 +160,9 @@ Signing in from the home page ends on your profile, or back on the home page if 
 
 | Route | |
 | --- | --- |
-| `GET /api/contributors?period=12m&country=TR&page=1` | One page (100) of the leaderboard, with each profile's name when it has one; filtered on a country, also each row's `countryRank` |
+| `GET /api/contributors?period=12m&country=TR&badges=angular-gde,github-star&page=1` | One page (100) of the leaderboard, with each profile's name when it has one; filtered on a country, also each row's `countryRank`; filtered on badges, anyone with at least one of them |
 | `GET /api/contributors/:username` | A profile: all-time stats, rank in each period, links |
 | `GET /api/search/contributors?q=cris&country=TR` | Up to 8 contributors, of that country if given |
-| `GET /api/map/contributors?period=all` | Contributors by country |
+| `GET /api/map/contributors?period=all` | Contributors by country, and every badge on the board with how many hold it in the period |
 | `GET /:username/card.png?period=2025&flag=TR&hide=reviewer&names=official` | The Angularian card, 2400×1260: the README card and the profile's link preview. `names=official` swaps fun project titles for the project and role, `names=none` shows the badges as icons alone; `hide` is the badges the owner left out in the share dialog (`app/src/app/profile/card-badges.ts`), and the profile's own `?hide=` carries them to its link preview. Its flag is the GitHub location's country, or `flag` when the owner picked another; under its stats, the profile's badges as tags with their names, as many as fit in up to three rows (the stats shrink for a third) and the rest as icons alone, a language's own name in Manrope's Cyrillic and extended Latin or a small Noto font holding just its letters (`TAG_FONTS` in `app/src/server/card/tag-fonts.ts`) (`earnedBadges` in `app/src/app/profile/earned-badges.ts`, shared with the profile page; images from the `site-images` server asset) |
 | `GET /og.png?period=2025` | The home page's link preview, 2400×1260: all time, or the top of a period |

@@ -10,7 +10,7 @@
         <ng-icon name="remixCloseLine" aria-hidden="true" />
       </button>
     </div>
-    <ul class="mt-4 grid grid-cols-6 gap-2" [attr.aria-busy]="!people().length || null" [attr.aria-label]="'Best ranked from ' + name(shown.code)">
+    <ul class="mt-4 grid grid-cols-6 gap-2" [attr.aria-busy]="(!people().length && !filtered()) || null" [attr.aria-label]="'Best ranked from ' + name(shown.code)">
       @for (tile of tiles(); track $index) {
         <li class="aspect-square">
           @if (tile) {

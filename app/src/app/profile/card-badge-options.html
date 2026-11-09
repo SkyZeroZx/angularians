@@ -4,7 +4,7 @@
       <hlm-select-trigger class="w-full" buttonAriaLabel="Badges on the card"><span class="truncate">{{ summary() }}</span></hlm-select-trigger>
       <hlm-select-content *hlmSelectPortal>
         @for (choice of choices(); track choice.key) {
-          <hlm-select-item [value]="choice.key">{{ choice.label }}</hlm-select-item>
+          <hlm-select-item [value]="choice.key"><app-brand-text [text]="choice.label" /></hlm-select-item>
         }
       </hlm-select-content>
     </hlm-select-multiple>

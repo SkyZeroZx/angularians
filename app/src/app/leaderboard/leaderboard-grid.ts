@@ -102,7 +102,7 @@ export class LeaderboardGrid {
   }
 
   protected async showMore(): Promise<void> {
-    // The period or the country can change while this loads: its items must not join the new board.
+    // The period, the country or the badges can change while this loads: its items must not join the new board.
     const first = this.page()
     const phone = window.matchMedia('(max-width: 639.98px)').matches
     const shown = showOneMore(this.shown(), phone)
@@ -116,7 +116,7 @@ export class LeaderboardGrid {
     this.loading.set(true)
     this.failed.set(false)
     try {
-      const page = await this.fetchPage({ period: first.period, country: first.country, page: next })
+      const page = await this.fetchPage({ period: first.period, country: first.country, badges: first.badges, page: next })
       if (first === this.page()) reveal([...this.shown().more, ...page.items])
     }
     catch {

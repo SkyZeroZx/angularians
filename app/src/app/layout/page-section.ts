@@ -1,7 +1,6 @@
 import { Component, computed, input } from '@angular/core';
+import { brandParts } from './brand-parts';
 import { Container } from './container';
-
-const brandParts = (text: string) => text.split(/(Angularians?)/)
 
 /** A titled block of a page (Nuxt UI `UPageSection`). `sectionId` makes it a link target. */
 @Component({

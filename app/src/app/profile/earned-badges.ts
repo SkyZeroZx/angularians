@@ -16,7 +16,7 @@ export const BADGE_ICONS = { octShield, remixStarFill, simpleNx, vikingAnvil, vi
 
 /**
  * A badge on a profile and on its card. `icon`: `angular`, `gde` or `logo` (`logo` is its image), or a key of
- * `BADGE_ICONS`. `tone`: its colours, a `tone-*` class of `badge-pill.css`.
+ * `BADGE_ICONS`. `tone`: its colours, a `tone-*` class of `styles/badge-tones.css`.
  */
 export interface EarnedBadge {
   label: string

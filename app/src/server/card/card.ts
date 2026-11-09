@@ -1,6 +1,7 @@
 // The Angularian card: the profile's link preview (og:image) and the GitHub README card, as one PNG.
 // After nuxt.com's `OgImage/Nuxter.takumi.vue` (MIT, Copyright (c) 2022-2023 NuxtLabs): the same layout,
 // our colours and mark. Only the username and the period are in its URL: the numbers are read when it renders.
+import { brandParts } from '../../app/layout/brand-parts'
 import { Resvg } from '@resvg/resvg-js'
 import { periodOrNull, periodPhrase, type ContributorProfile, type Period } from '@angularians/shared'
 import satori from 'satori'
@@ -66,7 +67,7 @@ const largeIcon = ({ src, colors }: CardTag): Node =>
 const badgeTag = ({ src, label, colors }: CardTag): Node =>
   h('div', { height: TAG_HEIGHT, ...(label ? { paddingLeft: TAG_PADDING, paddingRight: TAG_PADDING, gap: TAG_GAP } : { width: TAG_ICON_WIDTH, justifyContent: 'center' }), alignItems: 'center', borderRadius: 10, ...tagSurface(colors), fontFamily: ['Manrope', ...TAG_FONTS.map(font => font.name)].join(', '), fontSize: TAG_FONT_SIZE, fontWeight: 600, color: colors.text, whiteSpace: 'nowrap' }, [
     h('img', { width: TAG_ICON_SIZE, height: TAG_ICON_SIZE }, undefined, { src, width: TAG_ICON_SIZE, height: TAG_ICON_SIZE }),
-    ...(label ? [h('div', {}, label)] : []),
+    ...(label ? [branded(label, { fontSize: TAG_FONT_SIZE, flexWrap: 'nowrap' })] : []),
   ])
 
 
@@ -80,7 +81,7 @@ const tagRows = (tags: readonly CardTag[]): Node[] =>
  */
 function branded(text: string, style: Record<string, unknown>, brandColor?: string): Node {
   const size = Number(style.fontSize ?? 16)
-  const pieces = text.split(/(Angularians?)/).filter(Boolean)
+  const pieces = brandParts(text).filter(Boolean)
   return h('div', { flexWrap: 'wrap', alignItems: 'baseline', columnGap: size * .25, ...style }, pieces.map(piece => /^Angularians?$/.test(piece)
     ? h('span', { fontFamily: 'Norse', fontWeight: 700, fontSize: size, letterSpacing: size * .02, position: 'relative', top: size * NUDGE, ...(brandColor ? { color: brandColor } : {}) }, piece)
     : h('span', {}, piece.trim())))

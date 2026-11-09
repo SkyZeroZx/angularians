@@ -1,0 +1,287 @@
+/*
+ * Each badge's colours: `tone-*` sets `--pill`, its colour, for the background, the ring and the text; a tone whose
+ * text differs sets `--pill-text`, and one that mixes them otherwise `--pill-bg` or `--pill-ring`. The earned badges
+ * pick theirs in `earned-badges.ts`, the projects in `project-badges.ts`. A project's colour is its own brand's and a
+ * translation's its flag's, so a hex. Each tone's dark rule follows its light one; `BadgeTone` (`badge-pill.ts`) lists
+ * them. The badge pill and the leaderboard's badge filter use them.
+ */
+[class^='tone-'],
+[class*=' tone-'] {
+  --pill-text: var(--pill);
+  --pill-bg: color-mix(in oklab, var(--pill) 10%, transparent);
+  --pill-ring: color-mix(in oklab, var(--pill) 30%, transparent);
+}
+
+.tone-team {
+  --pill: var(--angular-pink);
+  --pill-text: var(--foreground);
+  --pill-ring: color-mix(in oklab, var(--pill) 40%, transparent);
+}
+
+.tone-gde {
+  --pill: #1A73E8;
+  --pill-text: #185ABC;
+}
+.dark .tone-gde {
+  --pill: #8AB4F8;
+  --pill-text: var(--pill);
+}
+
+.tone-star {
+  --pill: #BF8700;
+  --pill-text: #845A00;
+}
+.dark .tone-star {
+  --pill: #E3B341;
+  --pill-text: var(--pill);
+}
+
+.tone-nx {
+  --pill: #143055;
+}
+.dark .tone-nx {
+  --pill: #96D7E8;
+}
+
+.tone-shieldwall {
+  --pill: var(--shieldwall);
+}
+
+.tone-primary {
+  --pill: var(--primary);
+}
+
+/* GitHub's colours (`--github-*` in styles.css); the text a shade darker on light, for contrast. */
+.tone-gold {
+  --pill: var(--github-gold);
+  --pill-text: var(--github-gold-text);
+}
+
+.tone-green {
+  --pill: var(--github-green);
+  --pill-text: var(--github-green-text);
+}
+
+.tone-purple {
+  --pill: var(--github-purple);
+}
+
+.tone-foreground {
+  --pill: var(--foreground);
+  --pill-bg: color-mix(in oklab, var(--pill) 5%, transparent);
+  --pill-ring: color-mix(in oklab, var(--pill) 25%, transparent);
+}
+
+/* The projects: on dark, a lighter text and a stronger ring (ngx-builders sets its own) */
+.dark :is(.tone-analog, .tone-ng-icons, .tone-ngxtension, .tone-pangular, .tone-slide-ng, .tone-ng-native, .tone-ng-primitives, .tone-ng-baguette, .tone-angular-devs-france, .tone-openng, .tone-ng-poland, .tone-ng-asia, .tone-ng-tunisia, .tone-angular-space, .tone-angular-wroclaw) {
+  --pill-ring: color-mix(in oklab, var(--pill) 40%, transparent);
+}
+
+.tone-analog {
+  --pill: #DD0330;
+  --pill-text: #B80A2C;
+}
+.dark .tone-analog {
+  --pill-text: #F47088;
+}
+
+.tone-ng-icons {
+  --pill: #E53935;
+  --pill-text: #C62828;
+}
+.dark .tone-ng-icons {
+  --pill-text: #FF8A80;
+}
+
+.tone-ngxtension {
+  --pill: #F20755;
+  --pill-text: #C2185B;
+}
+.dark .tone-ngxtension {
+  --pill-text: #FF5BE1;
+}
+
+.tone-pangular {
+  --pill: #D97706;
+  --pill-text: #B45309;
+}
+.dark .tone-pangular {
+  --pill-text: #FBBF24;
+}
+
+.tone-slide-ng {
+  --pill: #CC4209;
+  --pill-text: #A33A08;
+}
+.dark .tone-slide-ng {
+  --pill-text: #F0883E;
+}
+
+.tone-ng-native {
+  --pill: #F0224F;
+  --pill-text: #C4002D;
+}
+.dark .tone-ng-native {
+  --pill-text: #FF6B88;
+}
+
+.tone-ng-primitives {
+  --pill: #E90364;
+  --pill-text: #B8024F;
+}
+.dark .tone-ng-primitives {
+  --pill-text: #FF5C9A;
+}
+
+.tone-ngx-builders {
+  --pill: #455A64;
+  --pill-text: #37474F;
+}
+.dark .tone-ngx-builders {
+  --pill-text: #B0BEC5;
+  --pill-ring: color-mix(in oklab, #90A4AE 40%, transparent);
+}
+
+.tone-ng-baguette {
+  --pill: #D6336C;
+  --pill-text: #B0245A;
+}
+.dark .tone-ng-baguette {
+  --pill-text: #FF7BA5;
+}
+
+.tone-angular-devs-france {
+  --pill: #1E4FB0;
+  --pill-text: #1E4FB0;
+}
+.dark .tone-angular-devs-france {
+  --pill-text: #7FA6F5;
+}
+
+.tone-openng {
+  --pill: #D6249F;
+  --pill-text: #A81B7E;
+}
+.dark .tone-openng {
+  --pill-text: #FF6FD0;
+}
+
+.tone-ng-poland {
+  --pill: #DC143C;
+  --pill-text: #B8102F;
+}
+.dark .tone-ng-poland {
+  --pill-text: #F2627D;
+}
+
+.tone-ng-asia {
+  --pill: #8B2FE0;
+  --pill-text: #7A22CC;
+}
+.dark .tone-ng-asia {
+  --pill-text: #C58BFF;
+}
+
+.tone-ng-tunisia {
+  --pill: #E70013;
+  --pill-text: #C00010;
+}
+.dark .tone-ng-tunisia {
+  --pill-text: #F2555F;
+}
+
+.tone-angular-space {
+  --pill: #6D3BBF;
+  --pill-text: #5B2FA8;
+}
+.dark .tone-angular-space {
+  --pill-text: #B79CF0;
+}
+
+.tone-angular-wroclaw {
+  --pill: #C2258E;
+  --pill-text: #A81E7A;
+}
+.dark .tone-angular-wroclaw {
+  --pill-text: #FF77C8;
+}
+
+/* The translations: each in its flag's colour, its text 4.5:1 on the tint in both themes */
+.dark :is(.tone-lang-az, .tone-lang-es, .tone-lang-uz, .tone-lang-tr, .tone-lang-ru, .tone-lang-ko, .tone-lang-ja, .tone-lang-zh-cn, .tone-lang-zh-tw, .tone-lang-fr) {
+  --pill-ring: color-mix(in oklab, var(--pill) 40%, transparent);
+}
+
+.tone-lang-az {
+  --pill: #00B5E2;
+  --pill-text: #007795;
+}
+.dark .tone-lang-az {
+  --pill-text: #00B5E2;
+}
+
+.tone-lang-es {
+  --pill: #C60B1E;
+}
+.dark .tone-lang-es {
+  --pill-text: #D64F5D;
+}
+
+.tone-lang-uz {
+  --pill: #0099B5;
+  --pill-text: #00778D;
+}
+.dark .tone-lang-uz {
+  --pill-text: #0099B5;
+}
+
+.tone-lang-tr {
+  --pill: #E30A17;
+  --pill-text: #D30915;
+}
+.dark .tone-lang-tr {
+  --pill-text: #E93B45;
+}
+
+.tone-lang-ru {
+  --pill: #0039A6;
+}
+.dark .tone-lang-ru {
+  --pill-text: #577CC4;
+}
+
+.tone-lang-ko {
+  --pill: #CD2E3A;
+  --pill-text: #C92D39;
+}
+.dark .tone-lang-ko {
+  --pill-text: #D6525B;
+}
+
+.tone-lang-ja {
+  --pill: #BC002D;
+}
+.dark .tone-lang-ja {
+  --pill-text: #D14F6E;
+}
+
+.tone-lang-zh-cn {
+  --pill: #DE2910;
+  --pill-text: #CC260F;
+}
+.dark .tone-lang-zh-cn {
+  --pill-text: #E34731;
+}
+
+.tone-lang-zh-tw {
+  --pill: #000095;
+}
+.dark .tone-lang-zh-tw {
+  --pill-text: #7373C5;
+}
+
+.tone-lang-fr {
+  --pill: #0055A4;
+}
+.dark .tone-lang-fr {
+  --pill-text: #4281BC;
+}

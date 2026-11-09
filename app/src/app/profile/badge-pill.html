@@ -5,7 +5,7 @@
     @case ('logo') { <img [src]="badge().logo" alt="" width="16" height="16" class="size-4 shrink-0 object-contain" /> }
     @default { <ng-icon [name]="badge().icon" [size]="badge().icon.startsWith('viking') ? '1.25rem' : '1em'" aria-hidden="true" /> }
   }
-  {{ badge().label }}
+  <app-brand-text [text]="badge().label" />
 </ng-template>
 @if (badge().href) {
   <a [href]="badge().href" target="_blank" rel="noopener" class="pill" [class]="'tone-' + badge().tone" [hlmTooltip]="badge().title"><ng-container [ngTemplateOutlet]="body" /></a>

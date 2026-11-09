@@ -1,4 +1,4 @@
-import { badgeKey, badgeQuery, cardBadgeLabel, hiddenBadgeKeys, parseBadgeNames, parseBadgeOptions, shownBadges } from './card-badges'
+import { badgeKey, badgeQuery, cardBadgeLabel, parseBadgeKeys, parseBadgeNames, parseBadgeOptions, shownBadges } from './card-badges'
 
 describe('badgeKey', () => {
   it('makes a label safe for a URL, keeping its letters', () => {
@@ -13,20 +13,20 @@ describe('badgeKey', () => {
   })
 })
 
-describe('hiddenBadgeKeys', () => {
+describe('parseBadgeKeys', () => {
   it('reads a comma list, sorted and without repeats', () => {
-    expect(hiddenBadgeKeys('reviewer,creator,reviewer')).toEqual(['creator', 'reviewer'])
+    expect(parseBadgeKeys('reviewer,creator,reviewer')).toEqual(['creator', 'reviewer'])
   })
 
   it('ignores anything that is not a usable list', () => {
-    expect(hiddenBadgeKeys(undefined)).toEqual([])
-    expect(hiddenBadgeKeys('')).toEqual([])
-    expect(hiddenBadgeKeys(['a', 'b'])).toEqual([])
-    expect(hiddenBadgeKeys(`${'x'.repeat(61)},ok`)).toEqual(['ok'])
+    expect(parseBadgeKeys(undefined)).toEqual([])
+    expect(parseBadgeKeys('')).toEqual([])
+    expect(parseBadgeKeys(['a', 'b'])).toEqual([])
+    expect(parseBadgeKeys(`${'x'.repeat(61)},ok`)).toEqual(['ok'])
   })
 
   it('reads at most 30 keys', () => {
-    expect(hiddenBadgeKeys(Array.from({ length: 40 }, (_, index) => `k${index}`).join(',')).length).toBe(30)
+    expect(parseBadgeKeys(Array.from({ length: 40 }, (_, index) => `k${index}`).join(',')).length).toBe(30)
   })
 })
 

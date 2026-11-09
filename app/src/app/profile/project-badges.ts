@@ -17,7 +17,7 @@ export interface ProjectBadge {
   does: string
   builtOn?: true
   badgeIsOfficial?: true
-  /** Its colours: a `tone-*` class of `badge-pill.css`. */
+  /** Its colours: a `tone-*` class of `styles/badge-tones.css`. */
   tone: BadgeTone
   people: readonly ProjectPerson[]
 }
@@ -36,7 +36,7 @@ export const PROJECT_BADGES: readonly ProjectBadge[] = [
     { githubId: 25516557, username: 'nartc', name: 'Chau Tran', role: 'creator' },
     { githubId: 25394362, username: 'eneajaho', name: 'Enea Jahollari', role: 'creator' },
   ] },
-  { name: 'Angularians', badgeIsOfficial: true, badge: 'Creator', tone: 'primary', href: 'https://angularians.dev', logo: '/logo.svg', does: 'Everyone who has contributed to Angular, ranked', people: [
+  { name: 'Angularians', badgeIsOfficial: true, badge: 'Angularians creator', tone: 'primary', href: 'https://angularians.dev', logo: '/logo.svg', does: 'Everyone who has contributed to Angular, ranked', people: [
     { githubId: 88717125, username: 'erkamyaman', name: 'Erkam Yaman', role: 'creator' },
   ] },
   { name: 'Pangular Inspector', badge: 'Chief inspector', tone: 'pangular', href: 'https://pangular-inspector.dev', logo: '/credits/pangular.svg', does: 'Angular DevTools: components, signals, DI and routes', people: [
