@@ -12,7 +12,10 @@ import { PeriodTabs } from '../leaderboard/period-tabs'
 import { HlmSkeleton } from '@spartan-ng/helm/skeleton'
 import { SITE_URL } from '../site'
 import { shareQuery } from './share-query'
+import { CardBadgeOptions } from './card-badge-options'
+import { badgeQuery, type BadgeNameStyle } from './card-badges'
 import { CARD_DESIGN } from './card-design'
+import type { EarnedBadge } from './earned-badges'
 
 /** The skeleton shows at least this long, so a fast card does not flicker it. */
 const MIN_LOADING_MS = 500
@@ -26,7 +29,7 @@ export const SHARE_BUTTONS = { link: 'Copy profile link', card: 'Share card', re
 /** Copy the profile link, or the Markdown of the Angularian card for a GitHub profile README. */
 @Component({
   selector: 'app-share',
-  imports: [CountrySelect, HlmButton, HlmDialogImports, HlmSkeleton, NgIcon, NgTemplateOutlet, PeriodTabs],
+  imports: [CardBadgeOptions, CountrySelect, HlmButton, HlmDialogImports, HlmSkeleton, NgIcon, NgTemplateOutlet, PeriodTabs],
   providers: [provideIcons({ remixCheckLine, remixDownloadLine, remixFileCopyLine, remixImageLine, remixLinkedinBoxFill, remixShareLine, simpleBluesky, simpleX, remixLinkM, remixMarkdownLine })],
   templateUrl: './share.html',
   styleUrl: './share.css',
@@ -39,6 +42,7 @@ export class Share {
   readonly periods = input<readonly Period[]>([])
   /** The country of the GitHub location, when it has one. */
   readonly country = input<string | null | undefined>(null)
+  readonly badges = input<readonly EarnedBadge[]>([])
 
   protected readonly buttons = SHARE_BUTTONS
   protected readonly copied = signal<'link' | 'markdown' | null>(null)
@@ -56,6 +60,8 @@ export class Share {
   protected readonly cardPeriod = linkedSignal(() => this.period())
   /** A country picked for this card only. `null`: the GitHub location. */
   protected readonly flag = signal<string | null>(null)
+  protected readonly hiddenBadges = signal<readonly string[]>([])
+  protected readonly names = signal<BadgeNameStyle>('fun')
   protected readonly allCountries = Object.keys(COUNTRIES).map(code => ({ code, count: 0, top: [] }))
   protected readonly name = countryName
   protected readonly flagLabel = computed(() => {
@@ -64,12 +70,13 @@ export class Share {
   })
   protected readonly cardPeriods = computed(() => sortPeriods(['all', ...this.periods()]))
 
+  private readonly badgeOptions = computed(() => badgeQuery({ hidden: this.hiddenBadges(), names: this.names() }))
   private readonly profileUrl = computed(() => `${SITE_URL}/${this.username()}${shareQuery(this.period())}`)
   /** The profile with the card's period and flag: what a post links to, and the README card's link. */
-  private readonly cardProfileUrl = computed(() => `${SITE_URL}/${this.username()}${shareQuery(this.cardPeriod(), this.flag())}`)
-  private readonly cardUrl = computed(() => `${SITE_URL}/${this.username()}/card.png${shareQuery(this.cardPeriod(), this.flag())}`)
+  private readonly cardProfileUrl = computed(() => `${SITE_URL}/${this.username()}${shareQuery(this.cardPeriod(), this.flag(), this.badgeOptions())}`)
+  private readonly cardUrl = computed(() => `${SITE_URL}/${this.username()}/card.png${shareQuery(this.cardPeriod(), this.flag(), this.badgeOptions())}`)
   /** The same card from this site: right on a preview deploy or locally too. The Markdown keeps the public address. */
-  protected readonly previewUrl = computed(() => `/${this.username()}/card.png${shareQuery(this.cardPeriod(), this.flag(), { v: String(CARD_DESIGN) })}`)
+  protected readonly previewUrl = computed(() => `/${this.username()}/card.png${shareQuery(this.cardPeriod(), this.flag(), { v: String(CARD_DESIGN), ...this.badgeOptions() })}`)
   protected readonly fileName = computed(() => `${this.username()}-angularian${this.cardPeriod() === 'all' ? '' : `-${this.cardPeriod()}`}.png`)
   /** The profile's link preview is this card, so a post only needs the link. */
   protected readonly shareLinks = computed(() => {
@@ -95,6 +102,8 @@ export class Share {
     if (state !== 'open') return
     this.cardPeriod.set(this.period())
     this.flag.set(null)
+    this.hiddenBadges.set([])
+    this.names.set('fun')
     this.shownUrl.set(null)
     this.startLoading()
   }
@@ -137,7 +146,7 @@ export class Share {
     void this.copy(this.markdown(), 'markdown')
   }
 
-  private startLoading(): void {
+  protected startLoading(): void {
     clearTimeout(this.loadedTimer)
     this.loadingSince = Date.now()
     this.cardState.set('loading')

@@ -6,14 +6,12 @@
   <nav class="ml-auto flex items-center gap-1" aria-label="Site">
     <!-- As on ngprimitives.com: sponsor first, a divider, then the icons. On phones the heart alone. -->
     <a class="mr-1 inline-flex h-9 items-center gap-2 rounded-md px-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
-      href="https://github.com/sponsors/erkamyaman" target="_blank" rel="noopener" aria-label="Sponsor Angularians" title="Sponsor Angularians">
+      [href]="sponsorUrl" target="_blank" rel="noopener" aria-label="Sponsor Angularians" title="Sponsor Angularians">
       <ng-icon name="remixHeartLine" aria-hidden="true" /><span class="max-sm:hidden">Sponsor</span>
     </a>
     <span class="mr-1 h-5 w-px bg-border" aria-hidden="true"></span>
     <!-- GitHub and the theme always; then, signed in, the avatar and its menu -->
-    <a hlmBtn variant="ghost" size="icon" href="https://github.com/erkamyaman/angularians" target="_blank" rel="noopener" aria-label="Angularians on GitHub" title="Angularians on GitHub">
-      <ng-icon name="simpleGithub" aria-hidden="true" />
-    </a>
+    <app-github-stars />
     <app-theme-toggle />
     @if (avatarSlot()) {
       <!-- The avatar's place, drawn by the server for a visitor signed in last time and kept for the whole visit, so

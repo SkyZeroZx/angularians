@@ -22,6 +22,7 @@
           @if (country(); as code) { says {{ name(code) }}. From elsewhere? Pick yours. } @else { is empty. Pick a country for a flag. }
         </p>
       </div>
+      <app-card-badge-options [badges]="badges()" [(hidden)]="hiddenBadges" [(names)]="names" (changed)="startLoading()" />
       <!-- The card's own background while it loads. Changing the period keeps the card on screen (the avatar and the
            name do not change) and only the parts that do (the rank, the points, the four stats) shimmer until the
            new one fades in over it. -->

@@ -4,19 +4,20 @@ import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { filter, map } from 'rxjs';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { remixHeartLine, remixLoginBoxLine } from '@ng-icons/remixicon';
-import { simpleGithub } from '@ng-icons/simple-icons';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { Container } from './container';
+import { GithubStars } from './github-stars';
 import { scrollHomeToTop } from './home-top';
 import { LogoMark } from './logo-mark';
 import { ThemeToggle } from './theme-toggle';
 import { UserMenu } from './user-menu';
 import { AuthService } from '../auth/auth.service';
+import { SPONSOR_URL } from '../site';
 
 @Component({
   selector: 'app-site-header',
-  imports: [Container, HlmButton, LogoMark, NgIcon, RouterLink, ThemeToggle, UserMenu],
-  providers: [provideIcons({ remixHeartLine, remixLoginBoxLine, simpleGithub })],
+  imports: [Container, GithubStars, HlmButton, LogoMark, NgIcon, RouterLink, ThemeToggle, UserMenu],
+  providers: [provideIcons({ remixHeartLine, remixLoginBoxLine })],
   host: { role: 'banner' },
   templateUrl: './site-header.html',
   styleUrl: './site-header.css',
@@ -26,6 +27,7 @@ export class SiteHeader {
   private readonly router = inject(Router);
   private readonly url = toSignal(this.router.events.pipe(filter(event => event instanceof NavigationEnd), map(() => this.router.url)), { initialValue: this.router.url });
 
+  protected readonly sponsorUrl = SPONSOR_URL;
   protected readonly signedIn = computed(() => !!this.auth.state()?.user);
   /** Signed in, or last time (the hint): the avatar's place. */
   protected readonly avatarSlot = computed(() => this.signedIn() || this.auth.wasSignedIn());
