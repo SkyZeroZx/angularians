@@ -108,6 +108,7 @@ MIT, Copyright (c) 2026 HatScripts. The full licence ships with the package.
 
 - [Manrope](https://github.com/sharanda/manrope), the site's font: SIL Open Font License 1.1, Copyright 2019 The Manrope
   Project Authors, through `@fontsource-variable/manrope` (and, for the cards, `app/src/server/card/fonts`).
+- [Noto Sans KR, JP, SC and TC](https://fonts.google.com/noto), for the language names on the cards: SIL Open Font License 1.1, Copyright 2014-2021 Adobe, reduced by Google Fonts to the letters used, in `app/src/server/card/fonts`.
 - [cobe](https://github.com/shuding/cobe), the globe: MIT, Copyright (c) 2021 Shu Ding.
 - [satori](https://github.com/vercel/satori) and [resvg-js](https://github.com/yisibl/resvg-js), which draw the cards:
   MPL 2.0, unmodified.
@@ -127,7 +128,9 @@ The special badges also show, unchanged, the marks of Pangular Inspector (https:
 
 The badges of Ashley Hunter's Angular Native (https://ng-native.com) and Angular Primitives
 (https://angularprimitives.com) show their marks, unchanged, in `app/public/credits/`. Santosh Yadav's ngx-builders
-(https://github.com/ngx-builders) shows its GitHub organization avatar, unchanged.
+(https://github.com/ngx-builders) shows its GitHub organization avatar, unchanged. The badges of NG Baguette (https://ngbaguette.angulardevs.fr) and Angular
+Devs France (https://angulardevs.fr) show their logos, reduced to 256 pixels (NG Baguette's white logo on a dark tile, so it shows in both themes), and OpenNG (https://www.openng.org) its GitHub
+organization avatar. NG Poland (https://ng-poland.pl) and NG Asia (https://ng-asia.org) show the mark their own sites use, and NG Tunisia (https://ng-tunisia.org) its logo, reduced to 256 pixels. Angular Space (https://www.angularspace.com) shows its site icon, unchanged, and Angular Wrocław (https://www.meetup.com/angularwroclaw/) the shield from its Meetup banner.
 
 ## Data
 
