@@ -9,6 +9,12 @@
  *   page gives). Also those not on the board yet: their badge shows the day they are.
  */
 
+/** Angular team members whose membership of the organization is private on GitHub, so the collector's `team.json` misses them. */
+export const ANGULAR_TEAM_PRIVATE: ReadonlySet<number> = new Set([
+  2554588, // MarkTechson
+  1596273, // thePunderWoman
+])
+
 /** Angular GDEs, as of November 2026: GitHub id, and their handle on me.developers.google.com/u/ (null: not in the directory). */
 export const ANGULAR_GDES: ReadonlyMap<number, string | null> = new Map([
   [44946000, 'romanski'], // AdrianRomanski

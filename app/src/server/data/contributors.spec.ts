@@ -110,6 +110,14 @@ describe('ContributorsData', () => {
     expect(data.map('30d')).toMatchObject({ period: '30d', total: 0, located: 0, countries: [] })
   })
 
+  it('counts the Angular team members GitHub keeps private as team members', () => {
+    const MARK = 2554588
+    const withMark = new ContributorsData({ ...bundle, periods: { ...bundle.periods, all: [...all, row(MARK, 'MarkTechson', 6, 5)] } })
+    expect(withMark.isTeamMember(MARK)).toBe(true)
+    expect(withMark.profile('MarkTechson')?.team).toBe(true)
+    expect(withMark.leaderboard({ period: 'all', badges: ['angular-team'] }).items.map(item => item.username)).toEqual(['crisbeto', 'MarkTechson'])
+  })
+
   describe('badges', () => {
     const GDE = 44946000
     const badged = new ContributorsData({

@@ -17,6 +17,7 @@ import {
 } from '@angularians/shared'
 import { indexBadges, type BadgeIndex } from '../../app/profile/badge-filters'
 import { earnedBadges } from '../../app/profile/earned-badges'
+import { ANGULAR_TEAM_PRIVATE } from '../../app/profile/recognitions'
 import type { DataBundle } from './bundle'
 
 /** 10 rows of the 10-column avatar grid. */
@@ -61,7 +62,7 @@ export class ContributorsData {
     this.profiles = new Map(bundle.profiles.map(profile => [profile.githubId, profile]))
     this.packages = new Map(bundle.packages.map(record => [record.githubId, record.packages]))
     this.calendar = bundle.calendar
-    this.team = new Set(bundle.team.map(member => member.githubId))
+    this.team = new Set([...bundle.team.map(member => member.githubId), ...ANGULAR_TEAM_PRIVATE])
     this.usernames = new Map((this.byPeriod.get('all') ?? []).map(row => [row.githubId, row.username]))
     this.renames = new Map(bundle.renames.map(record => [record.username.toLowerCase(), record.githubId]))
     for (const [period, rows] of this.byPeriod) {
