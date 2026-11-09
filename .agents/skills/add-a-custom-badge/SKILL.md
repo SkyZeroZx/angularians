@@ -13,7 +13,7 @@ Ask for anything missing; never guess it. The "Badge request" issue form asks fo
 
 | What | Why |
 | --- | --- |
-| Each person's GitHub username and role (`creator`, `co-creator`, `founder`, `co-founder`, `maintainer`, `organizer` or `lead organizer`) | who wears it |
+| Each person's GitHub username and role (`creator`, `co-creator`, `co-author`, `founder`, `co-founder`, `maintainer`, `organizer` or `lead organizer`) | who wears it |
 | Project name | the tooltip |
 | Website, its main page | where the badge links |
 | GitHub repository (required for a library or a tool) | to check the project and the role |

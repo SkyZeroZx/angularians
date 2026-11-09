@@ -1,6 +1,6 @@
 import type { BadgeTone } from './badge-pill'
 
-export type ProjectRole = 'creator' | 'co-creator' | 'founder' | 'co-founder' | 'maintainer' | 'organizer' | 'lead organizer'
+export type ProjectRole = 'creator' | 'co-creator' | 'co-author' | 'founder' | 'co-founder' | 'maintainer' | 'organizer' | 'lead organizer'
 
 export interface ProjectPerson {
   githubId: number
@@ -91,9 +91,9 @@ export const PROJECT_BADGES: readonly ProjectBadge[] = [
     { githubId: 8568104, username: 'DMezhenskyi', name: 'Dmytro Mezhenskyi', role: 'creator' },
   ] },
   { name: 'Angular-Buch', badge: 'Rune scribe', officialBadge: 'Angular book author', tone: 'foreground', href: 'https://angular-buch.com', logo: '/credits/angular-schule.png', does: 'The German book on Angular', people: [
-    { githubId: 640639, username: 'JohannesHoppe', name: 'Johannes Hoppe', role: 'co-creator' },
-    { githubId: 1683147, username: 'fmalcher', name: 'Ferdinand Malcher', role: 'co-creator' },
-    { githubId: 4279702, username: 'd-koppenhagen', name: 'Danny Koppenhagen', role: 'co-creator' },
+    { githubId: 640639, username: 'JohannesHoppe', name: 'Johannes Hoppe', role: 'co-author' },
+    { githubId: 1683147, username: 'fmalcher', name: 'Ferdinand Malcher', role: 'co-author' },
+    { githubId: 4279702, username: 'd-koppenhagen', name: 'Danny Koppenhagen', role: 'co-author' },
   ] },
   { name: 'ng-news', badge: 'ng-news skald', officialBadge: 'ng-news host', tone: 'ng-news', href: 'https://www.youtube.com/@ng-news', logo: '/credits/ng-news.png', does: 'A weekly video update for the Angular community', people: [
     { githubId: 5721205, username: 'rainerhahnekamp', name: 'Rainer Hahnekamp', role: 'maintainer' },
