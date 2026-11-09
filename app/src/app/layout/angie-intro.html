@@ -16,6 +16,6 @@
       <a hlmBtn [variant]="starred() ? 'secondary' : 'default'" [href]="repoUrl" target="_blank" rel="noopener" (click)="markStarred()"><ng-icon [name]="starIcon()" aria-hidden="true" /> {{ starLabel() }}</a>
       <a hlmBtn variant="ghost" class="sponsor" [href]="sponsorUrl" target="_blank" rel="noopener"><ng-icon name="remixHeartLine" aria-hidden="true" /> Sponsor</a>
     </div>
-    <button type="button" class="quiet" (click)="turnOff()">Too loud? Turn off Angie’s lightning</button>
+    <button type="button" class="quiet" (click)="toggleLightning()">{{ lightningLabel() }}</button>
   </hlm-dialog-content>
 </hlm-dialog>

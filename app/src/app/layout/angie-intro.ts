@@ -24,6 +24,7 @@ export class AngieIntro {
   protected readonly starred = signal(false)
   protected readonly starLabel = computed(() => (this.starred() ? 'Thanks for the star' : 'Star on GitHub'))
   protected readonly starIcon = computed(() => (this.starred() ? 'remixCheckLine' : 'remixStarLine'))
+  protected readonly lightningLabel = computed(() => (this.angie.on() ? 'Too loud? Turn off Angie’s lightning' : 'Angie’s lightning is off. Turn it back on'))
   protected readonly authorUrl = SITE_AUTHOR.url
   protected readonly pressKitUrl = PRESS_KIT_URL
   protected readonly repoUrl = REPO_URL
@@ -41,8 +42,8 @@ export class AngieIntro {
     this.starred.set(true)
   }
 
-  protected turnOff(): void {
-    this.angie.turnOff()
+  protected toggleLightning(): void {
+    this.angie.toggle()
   }
 
   private revealCloseButtonLater(): void {

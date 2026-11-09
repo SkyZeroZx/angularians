@@ -43,11 +43,6 @@ export class AngieService {
     }
   }
 
-  turnOff(): void {
-    if (this.on()) this.toggle()
-    this.closeIntro()
-  }
-
   closeIntro(): void {
     this.introOpen.set(false)
   }

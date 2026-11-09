@@ -22,6 +22,17 @@ describe('AngieIntro', () => {
     expect(canClose()).toBe(true)
   })
 
+  it('stays open when the lightning is turned off', () => {
+    const fixture = TestBed.createComponent(AngieIntro)
+    const intro = fixture.componentInstance as unknown as { toggleLightning(): void, lightningLabel(): string }
+    const angie = TestBed.inject(AngieService)
+    angie.stormEnded()
+    intro.toggleLightning()
+    expect(angie.on()).toBe(false)
+    expect(angie.introOpen()).toBe(true)
+    expect(intro.lightningLabel()).toContain('Turn it back on')
+  })
+
   it('thanks for the star', () => {
     const intro = TestBed.createComponent(AngieIntro).componentInstance as unknown as { markStarred(): void, starLabel(): string }
     expect(intro.starLabel()).toBe('Star on GitHub')
